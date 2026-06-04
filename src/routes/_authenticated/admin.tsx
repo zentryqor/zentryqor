@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -20,17 +20,6 @@ import { toast } from "sonner";
 import { Loader2, Upload, Trash2, Download } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  ssr: false,
-  beforeLoad: async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw redirect({ to: "/auth" });
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userData.user.id);
-    const isAdmin = (roles ?? []).some((r) => r.role === "admin");
-    if (!isAdmin) throw redirect({ to: "/dashboard" });
-  },
   component: AdminPage,
 });
 
@@ -57,6 +46,9 @@ type AssetRow = {
 };
 
 function AdminPage() {
+  const navigate = useNavigate();
+  const [checkingAdmin, setCheckingAdmin] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [assets, setAssets] = useState<AssetRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,6 +61,24 @@ function AdminPage() {
   const [tagsInput, setTagsInput] = useState("");
   const [premiumOnly, setPremiumOnly] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        navigate({ to: "/auth" });
+        return;
+      }
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userData.user.id);
+      const admin = (roles ?? []).some((r) => r.role === "admin");
+      setIsAdmin(admin);
+      setCheckingAdmin(false);
+      if (!admin) navigate({ to: "/dashboard" });
+    })();
+  }, [navigate]);
 
   const loadAll = async () => {
     setLoading(true);
@@ -98,8 +108,8 @@ function AdminPage() {
   };
 
   useEffect(() => {
-    loadAll();
-  }, []);
+    if (isAdmin) loadAll();
+  }, [isAdmin]);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -176,6 +186,15 @@ function AdminPage() {
     }
     window.open(data.signedUrl, "_blank");
   };
+
+  if (checkingAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  if (!isAdmin) return null;
 
   return (
     <div className="container mx-auto max-w-6xl space-y-8 p-6">
