@@ -1,4 +1,5 @@
 import { Check, Sparkles } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 const free = [
   "Limited daily downloads",
