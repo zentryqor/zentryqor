@@ -187,6 +187,15 @@ function AdminPage() {
     window.open(data.signedUrl, "_blank");
   };
 
+  if (checkingAdmin) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  if (!isAdmin) return null;
+
   return (
     <div className="container mx-auto max-w-6xl space-y-8 p-6">
       <div className="flex items-center justify-between">
