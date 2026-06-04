@@ -124,10 +124,6 @@ export function WordReveal({ text, className, delay = 0 }: { text: string; class
   );
 }
 
-type MagneticProps = HTMLMotionProps<"div"> & {
-  strength?: number;
-  as?: "div" | "a" | "button";
-};
 
 export function Magnetic({ children, strength = 18, className, ...rest }: { children: ReactNode; strength?: number; className?: string }) {
   const reduce = useReducedMotion();
