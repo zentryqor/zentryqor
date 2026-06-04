@@ -34,8 +34,7 @@ export function Reveal({ children, className, delay = 0, y = 24, as = "div", onc
   const reduce = useReducedMotion();
   const MotionTag = motion[as] as typeof motion.div;
   if (reduce) {
-    const Tag = as as keyof JSX.IntrinsicElements;
-    return <Tag className={className}>{children}</Tag>;
+    return createElement(as, { className }, children);
   }
   return (
     <MotionTag
