@@ -47,15 +47,41 @@ const AI_TOOLS = [
 
 function Dashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
   const fetchCtx = useServerFn(getMyContext);
   const track = useServerFn(trackVaultView);
   const { data: ctx, isLoading } = useQuery({ queryKey: ["me"], queryFn: () => fetchCtx() });
+  const { isPastDue, isPremium: liveIsPremium } = useSubscription(user?.id);
 
   useEffect(() => {
     if (!isLoading && ctx && !ctx.profile?.onboarding_completed) {
       navigate({ to: "/onboarding" });
     }
   }, [ctx, isLoading, navigate]);
+
+  // Checkout success celebration — poll briefly for the webhook to update the row
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("checkout") !== "success") return;
+
+    toast.success("🎉 Welcome to Premium", {
+      description: "Everything is unlocked. Enjoy the vault.",
+      duration: 6000,
+    });
+
+    let tries = 0;
+    const poll = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+      tries += 1;
+      if (tries >= 6) clearInterval(poll);
+    }, 1500);
+
+    // Clean the URL
+    window.history.replaceState({}, "", window.location.pathname);
+    return () => clearInterval(poll);
+  }, [queryClient]);
 
   if (isLoading || !ctx) {
     return (
