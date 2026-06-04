@@ -1,5 +1,6 @@
 "use client";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform, useMotionValue, AnimatePresence, type Variants, type MotionProps, type HTMLMotionProps } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform, useMotionValue, AnimatePresence, type Variants } from "framer-motion";
+import { createElement } from "react";
 import { useEffect, useRef, useState, type ReactNode, type ComponentPropsWithoutRef } from "react";
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
