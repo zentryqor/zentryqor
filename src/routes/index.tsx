@@ -8,6 +8,7 @@ import { Pricing } from "@/components/landing/Pricing";
 import { Testimonials } from "@/components/landing/Testimonials";
 import { FAQ } from "@/components/landing/FAQ";
 import { CtaFooter } from "@/components/landing/CtaFooter";
+import { MobileStickyCTA } from "@/components/landing/MobileStickyCTA";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,7 +35,9 @@ function Index() {
         <Testimonials />
         <FAQ />
         <CtaFooter />
+        <div className="md:hidden h-20" aria-hidden />
       </main>
+      <MobileStickyCTA />
     </div>
   );
 }

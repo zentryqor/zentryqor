@@ -1,8 +1,9 @@
 import { ArrowUpRight, Sparkles, Play } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export function Hero() {
   return (
-    <section className="relative pt-36 sm:pt-44 pb-24 px-4 overflow-hidden">
+    <section className="relative pt-32 sm:pt-44 pb-20 sm:pb-24 px-4 overflow-hidden">
       {/* Background atmosphere */}
       <div className="absolute inset-0 ring-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full bg-primary/20 blur-[120px] opacity-60 animate-pulse-glow" />
@@ -27,15 +28,15 @@ export function Hero() {
           analytics, and a creator workspace — engineered for serious creators.
         </p>
 
-        <div className="mt-10 flex items-center justify-center gap-3 flex-wrap">
-          <button className="group inline-flex items-center gap-2 h-12 px-5 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary">
+        <div className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:flex-wrap">
+          <Link to="/auth" className="group inline-flex items-center justify-center gap-2 h-12 px-5 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary w-full sm:w-auto">
             Start creating free
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </button>
-          <button className="group inline-flex items-center gap-2 h-12 px-5 rounded-xl glass text-sm font-medium magnetic">
+          </Link>
+          <a href="#pricing" className="group inline-flex items-center justify-center gap-2 h-12 px-5 rounded-xl glass text-sm font-medium magnetic w-full sm:w-auto">
             <Play className="h-3.5 w-3.5 fill-foreground" />
-            Watch the demo
-          </button>
+            See pricing
+          </a>
         </div>
 
         <p className="mt-5 text-xs text-muted-foreground">
