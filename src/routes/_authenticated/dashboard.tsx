@@ -1,7 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
+import { useSubscription } from "@/hooks/use-subscription";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import {
   ArrowUpRight,
   Bookmark,
@@ -43,15 +47,41 @@ const AI_TOOLS = [
 
 function Dashboard() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
   const fetchCtx = useServerFn(getMyContext);
   const track = useServerFn(trackVaultView);
   const { data: ctx, isLoading } = useQuery({ queryKey: ["me"], queryFn: () => fetchCtx() });
+  const { isPastDue, isPremium: liveIsPremium } = useSubscription(user?.id);
 
   useEffect(() => {
     if (!isLoading && ctx && !ctx.profile?.onboarding_completed) {
       navigate({ to: "/onboarding" });
     }
   }, [ctx, isLoading, navigate]);
+
+  // Checkout success celebration — poll briefly for the webhook to update the row
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("checkout") !== "success") return;
+
+    toast.success("🎉 Welcome to Premium", {
+      description: "Everything is unlocked. Enjoy the vault.",
+      duration: 6000,
+    });
+
+    let tries = 0;
+    const poll = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+      tries += 1;
+      if (tries >= 6) clearInterval(poll);
+    }, 1500);
+
+    // Clean the URL
+    window.history.replaceState({}, "", window.location.pathname);
+    return () => clearInterval(poll);
+  }, [queryClient]);
 
   if (isLoading || !ctx) {
     return (
@@ -61,7 +91,8 @@ function Dashboard() {
     );
   }
 
-  const { profile, preferences, activity, isPremium } = ctx;
+  const { profile, preferences, activity } = ctx;
+  const isPremium = ctx.isPremium || liveIsPremium;
   const firstName = profile?.display_name?.split(" ")[0] ?? "creator";
 
   // Personalize: filter recommendations by interests/platforms
@@ -91,6 +122,16 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <PaymentTestModeBanner />
+      {isPastDue && (
+        <div className="w-full bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-center text-xs text-amber-200">
+          ⚠ Your last payment failed.{" "}
+          <Link to="/billing" className="underline font-medium">
+            Update your card
+          </Link>{" "}
+          to keep Premium access.
+        </div>
+      )}
       {/* Top bar */}
       <header className="sticky top-0 z-30 glass border-b border-border/60">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">

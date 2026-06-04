@@ -57,7 +57,13 @@ export const getMyContext = createServerFn({ method: "GET" })
     const [profile, prefs, sub, activity] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
       supabase.from("creator_preferences").select("*").eq("user_id", userId).maybeSingle(),
-      supabase.from("subscriptions").select("*").eq("user_id", userId).maybeSingle(),
+      supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
       supabase
         .from("vault_activity")
         .select("*")
@@ -66,7 +72,12 @@ export const getMyContext = createServerFn({ method: "GET" })
         .limit(8),
     ]);
 
-    const isPremium = sub.data?.status === "active" || sub.data?.plan === "premium";
+    const now = Date.now();
+    const periodEnd = sub.data?.current_period_end ? new Date(sub.data.current_period_end).getTime() : null;
+    const isPremium = !!sub.data && (
+      (["active", "trialing", "past_due"].includes(sub.data.status) && (!periodEnd || periodEnd > now)) ||
+      (sub.data.status === "canceled" && periodEnd !== null && periodEnd > now)
+    );
 
     return {
       profile: profile.data,

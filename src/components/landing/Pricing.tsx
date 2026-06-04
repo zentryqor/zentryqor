@@ -1,4 +1,5 @@
 import { Check, Sparkles } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 const free = [
   "Limited daily downloads",
@@ -40,9 +41,9 @@ export function Pricing() {
             </div>
             <p className="text-sm text-muted-foreground mt-3">For exploring the ecosystem.</p>
 
-            <button className="mt-7 h-11 rounded-xl glass-strong text-sm font-medium magnetic">
+            <Link to="/auth" className="mt-7 h-11 rounded-xl glass-strong text-sm font-medium magnetic flex items-center justify-center">
               Start free
-            </button>
+            </Link>
 
             <ul className="mt-7 space-y-3">
               {free.map((f) => (
@@ -76,9 +77,9 @@ export function Pricing() {
               </div>
               <p className="text-sm text-muted-foreground mt-3">Everything. Unlocked. Forever-iterating.</p>
 
-              <button className="mt-7 w-full h-11 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary">
+              <Link to="/billing" className="mt-7 w-full h-11 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary flex items-center justify-center">
                 Upgrade to Premium
-              </button>
+              </Link>
 
               <ul className="mt-7 space-y-3">
                 {premium.map((f) => (
