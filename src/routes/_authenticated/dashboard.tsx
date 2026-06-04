@@ -139,9 +139,9 @@ function Dashboard() {
             <Link to="/" className="font-semibold tracking-tight text-gradient">Zentry Qor</Link>
             <nav className="hidden md:flex items-center gap-1 text-sm">
               <NavTab active>Dashboard</NavTab>
-              <NavTab>Vault</NavTab>
+              <Link to="/assets" className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors">Assets</Link>
+              <Link to="/admin" className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors">Admin</Link>
               <NavTab>AI Tools</NavTab>
-              <NavTab>Analytics</NavTab>
             </nav>
           </div>
           <div className="flex items-center gap-3">
