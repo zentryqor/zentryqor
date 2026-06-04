@@ -100,7 +100,7 @@ export function Hero() {
                   ))}
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="col-span-2 rounded-xl bg-elevated/60 border border-border p-4 h-44 relative overflow-hidden">
                     <div className="text-xs text-muted-foreground mb-2">Trending pack</div>
                     <div className="text-base font-semibold tracking-tight">Cinematic Reels Vol. 4</div>
