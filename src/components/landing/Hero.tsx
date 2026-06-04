@@ -51,21 +51,13 @@ export function Hero() {
       <motion.div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
-        style={{
-          background: `radial-gradient(600px circle at ${lightX.get()} ${lightY.get()}, oklch(0.56 0.22 264 / 0.18), transparent 60%)`,
-        }}
-      >
-        <motion.div
-          className="absolute inset-0"
-          style={{
-            background: useTransform(
-              [smx, smy] as never,
-              ([x, y]: number[]) =>
-                `radial-gradient(500px circle at ${x}% ${y}%, oklch(0.78 0.13 230 / 0.18), transparent 55%)`
-            ) as never,
-          }}
-        />
-      </motion.div>
+        style={{ background: bg1 }}
+      />
+      <motion.div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: bg2 }}
+      />
       <div className="absolute inset-0 noise opacity-40" />
 
       <div className="relative mx-auto max-w-5xl text-center">
