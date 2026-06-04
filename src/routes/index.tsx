@@ -1,29 +1,40 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Nav } from "@/components/landing/Nav";
+import { Hero } from "@/components/landing/Hero";
+import { SocialProof } from "@/components/landing/SocialProof";
+import { Features } from "@/components/landing/Features";
+import { VaultPreview } from "@/components/landing/VaultPreview";
+import { Pricing } from "@/components/landing/Pricing";
+import { Testimonials } from "@/components/landing/Testimonials";
+import { FAQ } from "@/components/landing/FAQ";
+import { CtaFooter } from "@/components/landing/CtaFooter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "Zentry Qor — Your Ultimate Creator Operating System" },
+      { name: "description", content: "One premium ecosystem for creators to create, organize, and grow faster. Vault, AI tools, analytics — built for serious creators." },
+      { property: "og:title", content: "Zentry Qor — Your Ultimate Creator Operating System" },
+      { property: "og:description", content: "One premium ecosystem for creators to create, organize, and grow faster." },
     ],
   }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="min-h-screen bg-background text-foreground">
+      <Nav />
+      <main>
+        <Hero />
+        <SocialProof />
+        <Features />
+        <VaultPreview />
+        <Pricing />
+        <Testimonials />
+        <FAQ />
+        <CtaFooter />
+      </main>
     </div>
   );
 }
