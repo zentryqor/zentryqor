@@ -46,6 +46,9 @@ type AssetRow = {
 };
 
 function AdminPage() {
+  const navigate = useNavigate();
+  const [checkingAdmin, setCheckingAdmin] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [assets, setAssets] = useState<AssetRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,6 +61,24 @@ function AdminPage() {
   const [tagsInput, setTagsInput] = useState("");
   const [premiumOnly, setPremiumOnly] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        navigate({ to: "/auth" });
+        return;
+      }
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userData.user.id);
+      const admin = (roles ?? []).some((r) => r.role === "admin");
+      setIsAdmin(admin);
+      setCheckingAdmin(false);
+      if (!admin) navigate({ to: "/dashboard" });
+    })();
+  }, [navigate]);
 
   const loadAll = async () => {
     setLoading(true);
