@@ -110,9 +110,10 @@ export function Hero() {
                   <div className="rounded-xl bg-elevated/60 border border-border p-4 h-44">
                     <div className="text-xs text-muted-foreground mb-2">AI tools</div>
                     {["Hook generator", "Caption AI", "Trend finder"].map((t) => (
-                      <div key={t} className="text-[13px] py-1.5 border-b border-border/60 last:border-0">{t}</div>
+                      <div key={t} className="text-[13px] py-1.5 border-b border-border/60 last:border-0 truncate">{t}</div>
                     ))}
                   </div>
+
                 </div>
               </main>
             </div>
