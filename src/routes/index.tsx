@@ -9,6 +9,7 @@ import { Testimonials } from "@/components/landing/Testimonials";
 import { FAQ } from "@/components/landing/FAQ";
 import { CtaFooter } from "@/components/landing/CtaFooter";
 import { MobileStickyCTA } from "@/components/landing/MobileStickyCTA";
+import { AmbientParticles, Reveal, ScrollProgress } from "@/components/motion/primitives";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,17 +25,19 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden relative">
+      <ScrollProgress />
+      <AmbientParticles count={22} />
       <Nav />
-      <main>
+      <main className="relative z-10">
         <Hero />
-        <SocialProof />
+        <Reveal><SocialProof /></Reveal>
         <Features />
-        <VaultPreview />
+        <Reveal><VaultPreview /></Reveal>
         <Pricing />
-        <Testimonials />
-        <FAQ />
-        <CtaFooter />
+        <Reveal><Testimonials /></Reveal>
+        <Reveal><FAQ /></Reveal>
+        <Reveal><CtaFooter /></Reveal>
         <div className="md:hidden h-20" aria-hidden />
       </main>
       <MobileStickyCTA />
