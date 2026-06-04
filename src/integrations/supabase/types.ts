@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      assets: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          file_name: string
+          id: string
+          mime_type: string | null
+          premium_only: boolean
+          size_bytes: number | null
+          storage_path: string
+          tags: string[]
+          title: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_name: string
+          id?: string
+          mime_type?: string | null
+          premium_only?: boolean
+          size_bytes?: number | null
+          storage_path: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          id?: string
+          mime_type?: string | null
+          premium_only?: boolean
+          size_bytes?: number | null
+          storage_path?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
       creator_preferences: {
         Row: {
           created_at: string
