@@ -22,13 +22,13 @@ export function Nav() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="hidden sm:inline-flex text-sm text-muted-foreground hover:text-foreground h-9 px-3 rounded-lg transition-colors">
+          <Link to="/auth" className="hidden sm:inline-flex text-sm text-muted-foreground hover:text-foreground h-9 px-3 rounded-lg transition-colors items-center">
             Sign in
-          </button>
-          <button className="group inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity">
+          </Link>
+          <Link to="/auth" className="group inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity">
             Get started
             <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </button>
+          </Link>
         </div>
       </nav>
     </header>
