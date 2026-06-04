@@ -27,12 +27,14 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const router = useRouter();
+  const { redirect: redirectTo } = Route.useSearch();
+  const dest = redirectTo && redirectTo.startsWith("/") ? redirectTo : "/dashboard";
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/dashboard" });
+      if (data.session) navigate({ to: dest });
     });
-  }, [navigate]);
+  }, [navigate, dest]);
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
@@ -43,7 +45,7 @@ function AuthPage() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
+            emailRedirectTo: `${window.location.origin}${dest}`,
             data: { full_name: name },
           },
         });
@@ -53,7 +55,7 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         await router.invalidate();
-        navigate({ to: "/dashboard" });
+        navigate({ to: dest });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -65,7 +67,7 @@ function AuthPage() {
   async function handleGoogle() {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/dashboard`,
+      redirect_uri: `${window.location.origin}${dest}`,
     });
     if (result.error) {
       toast.error("Google sign-in failed");
@@ -74,8 +76,9 @@ function AuthPage() {
     }
     if (result.redirected) return;
     await router.invalidate();
-    navigate({ to: "/dashboard" });
+    navigate({ to: dest });
   }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background text-foreground px-4 relative overflow-hidden">
