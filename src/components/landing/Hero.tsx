@@ -100,8 +100,8 @@ export function Hero() {
                   ))}
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="col-span-2 rounded-xl bg-elevated/60 border border-border p-4 h-44 relative overflow-hidden">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="sm:col-span-2 rounded-xl bg-elevated/60 border border-border p-4 h-44 relative overflow-hidden">
                     <div className="text-xs text-muted-foreground mb-2">Trending pack</div>
                     <div className="text-base font-semibold tracking-tight">Cinematic Reels Vol. 4</div>
                     <div className="text-xs text-muted-foreground mt-1">240 assets · LUTs, SFX, overlays</div>
@@ -110,9 +110,10 @@ export function Hero() {
                   <div className="rounded-xl bg-elevated/60 border border-border p-4 h-44">
                     <div className="text-xs text-muted-foreground mb-2">AI tools</div>
                     {["Hook generator", "Caption AI", "Trend finder"].map((t) => (
-                      <div key={t} className="text-[13px] py-1.5 border-b border-border/60 last:border-0">{t}</div>
+                      <div key={t} className="text-[13px] py-1.5 border-b border-border/60 last:border-0 truncate">{t}</div>
                     ))}
                   </div>
+
                 </div>
               </main>
             </div>
