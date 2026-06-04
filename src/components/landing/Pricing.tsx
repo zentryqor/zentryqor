@@ -41,9 +41,9 @@ export function Pricing() {
             </div>
             <p className="text-sm text-muted-foreground mt-3">For exploring the ecosystem.</p>
 
-            <button className="mt-7 h-11 rounded-xl glass-strong text-sm font-medium magnetic">
+            <Link to="/auth" className="mt-7 h-11 rounded-xl glass-strong text-sm font-medium magnetic flex items-center justify-center">
               Start free
-            </button>
+            </Link>
 
             <ul className="mt-7 space-y-3">
               {free.map((f) => (
