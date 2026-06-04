@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Check, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
@@ -18,6 +19,8 @@ const premium = [
 ];
 
 export function Pricing() {
+  const [annual, setAnnual] = useState(false);
+
   return (
     <section id="pricing" className="py-28 px-4">
       <div className="max-w-5xl mx-auto">
@@ -29,6 +32,27 @@ export function Pricing() {
           <p className="mt-4 text-muted-foreground">
             Start free. Upgrade when you're ready to take it seriously.
           </p>
+        </div>
+
+        {/* Toggle */}
+        <div className="flex justify-center mb-10">
+          <div className="glass-strong rounded-full p-1 flex items-center gap-1 text-xs">
+            <button
+              onClick={() => setAnnual(false)}
+              className={`px-4 h-8 rounded-full transition ${!annual ? "bg-foreground text-background" : "text-muted-foreground"}`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setAnnual(true)}
+              className={`px-4 h-8 rounded-full transition flex items-center gap-1.5 ${annual ? "bg-foreground text-background" : "text-muted-foreground"}`}
+            >
+              Annual
+              <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/20 text-accent">
+                –17%
+              </span>
+            </button>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-4">
@@ -72,15 +96,25 @@ export function Pricing() {
               </div>
 
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-5xl font-semibold tracking-tight text-gradient-brand">$12.99</span>
-                <span className="text-muted-foreground text-sm">/month</span>
+                <span className="text-5xl font-semibold tracking-tight text-gradient-brand">
+                  {annual ? "$129" : "$12.99"}
+                </span>
+                <span className="text-muted-foreground text-sm">{annual ? "/year" : "/month"}</span>
               </div>
+              {annual && (
+                <div className="mt-1 text-xs text-muted-foreground">
+                  ~$10.75/month — 2 months free
+                </div>
+              )}
               <p className="text-sm text-muted-foreground mt-3">Everything. Unlocked. Forever-iterating.</p>
 
-              <Link to="/auth" search={{ redirect: "/billing" }} className="mt-7 w-full h-11 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary flex items-center justify-center">
+              <Link
+                to="/auth"
+                search={{ redirect: "/billing" }}
+                className="mt-7 w-full h-11 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary flex items-center justify-center"
+              >
                 Upgrade to Premium
               </Link>
-
 
               <ul className="mt-7 space-y-3">
                 {premium.map((f) => (
