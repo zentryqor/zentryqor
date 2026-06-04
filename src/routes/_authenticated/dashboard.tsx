@@ -122,6 +122,16 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <PaymentTestModeBanner />
+      {isPastDue && (
+        <div className="w-full bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-center text-xs text-amber-200">
+          ⚠ Your last payment failed.{" "}
+          <Link to="/billing" className="underline font-medium">
+            Update your card
+          </Link>{" "}
+          to keep Premium access.
+        </div>
+      )}
       {/* Top bar */}
       <header className="sticky top-0 z-30 glass border-b border-border/60">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
