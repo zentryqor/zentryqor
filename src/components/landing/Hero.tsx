@@ -16,8 +16,12 @@ export function Hero() {
   const my = useMotionValue(20);
   const smx = useSpring(mx, { stiffness: 60, damping: 20 });
   const smy = useSpring(my, { stiffness: 60, damping: 20 });
-  const lightX = useTransform(smx, (v) => `${v}%`);
-  const lightY = useTransform(smy, (v) => `${v}%`);
+  const bg1 = useTransform([smx, smy], ([x, y]: number[]) =>
+    `radial-gradient(600px circle at ${x}% ${y}%, oklch(0.56 0.22 264 / 0.18), transparent 60%)`
+  );
+  const bg2 = useTransform([smx, smy], ([x, y]: number[]) =>
+    `radial-gradient(500px circle at ${x}% ${y}%, oklch(0.78 0.13 230 / 0.18), transparent 55%)`
+  );
 
   return (
     <section
