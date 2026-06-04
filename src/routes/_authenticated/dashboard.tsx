@@ -91,7 +91,8 @@ function Dashboard() {
     );
   }
 
-  const { profile, preferences, activity, isPremium } = ctx;
+  const { profile, preferences, activity } = ctx;
+  const isPremium = ctx.isPremium || liveIsPremium;
   const firstName = profile?.display_name?.split(" ")[0] ?? "creator";
 
   // Personalize: filter recommendations by interests/platforms
