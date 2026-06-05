@@ -19,9 +19,6 @@ export function Hero() {
   const bg1 = useTransform([smx, smy], ([x, y]: number[]) =>
     `radial-gradient(600px circle at ${x}% ${y}%, oklch(0.56 0.22 264 / 0.18), transparent 60%)`
   );
-  const bg2 = useTransform([smx, smy], ([x, y]: number[]) =>
-    `radial-gradient(500px circle at ${x}% ${y}%, oklch(0.78 0.13 230 / 0.18), transparent 55%)`
-  );
 
   const isFinePointer = typeof window !== "undefined" && window.matchMedia?.("(pointer: fine)").matches;
 
