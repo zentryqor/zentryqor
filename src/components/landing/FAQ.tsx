@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const faqs = [
   { q: "What exactly is Zentry Qor?", a: "A premium operating system for creators — vault, AI tools, workspace, analytics, and community in one polished app." },
@@ -15,33 +16,57 @@ export function FAQ() {
   return (
     <section id="faq" className="py-28 px-4">
       <div className="max-w-3xl mx-auto">
-        <div className="text-center mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-center mb-12"
+        >
           <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3">FAQ</div>
           <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em] text-gradient leading-[1.05]">
             Questions, answered.
           </h2>
-        </div>
+        </motion.div>
 
         <div className="space-y-2">
           {faqs.map((f, i) => {
             const isOpen = open === i;
             return (
-              <div key={f.q} className="glass rounded-2xl overflow-hidden">
+              <motion.div
+                key={f.q}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.05, ease: "easeOut" }}
+                className="glass rounded-2xl overflow-hidden"
+              >
                 <button
                   onClick={() => setOpen(isOpen ? null : i)}
                   className="w-full flex items-center justify-between text-left px-5 py-4 hover:bg-elevated/40 transition-colors"
                 >
                   <span className="text-[15px] font-medium tracking-tight">{f.q}</span>
-                  <Plus className={`h-4 w-4 text-muted-foreground transition-transform duration-300 ${isOpen ? "rotate-45" : ""}`} />
+                  <motion.div
+                    animate={{ rotate: isOpen ? 45 : 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                  >
+                    <Plus className="h-4 w-4 text-muted-foreground" />
+                  </motion.div>
                 </button>
-                <div
-                  className={`grid transition-all duration-300 ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
-                >
-                  <div className="overflow-hidden">
-                    <p className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed">{f.a}</p>
-                  </div>
-                </div>
-              </div>
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <p className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed">{f.a}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             );
           })}
         </div>
