@@ -345,9 +345,11 @@ function Dashboard() {
           )}
         </div>
       </main>
+      </div>
     </div>
   );
 }
+
 
 function NavTab({ children, active }: { children: React.ReactNode; active?: boolean }) {
   return (
