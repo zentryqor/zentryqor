@@ -107,10 +107,11 @@ function Stage({
       style={
         reduce
           ? { opacity: index === 0 ? 1 : 0 }
-          : { opacity, scale, y, filter: blur.get ? (blur as any) : undefined }
+          : { opacity, scale, y, filter: blur as any }
       }
       className="absolute inset-0 flex flex-col items-center justify-center text-center"
     >
+
       <div className="relative">
         <div className={`absolute -inset-20 bg-gradient-to-b ${stage.accent} blur-3xl opacity-60`} />
         <div className="relative h-24 w-24 sm:h-32 sm:w-32 rounded-3xl glass-strong flex items-center justify-center shadow-elegant">
