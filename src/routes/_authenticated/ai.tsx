@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
-import { generateAiText, generateAiImage } from "@/lib/ai.functions";
+import { generateAiText, generateAiImage, getThumbnailUsage } from "@/lib/ai.functions";
 
 export const Route = createFileRoute("/_authenticated/ai")({
   head: () => ({
