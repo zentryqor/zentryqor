@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const free = [
   "Limited daily downloads",
@@ -49,24 +49,41 @@ export function Pricing() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="flex justify-center mb-10"
         >
-          <div className="glass-strong rounded-full p-1 flex items-center gap-1 text-xs">
-            <motion.button
+          <div className="glass-strong rounded-full p-1 flex items-center relative text-xs select-none">
+            <motion.div
+              layout
+              layoutId="pricing-toggle-pill"
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              className="absolute top-1 bottom-1 rounded-full bg-foreground"
+              style={{
+                left: annual ? "50%" : "4px",
+                right: annual ? "4px" : "50%",
+                width: annual ? "calc(50% - 4px)" : "calc(50% - 4px)",
+              }}
+            />
+            <button
               onClick={() => setAnnual(false)}
-              whileTap={{ scale: 0.95 }}
-              className={`px-4 h-8 rounded-full transition ${!annual ? "bg-foreground text-background" : "text-muted-foreground"}`}
+              className={`relative z-10 px-5 h-8 rounded-full text-xs font-medium transition-colors duration-200 ${
+                !annual ? "text-background" : "text-muted-foreground"
+              }`}
             >
               Monthly
-            </motion.button>
-            <motion.button
+            </button>
+            <button
               onClick={() => setAnnual(true)}
-              whileTap={{ scale: 0.95 }}
-              className={`px-4 h-8 rounded-full transition flex items-center gap-1.5 ${annual ? "bg-foreground text-background" : "text-muted-foreground"}`}
+              className={`relative z-10 px-5 h-8 rounded-full text-xs font-medium transition-colors duration-200 flex items-center gap-1.5 ${
+                annual ? "text-background" : "text-muted-foreground"
+              }`}
             >
               Annual
-              <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/20 text-accent">
+              <span
+                className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full transition-colors duration-200 ${
+                  annual ? "bg-background/20 text-background" : "bg-primary/20 text-accent"
+                }`}
+              >
                 –17%
               </span>
-            </motion.button>
+            </button>
           </div>
         </motion.div>
 
@@ -127,16 +144,47 @@ export function Pricing() {
               </div>
 
               <div className="mt-4 flex items-baseline gap-1">
-                <span className="text-5xl font-semibold tracking-tight text-gradient-brand">
-                  {annual ? "$129" : "$12.99"}
-                </span>
-                <span className="text-muted-foreground text-sm">{annual ? "/year" : "/month"}</span>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={annual ? "annual-price" : "monthly-price"}
+                    initial={{ opacity: 0, y: -8, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    exit={{ opacity: 0, y: 8, filter: "blur(4px)" }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="text-5xl font-semibold tracking-tight text-gradient-brand"
+                  >
+                    {annual ? "$129" : "$12.99"}
+                  </motion.span>
+                </AnimatePresence>
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={annual ? "annual-period" : "monthly-period"}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="text-muted-foreground text-sm"
+                  >
+                    {annual ? "/year" : "/month"}
+                  </motion.span>
+                </AnimatePresence>
               </div>
-              {annual && (
-                <div className="mt-1 text-xs text-muted-foreground">
-                  ~$10.75/month — 2 months free
-                </div>
-              )}
+              <AnimatePresence mode="wait" initial={false}>
+                {annual && (
+                  <motion.div
+                    key="annual-note"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      ~$10.75/month — 2 months free
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <p className="text-sm text-muted-foreground mt-3">Everything. Unlocked. Forever-iterating.</p>
 
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
