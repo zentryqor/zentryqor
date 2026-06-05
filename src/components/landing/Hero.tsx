@@ -7,6 +7,7 @@ import { MagneticButton } from "@/components/motion/MagneticButton";
 import { TiltCard } from "@/components/motion/TiltCard";
 import { CountUp } from "@/components/motion/CountUp";
 import { Typewriter } from "@/components/motion/Typewriter";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const marqueeWords = [
   "Creators",
@@ -24,6 +25,8 @@ const marqueeWords = [
 export function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
+  const isMobile = useIsMobile();
+  const disableParallax = reduce || isMobile;
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
