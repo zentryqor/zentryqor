@@ -23,15 +23,17 @@ export function Hero() {
     `radial-gradient(500px circle at ${x}% ${y}%, oklch(0.78 0.13 230 / 0.18), transparent 55%)`
   );
 
+  const isFinePointer = typeof window !== "undefined" && window.matchMedia?.("(pointer: fine)").matches;
+
   return (
     <section
       ref={sectionRef}
-      onMouseMove={(e) => {
+      onMouseMove={isFinePointer ? (e) => {
         const r = sectionRef.current?.getBoundingClientRect();
         if (!r) return;
         mx.set(((e.clientX - r.left) / r.width) * 100);
         my.set(((e.clientY - r.top) / r.height) * 100);
-      }}
+      } : undefined}
       className="relative pt-32 sm:pt-44 pb-20 sm:pb-24 px-4 overflow-hidden"
     >
       {/* Background atmosphere */}
@@ -42,23 +44,16 @@ export function Hero() {
         animate={{ scale: [1, 1.08, 1], opacity: [0.45, 0.7, 0.45] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
-      <motion.div
-        className="absolute top-20 right-10 h-72 w-72 rounded-full bg-accent/20 blur-[100px] opacity-50"
-        animate={{ x: [0, 30, -10, 0], y: [0, -20, 10, 0] }}
-        transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-      />
-      {/* Mouse-follow ambient light */}
-      <motion.div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: bg1 }}
-      />
-      <motion.div
-        aria-hidden
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: bg2 }}
-      />
+      {/* Mouse-follow ambient light — desktop only */}
+      {isFinePointer && (
+        <motion.div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none hidden md:block"
+          style={{ background: bg1 }}
+        />
+      )}
       <div className="absolute inset-0 noise opacity-40" />
+
 
       <div className="relative mx-auto max-w-5xl text-center">
         <motion.div
