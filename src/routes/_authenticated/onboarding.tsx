@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { getMyContext, saveOnboarding } from "@/lib/preferences.functions";
+import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({ meta: [{ title: "Welcome — Zentry Qor" }] }),
@@ -97,7 +98,16 @@ function Onboarding() {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[600px] w-[600px] rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+      <AnimatedOrbs />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+        aria-hidden
+      />
 
       <div className="relative max-w-2xl mx-auto px-6 pt-14 pb-24">
         <div className="text-center mb-10">
