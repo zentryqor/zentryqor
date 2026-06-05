@@ -24,10 +24,18 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  if (typeof window !== "undefined") {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden relative">
       <ScrollProgress />
-      <AmbientParticles count={22} />
+      <AmbientParticles count={8} />
       <Nav />
       <main className="relative z-10">
         <Hero />
