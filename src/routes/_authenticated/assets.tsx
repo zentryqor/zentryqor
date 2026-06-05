@@ -1,24 +1,24 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
-import { Download, Lock, Search } from "lucide-react";
+import {
+  ArrowUpRight,
+  Download,
+  Layers,
+  Lock,
+  Search,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
+import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 
 export const Route = createFileRoute("/_authenticated/assets")({
   ssr: false,
+  head: () => ({ meta: [{ title: "Vault — Zentry Qor" }] }),
   component: AssetsPage,
 });
 
@@ -35,6 +35,15 @@ type AssetRow = {
   premium_only: boolean;
   created_at: string;
 };
+
+const GRADIENTS = [
+  "from-primary/40 to-accent/20",
+  "from-accent/40 to-primary/20",
+  "from-primary/30 to-foreground/5",
+  "from-accent/30 to-primary/10",
+  "from-foreground/10 to-primary/20",
+  "from-primary/20 to-accent/30",
+];
 
 function AssetsPage() {
   const { user } = useAuth();
@@ -78,6 +87,9 @@ function AssetsPage() {
     });
   }, [assets, search, category, tier]);
 
+  const totalCount = assets.length;
+  const premiumCount = assets.filter((a) => a.premium_only).length;
+
   const download = async (a: AssetRow) => {
     if (a.premium_only && !isPremium) {
       toast.error("Premium membership required");
@@ -94,104 +106,400 @@ function AssetsPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl space-y-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold">Asset library</h1>
-        <p className="text-sm text-muted-foreground">
-          Browse and download available assets
-        </p>
-      </div>
+    <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
+      <AnimatedOrbs />
 
-      <Card>
-        <CardContent className="grid gap-3 p-4 md:grid-cols-[1fr_200px_200px]">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search title, description, tags"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
+      {/* Subtle grid overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+        aria-hidden
+      />
+
+      <div className="relative">
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 glass border-b border-border/60">
+          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-8">
+              <Link to="/" className="font-semibold tracking-tight text-gradient">
+                Zentry Qor
+              </Link>
+              <nav className="hidden md:flex items-center gap-1 text-sm">
+                <Link
+                  to="/dashboard"
+                  className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Dashboard
+                </Link>
+                <span className="px-3 py-1.5 rounded-full bg-elevated text-foreground">
+                  Vault
+                </span>
+              </nav>
+            </div>
+            {!isPremium && (
+              <Link
+                to="/billing"
+                className="hidden sm:inline-flex h-9 px-3 rounded-full glass-strong items-center gap-1.5 text-xs font-medium magnetic"
+              >
+                <Sparkles className="h-3 w-3 text-accent" /> Upgrade
+              </Link>
+            )}
           </div>
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger>
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
-              {categories.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={tier} onValueChange={setTier}>
-            <SelectTrigger>
-              <SelectValue placeholder="Tier" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All tiers</SelectItem>
-              <SelectItem value="free">Free</SelectItem>
-              <SelectItem value="premium">Premium</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+        </header>
 
-      {loading ? (
-        <p className="text-sm text-muted-foreground">Loading…</p>
-      ) : filtered.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No assets match your filters.</p>
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((a) => {
-            const locked = a.premium_only && !isPremium;
-            return (
-              <Card key={a.id} className="flex flex-col">
-                <CardHeader>
-                  <CardTitle className="flex items-start justify-between gap-2 text-base">
-                    <span>{a.title}</span>
-                    {a.premium_only && <Badge>Premium</Badge>}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-1 flex-col justify-between gap-4">
-                  <div className="space-y-2">
-                    {a.description && (
-                      <p className="text-sm text-muted-foreground">{a.description}</p>
-                    )}
-                    <div className="flex flex-wrap gap-1">
-                      <Badge variant="outline">{a.category}</Badge>
-                      {a.tags.map((t) => (
-                        <Badge key={t} variant="secondary">
-                          {t}
-                        </Badge>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {a.file_name}
-                      {a.size_bytes
-                        ? ` · ${(a.size_bytes / 1024).toFixed(1)} KB`
-                        : ""}
-                    </p>
+        <main className="max-w-7xl mx-auto px-6 py-12">
+          {/* Hero */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="mb-10"
+          >
+            <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3 flex items-center gap-2">
+              <Layers className="h-3 w-3 text-accent" /> The Vault
+            </div>
+            <h1 className="text-4xl sm:text-6xl font-semibold tracking-[-0.03em] leading-[1.05]">
+              Every asset.{" "}
+              <span className="text-gradient-brand">One vault.</span>
+            </h1>
+            <p className="mt-4 max-w-xl text-muted-foreground">
+              Drop into a curated library of presets, overlays, templates and
+              motion packs — engineered to ship faster.
+            </p>
+
+            <div className="mt-6 flex flex-wrap items-center gap-2 text-xs">
+              <Stat label="Total assets" value={totalCount} />
+              <Stat label="Premium" value={premiumCount} accent />
+              <Stat label="Categories" value={categories.length} />
+            </div>
+          </motion.div>
+
+          {/* Filter bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="glass-strong rounded-2xl p-3 mb-8 flex flex-col md:flex-row gap-3"
+          >
+            <div className="relative flex-1">
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                placeholder="Search title, tags, description…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full h-11 pl-11 pr-10 rounded-xl bg-background/40 border border-border/60 text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-elevated transition"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto md:overflow-visible">
+              <Chip active={tier === "all"} onClick={() => setTier("all")}>
+                All
+              </Chip>
+              <Chip active={tier === "free"} onClick={() => setTier("free")}>
+                Free
+              </Chip>
+              <Chip
+                active={tier === "premium"}
+                onClick={() => setTier("premium")}
+                accent
+              >
+                <Sparkles className="h-3 w-3" /> Premium
+              </Chip>
+            </div>
+          </motion.div>
+
+          {/* Category chips */}
+          {categories.length > 0 && (
+            <div className="mb-8 flex flex-wrap gap-2">
+              <CatChip
+                active={category === "all"}
+                onClick={() => setCategory("all")}
+              >
+                All categories
+              </CatChip>
+              {categories.map((c) => (
+                <CatChip
+                  key={c}
+                  active={category === c}
+                  onClick={() => setCategory(c)}
+                >
+                  {c}
+                </CatChip>
+              ))}
+            </div>
+          )}
+
+          {/* Grid */}
+          {loading ? (
+            <SkeletonGrid />
+          ) : filtered.length === 0 ? (
+            <EmptyState onReset={() => {
+              setSearch("");
+              setCategory("all");
+              setTier("all");
+            }} />
+          ) : (
+            <motion.div
+              layout
+              className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
+            >
+              <AnimatePresence mode="popLayout">
+                {filtered.map((a, i) => {
+                  const locked = a.premium_only && !isPremium;
+                  const grad = GRADIENTS[i % GRADIENTS.length];
+                  return (
+                    <motion.article
+                      layout
+                      key={a.id}
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.96 }}
+                      transition={{
+                        duration: 0.45,
+                        delay: Math.min(i * 0.04, 0.4),
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      whileHover={{ y: -4 }}
+                      className="group relative glass rounded-3xl p-5 flex flex-col hover:bg-elevated/60 transition-colors"
+                    >
+                      {/* Thumbnail */}
+                      <div
+                        className={`relative aspect-[16/10] rounded-2xl bg-gradient-to-br ${grad} overflow-hidden ring-1 ring-border mb-4`}
+                      >
+                        <div className="absolute inset-0 ring-grid opacity-30" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-5xl font-semibold tracking-tighter text-foreground/30 select-none">
+                            {a.title.slice(0, 1).toUpperCase()}
+                          </span>
+                        </div>
+                        {a.premium_only && (
+                          <div className="absolute top-2 right-2 glass-strong rounded-full px-2 py-0.5 text-[10px] flex items-center gap-1">
+                            {locked && <Lock className="h-2.5 w-2.5" />}
+                            <Sparkles className="h-2.5 w-2.5 text-accent" />
+                            Premium
+                          </div>
+                        )}
+                        {locked && (
+                          <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center">
+                            <div className="glass-strong rounded-full h-10 w-10 flex items-center justify-center">
+                              <Lock className="h-4 w-4 text-foreground/80" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Meta */}
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="text-[10px] uppercase tracking-wider text-accent">
+                          {a.category}
+                        </div>
+                        {a.size_bytes ? (
+                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                            {(a.size_bytes / 1024).toFixed(1)} KB
+                          </div>
+                        ) : null}
+                      </div>
+                      <h3 className="text-base font-medium tracking-tight">
+                        {a.title}
+                      </h3>
+                      {a.description && (
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          {a.description}
+                        </p>
+                      )}
+
+                      {a.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {a.tags.slice(0, 4).map((t) => (
+                            <span
+                              key={t}
+                              className="text-[10px] px-2 py-0.5 rounded-full bg-elevated/70 text-muted-foreground"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Action */}
+                      <button
+                        onClick={() => download(a)}
+                        disabled={locked}
+                        className="mt-5 h-10 rounded-xl text-sm font-medium flex items-center justify-center gap-2 magnetic disabled:opacity-60 disabled:cursor-not-allowed transition-colors bg-foreground text-background hover:bg-foreground/90 disabled:bg-elevated disabled:text-muted-foreground"
+                      >
+                        {locked ? (
+                          <>
+                            <Lock className="h-3.5 w-3.5" /> Unlock with Premium
+                          </>
+                        ) : (
+                          <>
+                            <Download className="h-3.5 w-3.5" /> Download
+                            <ArrowUpRight className="h-3 w-3 opacity-60 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                          </>
+                        )}
+                      </button>
+                    </motion.article>
+                  );
+                })}
+              </AnimatePresence>
+            </motion.div>
+          )}
+
+          {/* Upgrade footer */}
+          {!isPremium && !loading && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.6 }}
+              className="mt-16 relative overflow-hidden glass rounded-3xl p-8 sm:p-10"
+            >
+              <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-primary/30 blur-3xl" />
+              <div className="absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-accent/20 blur-3xl" />
+              <div className="relative flex flex-wrap items-center justify-between gap-6">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.2em] text-accent flex items-center gap-1.5">
+                    <Sparkles className="h-3 w-3" /> Premium
                   </div>
-                  <Button onClick={() => download(a)} disabled={locked} className="w-full">
-                    {locked ? (
-                      <>
-                        <Lock className="mr-2 h-4 w-4" /> Premium only
-                      </>
-                    ) : (
-                      <>
-                        <Download className="mr-2 h-4 w-4" /> Download
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
+                  <h3 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em] mt-2">
+                    Unlock the full vault.
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Every premium asset, every AI tool. Cancel anytime.
+                  </p>
+                </div>
+                <Link
+                  to="/billing"
+                  className="h-11 px-6 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground text-sm font-medium glow-primary magnetic flex items-center gap-2"
+                >
+                  Upgrade now <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: number;
+  accent?: boolean;
+}) {
+  return (
+    <div className="glass rounded-full px-3 py-1.5 flex items-center gap-2">
+      <span
+        className={`font-semibold tabular-nums ${accent ? "text-gradient-brand" : ""}`}
+      >
+        {value}
+      </span>
+      <span className="text-muted-foreground uppercase tracking-wider text-[10px]">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function Chip({
+  children,
+  active,
+  accent,
+  onClick,
+}: {
+  children: React.ReactNode;
+  active?: boolean;
+  accent?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`h-11 px-4 rounded-xl text-xs font-medium uppercase tracking-wider flex items-center gap-1.5 transition-all whitespace-nowrap ${
+        active
+          ? accent
+            ? "bg-gradient-to-r from-primary to-accent text-primary-foreground glow-primary"
+            : "bg-foreground text-background"
+          : "bg-background/40 border border-border/60 text-muted-foreground hover:text-foreground hover:bg-elevated"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function CatChip({
+  children,
+  active,
+  onClick,
+}: {
+  children: React.ReactNode;
+  active?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 h-8 rounded-full text-xs transition-colors ${
+        active
+          ? "bg-elevated text-foreground ring-1 ring-border"
+          : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function SkeletonGrid() {
+  return (
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="glass rounded-3xl p-5 animate-pulse">
+          <div className="aspect-[16/10] rounded-2xl bg-elevated/60 mb-4" />
+          <div className="h-3 w-16 bg-elevated/60 rounded mb-3" />
+          <div className="h-4 w-2/3 bg-elevated/60 rounded mb-2" />
+          <div className="h-3 w-full bg-elevated/40 rounded" />
+          <div className="h-10 w-full bg-elevated/40 rounded-xl mt-5" />
         </div>
-      )}
+      ))}
+    </div>
+  );
+}
+
+function EmptyState({ onReset }: { onReset: () => void }) {
+  return (
+    <div className="glass rounded-3xl py-20 text-center">
+      <div className="mx-auto h-12 w-12 rounded-full bg-elevated flex items-center justify-center mb-4">
+        <Search className="h-5 w-5 text-muted-foreground" />
+      </div>
+      <h3 className="text-base font-medium">Nothing matches yet</h3>
+      <p className="text-sm text-muted-foreground mt-1">
+        Try different keywords or clear your filters.
+      </p>
+      <button
+        onClick={onReset}
+        className="mt-5 h-9 px-4 rounded-full glass-strong text-xs font-medium magnetic"
+      >
+        Reset filters
+      </button>
     </div>
   );
 }
