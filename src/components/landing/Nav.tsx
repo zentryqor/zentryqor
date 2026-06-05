@@ -62,14 +62,9 @@ export function Nav() {
                 <Link
                   to="/dashboard"
                   aria-label="Go to dashboard"
-                  className="block rounded-full ring-1 ring-white/15 hover:ring-[oklch(0.62_0.19_255/0.6)] transition-all shadow-[0_4px_14px_oklch(0.62_0.19_255/0.25)]"
+                  className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-semibold text-primary-foreground"
                 >
-                  <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
-                    {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName || "Profile"} /> : null}
-                    <AvatarFallback className="bg-[oklch(0.62_0.19_255)] text-white text-xs font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
+                  {(displayName?.[0] ?? "U").toUpperCase()}
                 </Link>
               </motion.div>
             </>
