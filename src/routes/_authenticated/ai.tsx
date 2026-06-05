@@ -8,7 +8,7 @@ import {
   ArrowUpRight,
   Calendar,
   FileText,
-  Flame,
+  
   Hash,
   Image as ImageIcon,
   Loader2,
@@ -322,13 +322,8 @@ function AiStudio() {
               className="mt-2 w-full bg-elevated/40 border border-border/60 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
             />
 
-            <div className="flex items-center justify-between mt-4">
-              <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-                <Flame className="h-3 w-3 text-accent" />{" "}
-                {active.id === "thumbnail"
-                  ? "Powered by riverflow-v2.5-pro"
-                  : "Powered by gpt-oss-120b"}
-              </span>
+            <div className="flex items-center justify-end mt-4">
+
               <button
                 onClick={() =>
                   input.trim() && mut.mutate({ tool: active, value: input.trim() })

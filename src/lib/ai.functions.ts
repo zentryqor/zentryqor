@@ -50,21 +50,37 @@ export const generateAiText = createServerFn({ method: "POST" })
 export const generateAiImage = createServerFn({ method: "POST" })
   .inputValidator((input) => z.object({ prompt: z.string().min(1).max(2000) }).parse(input))
   .handler(async ({ data }) => {
-    const json = await callOpenRouter(
-      "sourceful/riverflow-v2.5-pro:free",
-      [{ role: "user", content: data.prompt }],
-    );
+    const apiKey = process.env.LOVABLE_API_KEY;
+    if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-image",
+        messages: [{ role: "user", content: data.prompt }],
+        modalities: ["image", "text"],
+      }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      if (res.status === 429) throw new Error("Rate limit exceeded. Please try again shortly.");
+      if (res.status === 402) throw new Error("AI credits exhausted. Please add credits to your workspace.");
+      throw new Error(`Image gen ${res.status}: ${text.slice(0, 300)}`);
+    }
+
+    const json = await res.json();
     const message = json.choices?.[0]?.message;
-    // OpenRouter returns generated images on message.images[].image_url.url
     const images: string[] = (message?.images ?? [])
       .map((img: any) => img?.image_url?.url)
       .filter(Boolean);
 
     if (images.length === 0) {
-      const text = message?.content ?? "No image returned";
-      throw new Error(typeof text === "string" ? text : "No image returned");
+      throw new Error("No image returned");
     }
-
     return { image: images[0] };
   });
