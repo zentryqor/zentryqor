@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { getMyContext, saveOnboarding } from "@/lib/preferences.functions";
+import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
   head: () => ({ meta: [{ title: "Welcome — Zentry Qor" }] }),
