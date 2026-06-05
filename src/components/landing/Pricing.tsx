@@ -184,6 +184,7 @@ export function Pricing() {
               </AnimatePresence>
               <p className="text-sm text-muted-foreground mt-3">Everything. Unlocked. Forever-iterating.</p>
 
+
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
                 <Link
                   to="/auth"
