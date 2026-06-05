@@ -77,24 +77,53 @@ function Billing() {
 
         {/* Interval toggle */}
         <div className="mx-auto mb-6 inline-flex w-full justify-center">
-          <div className="glass-strong rounded-full p-1 flex items-center gap-1 text-xs">
+          <div
+            role="tablist"
+            aria-label="Billing interval"
+            className="relative glass-strong rounded-full p-1 flex items-center text-xs"
+          >
+            {/* Sliding indicator */}
+            <span
+              aria-hidden
+              className="absolute top-1 bottom-1 left-1 rounded-full bg-foreground shadow-[0_2px_12px_-2px_rgba(0,0,0,0.4)] transition-[transform,width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              style={{
+                width: interval === "month" ? "84px" : "118px",
+                transform:
+                  interval === "month" ? "translateX(0)" : "translateX(84px)",
+              }}
+            />
             <button
+              role="tab"
+              aria-selected={interval === "month"}
               onClick={() => setInterval("month")}
-              className={`px-4 h-8 rounded-full transition ${interval === "month" ? "bg-foreground text-background" : "text-muted-foreground"}`}
+              className={`relative z-10 w-[84px] h-8 rounded-full font-medium transition-colors duration-300 ${
+                interval === "month" ? "text-background" : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               Monthly
             </button>
             <button
+              role="tab"
+              aria-selected={interval === "year"}
               onClick={() => setInterval("year")}
-              className={`px-4 h-8 rounded-full transition flex items-center gap-1.5 ${interval === "year" ? "bg-foreground text-background" : "text-muted-foreground"}`}
+              className={`relative z-10 w-[118px] h-8 rounded-full font-medium transition-colors duration-300 flex items-center justify-center gap-1.5 ${
+                interval === "year" ? "text-background" : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               Annual
-              <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/20 text-accent">
+              <span
+                className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full transition-colors duration-300 ${
+                  interval === "year"
+                    ? "bg-background/15 text-background"
+                    : "bg-primary/20 text-accent"
+                }`}
+              >
                 –17%
               </span>
             </button>
           </div>
         </div>
+
 
         <div className="relative rounded-3xl p-8 bg-gradient-to-b from-elevated to-surface border border-border overflow-hidden">
           <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/30 blur-3xl" />
