@@ -36,7 +36,7 @@ export function Features() {
                 </div>
                 <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
               </div>
-              <div className="md:md:mt-auto">
+              <div className="md:mt-auto">
                 <h3 className="text-2xl font-semibold tracking-tight">
                   Creator Vault
                 </h3>
