@@ -1,9 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 export function Nav() {
   return (
-    <header className="fixed top-0 inset-x-0 z-50 flex justify-center px-4 pt-4">
+    <motion.header
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="fixed top-0 inset-x-0 z-50 flex justify-center px-4 pt-4"
+    >
       <nav className="glass-strong w-full max-w-6xl rounded-2xl px-4 sm:px-6 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5 group">
           <div className="relative h-7 w-7 rounded-lg bg-gradient-to-br from-primary-glow to-primary glow-primary flex items-center justify-center">
@@ -25,12 +31,14 @@ export function Nav() {
           <Link to="/auth" className="hidden sm:inline-flex text-sm text-muted-foreground hover:text-foreground h-9 px-3 rounded-lg transition-colors items-center">
             Sign in
           </Link>
-          <Link to="/auth" className="group inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity">
-            Get started
-            <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </Link>
+          <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+            <Link to="/auth" className="group inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity">
+              Get started
+              <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
+          </motion.div>
         </div>
       </nav>
-    </header>
+    </motion.header>
   );
 }

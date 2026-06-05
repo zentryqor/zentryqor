@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { motion } from "framer-motion";
 
 const free = [
   "Limited daily downloads",
@@ -24,7 +25,13 @@ export function Pricing() {
   return (
     <section id="pricing" className="py-28 px-4">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center max-w-2xl mx-auto mb-14">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-center max-w-2xl mx-auto mb-14"
+        >
           <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3">Pricing</div>
           <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em] text-gradient leading-[1.05]">
             One price. Everything unlocked.
@@ -32,32 +39,50 @@ export function Pricing() {
           <p className="mt-4 text-muted-foreground">
             Start free. Upgrade when you're ready to take it seriously.
           </p>
-        </div>
+        </motion.div>
 
         {/* Toggle */}
-        <div className="flex justify-center mb-10">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="flex justify-center mb-10"
+        >
           <div className="glass-strong rounded-full p-1 flex items-center gap-1 text-xs">
-            <button
+            <motion.button
               onClick={() => setAnnual(false)}
+              whileTap={{ scale: 0.95 }}
               className={`px-4 h-8 rounded-full transition ${!annual ? "bg-foreground text-background" : "text-muted-foreground"}`}
             >
               Monthly
-            </button>
-            <button
+            </motion.button>
+            <motion.button
               onClick={() => setAnnual(true)}
+              whileTap={{ scale: 0.95 }}
               className={`px-4 h-8 rounded-full transition flex items-center gap-1.5 ${annual ? "bg-foreground text-background" : "text-muted-foreground"}`}
             >
               Annual
               <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-primary/20 text-accent">
                 –17%
               </span>
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="grid md:grid-cols-2 gap-4"
+        >
           {/* Free */}
-          <div className="glass rounded-3xl p-7 flex flex-col">
+          <motion.div
+            whileHover={{ y: -4 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="glass rounded-3xl p-7 flex flex-col"
+          >
             <div className="text-sm font-medium text-muted-foreground">Free</div>
             <div className="mt-4 flex items-baseline gap-1">
               <span className="text-5xl font-semibold tracking-tight">$0</span>
@@ -65,9 +90,11 @@ export function Pricing() {
             </div>
             <p className="text-sm text-muted-foreground mt-3">For exploring the ecosystem.</p>
 
-            <Link to="/auth" className="mt-7 h-11 rounded-xl glass-strong text-sm font-medium magnetic flex items-center justify-center">
-              Start free
-            </Link>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+              <Link to="/auth" className="mt-7 h-11 rounded-xl glass-strong text-sm font-medium magnetic flex items-center justify-center">
+                Start free
+              </Link>
+            </motion.div>
 
             <ul className="mt-7 space-y-3">
               {free.map((f) => (
@@ -77,10 +104,14 @@ export function Pricing() {
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
 
           {/* Premium */}
-          <div className="relative rounded-3xl p-7 flex flex-col bg-gradient-to-b from-elevated to-surface border border-border overflow-hidden">
+          <motion.div
+            whileHover={{ y: -4 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="relative rounded-3xl p-7 flex flex-col bg-gradient-to-b from-elevated to-surface border border-border overflow-hidden"
+          >
             <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/30 blur-3xl" />
             <div className="absolute -bottom-32 -left-10 h-64 w-64 rounded-full bg-accent/20 blur-3xl" />
 
@@ -108,13 +139,15 @@ export function Pricing() {
               )}
               <p className="text-sm text-muted-foreground mt-3">Everything. Unlocked. Forever-iterating.</p>
 
-              <Link
-                to="/auth"
-                search={{ redirect: "/billing" }}
-                className="mt-7 w-full h-11 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary flex items-center justify-center"
-              >
-                Upgrade to Premium
-              </Link>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+                <Link
+                  to="/auth"
+                  search={{ redirect: "/billing" }}
+                  className="mt-7 w-full h-11 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary flex items-center justify-center"
+                >
+                  Upgrade to Premium
+                </Link>
+              </motion.div>
 
               <ul className="mt-7 space-y-3">
                 {premium.map((f) => (
@@ -127,8 +160,8 @@ export function Pricing() {
                 ))}
               </ul>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );
