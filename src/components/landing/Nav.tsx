@@ -50,20 +50,29 @@ export function Nav() {
 
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {loading ? null : user ? (
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-              <Link
-                to="/dashboard"
-                aria-label="Go to dashboard"
-                className="block rounded-full ring-1 ring-white/15 hover:ring-[oklch(0.62_0.19_255/0.6)] transition-all shadow-[0_4px_14px_oklch(0.62_0.19_255/0.25)]"
+            <>
+              <button
+                onClick={() => supabase.auth.signOut()}
+                className="inline-flex whitespace-nowrap text-xs sm:text-sm text-muted-foreground hover:text-foreground h-8 sm:h-9 px-2 sm:px-3 rounded-lg transition-colors items-center"
+                type="button"
               >
-                <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
-                  {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName || "Profile"} /> : null}
-                  <AvatarFallback className="bg-[oklch(0.62_0.19_255)] text-white text-xs font-semibold">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-              </Link>
-            </motion.div>
+                Sign out
+              </button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+                <Link
+                  to="/dashboard"
+                  aria-label="Go to dashboard"
+                  className="block rounded-full ring-1 ring-white/15 hover:ring-[oklch(0.62_0.19_255/0.6)] transition-all shadow-[0_4px_14px_oklch(0.62_0.19_255/0.25)]"
+                >
+                  <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
+                    {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName || "Profile"} /> : null}
+                    <AvatarFallback className="bg-[oklch(0.62_0.19_255)] text-white text-xs font-semibold">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+              </motion.div>
+            </>
           ) : (
             <>
               <Link to="/auth" className="inline-flex whitespace-nowrap text-xs sm:text-sm text-muted-foreground hover:text-foreground h-8 sm:h-9 px-2 sm:px-3 rounded-lg transition-colors items-center">
