@@ -11,12 +11,13 @@ function useShouldAnimate() {
     document.addEventListener("visibilitychange", onVis);
     onVis();
 
-    // Heuristic for low-end devices: few cores, low memory, or mobile.
+    // Heuristic for low-end devices: few cores, low memory, mobile, or coarse pointer.
     const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
     const cores = nav.hardwareConcurrency ?? 8;
     const mem = nav.deviceMemory ?? 8;
     const saveData = nav.connection?.saveData ?? false;
-    if (cores <= 4 || mem <= 4 || saveData) setLowPower(true);
+    const isMobile = window.matchMedia("(max-width: 767px), (pointer: coarse)").matches;
+    if (cores <= 4 || mem <= 4 || saveData || isMobile) setLowPower(true);
 
     return () => document.removeEventListener("visibilitychange", onVis);
   }, []);

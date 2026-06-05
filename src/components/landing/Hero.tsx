@@ -7,6 +7,7 @@ import { MagneticButton } from "@/components/motion/MagneticButton";
 import { TiltCard } from "@/components/motion/TiltCard";
 import { CountUp } from "@/components/motion/CountUp";
 import { Typewriter } from "@/components/motion/Typewriter";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const marqueeWords = [
   "Creators",
@@ -24,6 +25,8 @@ const marqueeWords = [
 export function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
+  const isMobile = useIsMobile();
+  const disableParallax = reduce || isMobile;
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
@@ -40,7 +43,7 @@ export function Hero() {
     >
       {/* Background atmosphere */}
       <div className="absolute inset-0 ring-grid opacity-50 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
-      <motion.div style={reduce ? undefined : { y: orbY }} className="absolute inset-0">
+      <motion.div style={disableParallax ? undefined : { y: orbY }} className="absolute inset-0">
         <AnimatedOrbs />
       </motion.div>
       <div className="absolute inset-0 noise opacity-40" />
@@ -67,7 +70,7 @@ export function Hero() {
 
         {/* Asymmetric headline grid */}
         <motion.div
-          style={reduce ? undefined : { y: headlineY }}
+          style={disableParallax ? undefined : { y: headlineY }}
           className="grid grid-cols-12 gap-6 sm:gap-10 items-end"
         >
           <div className="col-span-12 lg:col-span-8">
@@ -140,7 +143,7 @@ export function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.5 }}
           transition={{ duration: 1.2, delay: 0.8 }}
-          style={reduce ? undefined : { x: marqueeX }}
+          style={disableParallax ? undefined : { x: marqueeX }}
           className="relative mt-16 mb-4 overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_15%,black_85%,transparent)]"
         >
           <div className="flex gap-12 animate-marquee whitespace-nowrap text-5xl sm:text-7xl font-semibold tracking-[-0.04em] text-foreground/10">
@@ -156,7 +159,7 @@ export function Hero() {
 
       {/* Product preview — TiltCard */}
       <motion.div
-        style={reduce ? undefined : { y: previewY }}
+        style={disableParallax ? undefined : { y: previewY }}
         initial={{ opacity: 0, y: 60, filter: "blur(8px)" }}
         animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         transition={{ duration: 1, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
