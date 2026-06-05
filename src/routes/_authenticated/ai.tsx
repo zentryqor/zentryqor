@@ -172,21 +172,32 @@ const TOOLS: Tool[] = [
   },
 ];
 
+type AspectRatio = "16:9" | "9:16" | "4:3" | "3:4";
+
 function AiStudio() {
   const [activeId, setActiveId] = useState<ToolId | null>(null);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [imageOutput, setImageOutput] = useState<string | null>(null);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9");
 
   const runText = useServerFn(generateAiText);
   const runImage = useServerFn(generateAiImage);
+  const fetchUsage = useServerFn(getThumbnailUsage);
   const active = TOOLS.find((t) => t.id === activeId) ?? null;
+
+  const usageQuery = useQuery({
+    queryKey: ["thumbnail-usage"],
+    queryFn: () => fetchUsage(),
+    enabled: activeId === "thumbnail",
+    staleTime: 30_000,
+  });
 
   const mut = useMutation({
     mutationFn: async ({ tool, value }: { tool: Tool; value: string }) => {
       if (tool.id === "thumbnail") {
-        const r = await runImage({ data: { prompt: tool.buildPrompt(value) } });
-        return { kind: "image" as const, image: r.image };
+        const r = await runImage({ data: { prompt: tool.buildPrompt(value), aspectRatio } });
+        return { kind: "image" as const, image: r.image, usage: r.usage };
       }
       const r = await runText({ data: { prompt: tool.buildPrompt(value), system: tool.system } });
       return { kind: "text" as const, text: r.text };
@@ -195,6 +206,7 @@ function AiStudio() {
       if (r.kind === "image") {
         setImageOutput(r.image);
         setOutput("");
+        usageQuery.refetch();
       } else {
         setOutput(r.text);
         setImageOutput(null);
@@ -208,7 +220,13 @@ function AiStudio() {
     setInput("");
     setOutput("");
     setImageOutput(null);
+    setAspectRatio("16:9");
   };
+
+  const isThumbnail = active?.id === "thumbnail";
+  const usage = usageQuery.data;
+  const limitReached = !!usage && !usage.isPremium && usage.used >= usage.limit;
+
 
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
