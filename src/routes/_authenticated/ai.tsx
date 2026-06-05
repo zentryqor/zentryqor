@@ -3,51 +3,195 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Download, ImageIcon, Loader2, Sparkles, Wand2 } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  Calendar,
+  FileText,
+  Flame,
+  Hash,
+  Image as ImageIcon,
+  Loader2,
+  Megaphone,
+  Quote,
+  Sparkles,
+  TrendingUp,
+  Video,
+  Wand2,
+  Zap,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
-import { generateAiText, generateAiImage } from "@/lib/ai.functions";
+import { generateAiText } from "@/lib/ai.functions";
 
 export const Route = createFileRoute("/_authenticated/ai")({
   head: () => ({
     meta: [
       { title: "AI Studio — Zentry Qor" },
-      { name: "description", content: "Generate text and images with state-of-the-art AI models." },
+      {
+        name: "description",
+        content:
+          "Viral captions, hooks, scripts, hashtags & more — a creator AI toolkit powered by Zentry Qor.",
+      },
     ],
   }),
   component: AiStudio,
 });
 
-type Tab = "text" | "image";
+type ToolId =
+  | "caption"
+  | "hook"
+  | "video-idea"
+  | "thumbnail"
+  | "bio"
+  | "planner"
+  | "script"
+  | "trend"
+  | "hashtag";
+
+type Tool = {
+  id: ToolId;
+  name: string;
+  tagline: string;
+  icon: React.ComponentType<{ className?: string }>;
+  accent: string; // tailwind text color class for icon
+  placeholder: string;
+  inputLabel: string;
+  system: string;
+  buildPrompt: (input: string) => string;
+};
+
+const TOOLS: Tool[] = [
+  {
+    id: "caption",
+    name: "Viral Caption Generator",
+    tagline: "Scroll-stopping captions for any post.",
+    icon: Quote,
+    accent: "text-pink-400",
+    placeholder: "Topic: launching my new skincare brand for Gen-Z",
+    inputLabel: "What's the post about?",
+    system:
+      "You are a viral social media copywriter. Output 5 punchy, scroll-stopping captions (under 220 chars each) with varied tones: bold, witty, story-driven, controversial, and emotional. Add 1 strong CTA per caption. Use markdown numbered list.",
+    buildPrompt: (i) => `Write viral captions about: ${i}`,
+  },
+  {
+    id: "hook",
+    name: "Hook Generator",
+    tagline: "First 3 seconds that stop the scroll.",
+    icon: Zap,
+    accent: "text-yellow-400",
+    placeholder: "Niche: personal finance for 20-somethings",
+    inputLabel: "Topic / Niche",
+    system:
+      "You are a short-form video hook expert (TikTok/Reels/Shorts). Output 10 hooks under 12 words each. Mix curiosity, contrarian, listicle, question, story, and shock formats. Mark the format type in parentheses after each. Use markdown numbered list.",
+    buildPrompt: (i) => `Write hooks for: ${i}`,
+  },
+  {
+    id: "video-idea",
+    name: "Video Idea Generator",
+    tagline: "10 fresh concepts on demand.",
+    icon: Video,
+    accent: "text-blue-400",
+    placeholder: "Niche: home workout for busy moms",
+    inputLabel: "Your niche / audience",
+    system:
+      "You are a viral content strategist. Generate 10 short-form video ideas. For each: **Title** — one line concept — *format* (talking head / tutorial / POV / day in life / reaction). Make them specific, native to short-form, and emotionally hooky.",
+    buildPrompt: (i) => `Video ideas for: ${i}`,
+  },
+  {
+    id: "thumbnail",
+    name: "Thumbnail Idea Generator",
+    tagline: "Click-worthy YouTube visuals.",
+    icon: ImageIcon,
+    accent: "text-emerald-400",
+    placeholder: "Video: I tried the carnivore diet for 30 days",
+    inputLabel: "Video title or topic",
+    system:
+      "You are a top YouTube thumbnail designer. Generate 5 thumbnail concepts. For each: **Concept name**, then describe (a) background, (b) subject pose/expression, (c) bold 3-5 word text overlay, (d) color palette, (e) emotional trigger. Make them high-contrast and curiosity-driven.",
+    buildPrompt: (i) => `Thumbnail ideas for: ${i}`,
+  },
+  {
+    id: "bio",
+    name: "Brand Bio Generator",
+    tagline: "A bio that converts followers.",
+    icon: Megaphone,
+    accent: "text-orange-400",
+    placeholder: "I help SaaS founders grow on LinkedIn through storytelling",
+    inputLabel: "What you do (one sentence)",
+    system:
+      "You are a personal branding expert. Write 4 distinct bio variations (Instagram/TikTok-style, ≤150 chars): 1) bold & confident, 2) playful & witty, 3) authority-driven, 4) minimal aesthetic. Include emojis tastefully where it fits.",
+    buildPrompt: (i) => `Write brand bios for: ${i}`,
+  },
+  {
+    id: "planner",
+    name: "Content Planner",
+    tagline: "7-day calendar in seconds.",
+    icon: Calendar,
+    accent: "text-violet-400",
+    placeholder: "Fitness creator on Instagram & TikTok",
+    inputLabel: "Niche, platform & goal",
+    system:
+      "You are a content strategist. Build a 7-day content calendar as a markdown table with columns: Day | Platform | Format | Hook | Topic | CTA. Mix educational, entertaining, and promotional content (60/30/10 rule).",
+    buildPrompt: (i) => `Build a 7-day content plan for: ${i}`,
+  },
+  {
+    id: "script",
+    name: "Script Assistant",
+    tagline: "Full short-form scripts, ready to film.",
+    icon: FileText,
+    accent: "text-cyan-400",
+    placeholder: "30-sec Reel about morning routines that 10x productivity",
+    inputLabel: "Video idea & length",
+    system:
+      "You are a short-form video scriptwriter. Output a full script with sections: **Hook (0-3s)**, **Setup (3-8s)**, **Value (main beats with timestamps)**, **CTA (last 3s)**. Add B-roll/visual cues in *italics*. Keep total under requested duration.",
+    buildPrompt: (i) => `Write a script for: ${i}`,
+  },
+  {
+    id: "trend",
+    name: "Trend Finder",
+    tagline: "What's hot in your niche right now.",
+    icon: TrendingUp,
+    accent: "text-rose-400",
+    placeholder: "Niche: AI productivity tools",
+    inputLabel: "Niche / industry",
+    system:
+      "You are a trend analyst. List 8 current trends, sounds, formats, or angles working in this niche on TikTok/Reels/Shorts. For each: **Trend name** — why it works — how to apply it to the user's niche. Be specific and modern (2025).",
+    buildPrompt: (i) => `Find trends for: ${i}`,
+  },
+  {
+    id: "hashtag",
+    name: "Hashtag Assistant",
+    tagline: "Reach-maximizing hashtag mixes.",
+    icon: Hash,
+    accent: "text-teal-400",
+    placeholder: "Post about: vegan meal prep recipes",
+    inputLabel: "Post topic",
+    system:
+      "You are a hashtag strategist. Output 3 groups for Instagram/TikTok: **High volume (1M+)**, **Medium (100K-1M)**, **Niche (<100K)**. 8 hashtags per group. Then a copy-paste block combining the best 20. No fluff.",
+    buildPrompt: (i) => `Generate hashtags for: ${i}`,
+  },
+];
 
 function AiStudio() {
-  const [tab, setTab] = useState<Tab>("text");
-  const [textPrompt, setTextPrompt] = useState("");
-  const [imagePrompt, setImagePrompt] = useState("");
-  const [textOut, setTextOut] = useState("");
-  const [imageOut, setImageOut] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<ToolId | null>(null);
+  const [input, setInput] = useState("");
+  const [output, setOutput] = useState("");
 
   const runText = useServerFn(generateAiText);
-  const runImage = useServerFn(generateAiImage);
+  const active = TOOLS.find((t) => t.id === activeId) ?? null;
 
-  const textMut = useMutation({
-    mutationFn: (prompt: string) =>
-      runText({
-        data: {
-          prompt,
-          system:
-            "You are a sharp creative copilot for content creators. Be concise, structured, and inspiring. Use markdown.",
-        },
-      }),
-    onSuccess: (r) => setTextOut(r.text),
+  const mut = useMutation({
+    mutationFn: async ({ tool, value }: { tool: Tool; value: string }) =>
+      runText({ data: { prompt: tool.buildPrompt(value), system: tool.system } }),
+    onSuccess: (r) => setOutput(r.text),
     onError: (e: any) => toast.error(e?.message ?? "Generation failed"),
   });
 
-  const imageMut = useMutation({
-    mutationFn: (prompt: string) => runImage({ data: { prompt } }),
-    onSuccess: (r) => setImageOut(r.image),
-    onError: (e: any) => toast.error(e?.message ?? "Image generation failed"),
-  });
+  const openTool = (id: ToolId) => {
+    setActiveId(id);
+    setInput("");
+    setOutput("");
+  };
 
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
@@ -63,10 +207,9 @@ function AiStudio() {
       />
 
       <div className="relative">
-        {/* Top bar */}
         <header className="sticky top-0 z-30 glass border-b border-border/60">
-          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-3">
               <Link
                 to="/dashboard"
                 className="h-9 w-9 rounded-full glass flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
@@ -83,167 +226,121 @@ function AiStudio() {
           </div>
         </header>
 
-        <main className="max-w-5xl mx-auto px-6 py-12">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
           {/* Hero */}
-          <div className="text-center max-w-2xl mx-auto mb-10">
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
             <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3 flex items-center justify-center gap-1.5">
-              <Wand2 className="h-3 w-3 text-accent" /> Powered by OpenRouter
+              <Wand2 className="h-3 w-3 text-accent" /> The Creator Toolkit
             </div>
             <h1 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em]">
-              Create with <span className="text-gradient-brand">intelligence</span>.
+              Your unfair{" "}
+              <span className="text-gradient-brand">creative advantage</span>.
             </h1>
             <p className="text-sm text-muted-foreground mt-3">
-              Draft copy, brainstorm ideas, and conjure visuals — all from one prompt.
+              Nine AI tools tuned for creators — captions, hooks, scripts, trends, and more.
             </p>
           </div>
 
-          {/* Tabs */}
-          <div className="flex justify-center mb-6">
-            <div className="glass rounded-full p-1 flex items-center gap-1">
-              <TabBtn active={tab === "text"} onClick={() => setTab("text")}>
-                <Wand2 className="h-3.5 w-3.5" /> Text
-              </TabBtn>
-              <TabBtn active={tab === "image"} onClick={() => setTab("image")}>
-                <ImageIcon className="h-3.5 w-3.5" /> Image
-              </TabBtn>
-            </div>
-          </div>
-
-          {/* Panel */}
-          <div className="glass rounded-3xl p-6 sm:p-8">
-            {tab === "text" ? (
-              <div className="space-y-4">
-                <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  Your prompt
-                </label>
-                <textarea
-                  value={textPrompt}
-                  onChange={(e) => setTextPrompt(e.target.value)}
-                  placeholder="Write 5 viral TikTok hooks for a fitness creator..."
-                  rows={4}
-                  className="w-full bg-elevated/40 border border-border/60 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
-                />
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Model: gpt-oss-120b</span>
-                  <button
-                    onClick={() => textPrompt.trim() && textMut.mutate(textPrompt.trim())}
-                    disabled={textMut.isPending || !textPrompt.trim()}
-                    className="h-11 px-6 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    {textMut.isPending ? (
-                      <>
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="h-3.5 w-3.5" /> Generate
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {textOut && (
-                  <div className="mt-6 p-5 rounded-2xl bg-elevated/40 border border-border/60">
-                    <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3">Output</div>
-                    <div className="prose prose-sm prose-invert max-w-none">
-                      <ReactMarkdown>{textOut}</ReactMarkdown>
+          {/* Tool grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {TOOLS.map((t) => {
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => openTool(t.id)}
+                  className="group text-left glass rounded-2xl p-5 hover:border-foreground/30 border border-border/60 transition-all hover:-translate-y-0.5"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="h-10 w-10 rounded-xl bg-elevated/50 border border-border/60 flex items-center justify-center">
+                      <Icon className={`h-5 w-5 ${t.accent}`} />
                     </div>
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  Describe your image
-                </label>
-                <textarea
-                  value={imagePrompt}
-                  onChange={(e) => setImagePrompt(e.target.value)}
-                  placeholder="A cinematic neon-lit cyberpunk skyline at dusk, hyper detailed..."
-                  rows={4}
-                  className="w-full bg-elevated/40 border border-border/60 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
-                />
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Model: riverflow-v2.5-pro</span>
-                  <button
-                    onClick={() => imagePrompt.trim() && imageMut.mutate(imagePrompt.trim())}
-                    disabled={imageMut.isPending || !imagePrompt.trim()}
-                    className="h-11 px-6 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                  >
-                    {imageMut.isPending ? (
-                      <>
-                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Rendering
-                      </>
-                    ) : (
-                      <>
-                        <ImageIcon className="h-3.5 w-3.5" /> Generate
-                      </>
-                    )}
-                  </button>
-                </div>
+                  <div className="text-base font-medium tracking-tight">{t.name}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{t.tagline}</div>
+                </button>
+              );
+            })}
+          </div>
+        </main>
+      </div>
 
-                <div className="mt-6">
-                  {imageMut.isPending ? (
-                    <div className="aspect-square rounded-2xl bg-elevated/40 border border-border/60 flex items-center justify-center">
-                      <div className="text-center">
-                        <Loader2 className="h-6 w-6 animate-spin mx-auto text-accent" />
-                        <div className="text-xs text-muted-foreground mt-3 uppercase tracking-[0.2em]">
-                          Conjuring pixels
-                        </div>
-                      </div>
-                    </div>
-                  ) : imageOut ? (
-                    <div className="relative group">
-                      <img
-                        src={imageOut}
-                        alt="AI generated"
-                        className="w-full rounded-2xl border border-border/60"
-                      />
-                      <a
-                        href={imageOut}
-                        download="zentry-ai.png"
-                        className="absolute top-3 right-3 h-9 px-3 rounded-full glass-strong text-xs flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Download className="h-3 w-3" /> Download
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="aspect-square rounded-2xl bg-elevated/20 border border-dashed border-border/60 flex items-center justify-center">
-                      <div className="text-center text-muted-foreground">
-                        <ImageIcon className="h-8 w-8 mx-auto opacity-40" />
-                        <div className="text-xs mt-2 uppercase tracking-[0.2em]">Your image appears here</div>
-                      </div>
-                    </div>
-                  )}
+      {/* Tool drawer/modal */}
+      {active && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-background/70 backdrop-blur-md"
+          onClick={() => setActiveId(null)}
+        >
+          <div
+            className="relative w-full sm:max-w-2xl max-h-[92vh] overflow-y-auto glass-strong border border-border/60 rounded-t-3xl sm:rounded-3xl p-6 sm:p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-elevated/50 border border-border/60 flex items-center justify-center">
+                  <active.icon className={`h-5 w-5 ${active.accent}`} />
+                </div>
+                <div>
+                  <div className="text-base font-medium">{active.name}</div>
+                  <div className="text-xs text-muted-foreground">{active.tagline}</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveId(null)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Close
+              </button>
+            </div>
+
+            <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              {active.inputLabel}
+            </label>
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={active.placeholder}
+              rows={3}
+              className="mt-2 w-full bg-elevated/40 border border-border/60 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+            />
+
+            <div className="flex items-center justify-between mt-4">
+              <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Flame className="h-3 w-3 text-accent" /> Powered by gpt-oss-120b
+              </span>
+              <button
+                onClick={() =>
+                  input.trim() && mut.mutate({ tool: active, value: input.trim() })
+                }
+                disabled={mut.isPending || !input.trim()}
+                className="h-11 px-6 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {mut.isPending ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-3.5 w-3.5" /> Generate
+                  </>
+                )}
+              </button>
+            </div>
+
+            {output && (
+              <div className="mt-6 p-5 rounded-2xl bg-elevated/40 border border-border/60">
+                <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3">
+                  Output
+                </div>
+                <div className="prose prose-sm prose-invert max-w-none">
+                  <ReactMarkdown>{output}</ReactMarkdown>
                 </div>
               </div>
             )}
           </div>
-        </main>
-      </div>
+        </div>
+      )}
     </div>
-  );
-}
-
-function TabBtn({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-5 h-9 rounded-full text-sm flex items-center gap-1.5 transition-all ${
-        active
-          ? "bg-foreground text-background"
-          : "text-muted-foreground hover:text-foreground"
-      }`}
-    >
-      {children}
-    </button>
   );
 }
