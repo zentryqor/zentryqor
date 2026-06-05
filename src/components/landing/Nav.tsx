@@ -12,11 +12,11 @@ export function Nav() {
       className="fixed top-0 inset-x-0 z-50 flex justify-center px-4 pt-4"
     >
       <nav className="glass-strong w-full max-w-6xl rounded-2xl px-3 sm:px-6 h-14 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 group shrink-0">
-          <div className="relative h-8 w-8 flex items-center justify-center">
-            <img src={logoAsset.url} alt="Zentry Qor logo" className="h-8 w-8 object-contain drop-shadow-[0_0_12px_oklch(0.65_0.2_250/0.45)]" />
+        <Link to="/" className="flex items-center gap-1.5 sm:gap-2 group shrink-0 min-w-0">
+          <div className="relative h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center shrink-0">
+            <img src={logoAsset.url} alt="Zentry Qor logo" className="h-7 w-7 sm:h-8 sm:w-8 object-contain drop-shadow-[0_0_12px_oklch(0.65_0.2_250/0.45)]" />
           </div>
-          <span className="font-semibold tracking-tight text-[15px] hidden sm:inline">
+          <span className="font-semibold tracking-tight text-sm sm:text-[15px] truncate">
             Zentry <span className="text-muted-foreground font-medium">Qor</span>
           </span>
         </Link>
@@ -29,11 +29,11 @@ export function Nav() {
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          <Link to="/auth" className="inline-flex whitespace-nowrap text-sm text-muted-foreground hover:text-foreground h-9 px-2.5 sm:px-3 rounded-lg transition-colors items-center">
+          <Link to="/auth" className="inline-flex whitespace-nowrap text-xs sm:text-sm text-muted-foreground hover:text-foreground h-8 sm:h-9 px-2 sm:px-3 rounded-lg transition-colors items-center">
             Log in
           </Link>
           <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-            <Link to="/auth" className="inline-flex whitespace-nowrap items-center justify-center h-9 px-3 sm:px-4 rounded-xl bg-[oklch(0.62_0.19_255)] text-white text-sm font-semibold hover:opacity-90 transition-opacity shadow-[0_4px_14px_oklch(0.62_0.19_255/0.4)]">
+            <Link to="/auth" className="inline-flex whitespace-nowrap items-center justify-center h-8 sm:h-9 px-2.5 sm:px-4 rounded-xl bg-[oklch(0.62_0.19_255)] text-white text-xs sm:text-sm font-semibold hover:opacity-90 transition-opacity shadow-[0_4px_14px_oklch(0.62_0.19_255/0.4)]">
               Get started
             </Link>
           </motion.div>
