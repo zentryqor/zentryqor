@@ -100,15 +100,15 @@ const TOOLS: Tool[] = [
   },
   {
     id: "thumbnail",
-    name: "Thumbnail Idea Generator",
-    tagline: "Click-worthy YouTube visuals.",
+    name: "Thumbnail Photo Generator",
+    tagline: "AI-generated thumbnail images.",
     icon: ImageIcon,
     accent: "text-emerald-400",
-    placeholder: "Video: I tried the carnivore diet for 30 days",
-    inputLabel: "Video title or topic",
-    system:
-      "You are a top YouTube thumbnail designer. Generate 5 thumbnail concepts. For each: **Concept name**, then describe (a) background, (b) subject pose/expression, (c) bold 3-5 word text overlay, (d) color palette, (e) emotional trigger. Make them high-contrast and curiosity-driven.",
-    buildPrompt: (i) => `Thumbnail ideas for: ${i}`,
+    placeholder: "Bold YouTube thumbnail: shocked man holding a giant burger, neon background, 'I ATE THIS' text",
+    inputLabel: "Describe the thumbnail",
+    system: "",
+    buildPrompt: (i) =>
+      `A high-contrast, click-worthy YouTube thumbnail, 16:9, vivid colors, dramatic lighting, bold composition. Subject: ${i}`,
   },
   {
     id: "bio",
