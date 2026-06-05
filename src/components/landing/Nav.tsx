@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { Logo } from "./Logo";
 
 export function Nav() {
   return (
