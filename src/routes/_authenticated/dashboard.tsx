@@ -153,7 +153,7 @@ function Dashboard() {
               <NavTab active>Dashboard</NavTab>
               <Link to="/assets" className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors">Assets</Link>
               <Link to="/admin" className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors">Admin</Link>
-              <NavTab>AI Tools</NavTab>
+              <Link to="/ai" className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors">AI Studio</Link>
             </nav>
           </div>
           <div className="flex items-center gap-3">
