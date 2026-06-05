@@ -340,24 +340,68 @@ function AiStudio() {
               className="mt-2 w-full bg-elevated/40 border border-border/60 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
             />
 
-            <div className="flex items-center justify-end mt-4">
+            {isThumbnail && (
+              <div className="mt-5">
+                <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                  Aspect ratio
+                </label>
+                <div className="mt-2 grid grid-cols-4 gap-2">
+                  {(["16:9", "9:16", "4:3", "3:4"] as AspectRatio[]).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setAspectRatio(r)}
+                      className={`h-10 rounded-xl border text-xs font-medium transition-colors ${
+                        aspectRatio === r
+                          ? "bg-foreground text-background border-foreground"
+                          : "bg-elevated/40 border-border/60 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between mt-4 gap-3">
+              {isThumbnail ? (
+                <div className="text-xs text-muted-foreground">
+                  {usage ? (
+                    usage.isPremium ? (
+                      <span className="text-accent">Premium — unlimited</span>
+                    ) : (
+                      <span>
+                        {Math.max(0, usage.limit - usage.used)} / {usage.limit} free today
+                      </span>
+                    )
+                  ) : (
+                    <span className="opacity-50">…</span>
+                  )}
+                </div>
+              ) : (
+                <div />
+              )}
 
               <button
                 onClick={() =>
                   input.trim() && mut.mutate({ tool: active, value: input.trim() })
                 }
-                disabled={mut.isPending || !input.trim()}
+                disabled={mut.isPending || !input.trim() || (isThumbnail && limitReached)}
                 className="h-11 px-6 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {mut.isPending ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating
                   </>
+                ) : isThumbnail && limitReached ? (
+                  <>Daily limit reached</>
                 ) : (
                   <>
                     <Sparkles className="h-3.5 w-3.5" /> Generate
                   </>
                 )}
+
               </button>
             </div>
 
