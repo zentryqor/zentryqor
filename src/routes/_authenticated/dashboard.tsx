@@ -282,25 +282,24 @@ function Dashboard() {
 
           {/* AI Tools */}
           <BentoCard className="md:col-span-3">
-            <CardHeader icon={<Wand2 className="h-4 w-4" />} title="AI Tools" />
+            <div className="flex items-center justify-between">
+              <CardHeader icon={<Wand2 className="h-4 w-4" />} title="AI Studio" />
+              <Link to="/ai" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+                Open <ArrowUpRight className="h-3 w-3" />
+              </Link>
+            </div>
             <div className="mt-4 grid grid-cols-2 gap-2">
               {AI_TOOLS.map((t) => {
-                const locked = t.premium && !isPremium;
                 const Icon = t.icon;
                 return (
-                  <button
+                  <Link
                     key={t.name}
-                    disabled={locked}
-                    className="relative p-3 rounded-xl glass hover:bg-elevated transition-colors text-left disabled:opacity-100"
+                    to="/ai"
+                    className="relative p-3 rounded-xl glass hover:bg-elevated transition-colors text-left"
                   >
                     <Icon className="h-4 w-4 text-accent" />
                     <div className="text-sm font-medium mt-2">{t.name}</div>
-                    {locked && (
-                      <div className="absolute inset-0 rounded-xl bg-background/60 backdrop-blur-sm flex items-center gap-1.5 justify-center text-[10px] uppercase tracking-wider">
-                        <Lock className="h-3 w-3" /> Premium
-                      </div>
-                    )}
-                  </button>
+                  </Link>
                 );
               })}
             </div>
