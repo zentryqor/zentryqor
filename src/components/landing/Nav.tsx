@@ -3,26 +3,15 @@ import { motion } from "framer-motion";
 import logoAsset from "@/assets/zentry-logo.png.asset.json";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Nav() {
   const { user, loading } = useAuth();
 
-  const avatarUrl =
-    (user?.user_metadata?.avatar_url as string | undefined) ??
-    (user?.user_metadata?.picture as string | undefined);
   const displayName =
     (user?.user_metadata?.full_name as string | undefined) ??
     (user?.user_metadata?.name as string | undefined) ??
     user?.email ??
     "";
-  const initials = displayName
-    .split(" ")
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase() || "U";
 
   return (
     <motion.header
