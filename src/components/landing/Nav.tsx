@@ -3,26 +3,15 @@ import { motion } from "framer-motion";
 import logoAsset from "@/assets/zentry-logo.png.asset.json";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Nav() {
   const { user, loading } = useAuth();
 
-  const avatarUrl =
-    (user?.user_metadata?.avatar_url as string | undefined) ??
-    (user?.user_metadata?.picture as string | undefined);
   const displayName =
     (user?.user_metadata?.full_name as string | undefined) ??
     (user?.user_metadata?.name as string | undefined) ??
     user?.email ??
     "";
-  const initials = displayName
-    .split(" ")
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase() || "U";
 
   return (
     <motion.header
@@ -62,14 +51,9 @@ export function Nav() {
                 <Link
                   to="/dashboard"
                   aria-label="Go to dashboard"
-                  className="block rounded-full ring-1 ring-white/15 hover:ring-[oklch(0.62_0.19_255/0.6)] transition-all shadow-[0_4px_14px_oklch(0.62_0.19_255/0.25)]"
+                  className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-semibold text-primary-foreground"
                 >
-                  <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
-                    {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName || "Profile"} /> : null}
-                    <AvatarFallback className="bg-[oklch(0.62_0.19_255)] text-white text-xs font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
+                  {(displayName?.[0] ?? "U").toUpperCase()}
                 </Link>
               </motion.div>
             </>
