@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
-import { generateAiText, generateAiImage } from "@/lib/ai.functions";
+import { generateAiText, generateAiImage, getThumbnailUsage } from "@/lib/ai.functions";
 
 export const Route = createFileRoute("/_authenticated/ai")({
   head: () => ({
@@ -172,21 +172,32 @@ const TOOLS: Tool[] = [
   },
 ];
 
+type AspectRatio = "16:9" | "9:16" | "4:3" | "3:4";
+
 function AiStudio() {
   const [activeId, setActiveId] = useState<ToolId | null>(null);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [imageOutput, setImageOutput] = useState<string | null>(null);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9");
 
   const runText = useServerFn(generateAiText);
   const runImage = useServerFn(generateAiImage);
+  const fetchUsage = useServerFn(getThumbnailUsage);
   const active = TOOLS.find((t) => t.id === activeId) ?? null;
+
+  const usageQuery = useQuery({
+    queryKey: ["thumbnail-usage"],
+    queryFn: () => fetchUsage(),
+    enabled: activeId === "thumbnail",
+    staleTime: 30_000,
+  });
 
   const mut = useMutation({
     mutationFn: async ({ tool, value }: { tool: Tool; value: string }) => {
       if (tool.id === "thumbnail") {
-        const r = await runImage({ data: { prompt: tool.buildPrompt(value) } });
-        return { kind: "image" as const, image: r.image };
+        const r = await runImage({ data: { prompt: tool.buildPrompt(value), aspectRatio } });
+        return { kind: "image" as const, image: r.image, usage: r.usage };
       }
       const r = await runText({ data: { prompt: tool.buildPrompt(value), system: tool.system } });
       return { kind: "text" as const, text: r.text };
@@ -195,6 +206,7 @@ function AiStudio() {
       if (r.kind === "image") {
         setImageOutput(r.image);
         setOutput("");
+        usageQuery.refetch();
       } else {
         setOutput(r.text);
         setImageOutput(null);
@@ -208,7 +220,13 @@ function AiStudio() {
     setInput("");
     setOutput("");
     setImageOutput(null);
+    setAspectRatio("16:9");
   };
+
+  const isThumbnail = active?.id === "thumbnail";
+  const usage = usageQuery.data;
+  const limitReached = !!usage && !usage.isPremium && usage.used >= usage.limit;
+
 
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
@@ -322,24 +340,68 @@ function AiStudio() {
               className="mt-2 w-full bg-elevated/40 border border-border/60 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
             />
 
-            <div className="flex items-center justify-end mt-4">
+            {isThumbnail && (
+              <div className="mt-5">
+                <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                  Aspect ratio
+                </label>
+                <div className="mt-2 grid grid-cols-4 gap-2">
+                  {(["16:9", "9:16", "4:3", "3:4"] as AspectRatio[]).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setAspectRatio(r)}
+                      className={`h-10 rounded-xl border text-xs font-medium transition-colors ${
+                        aspectRatio === r
+                          ? "bg-foreground text-background border-foreground"
+                          : "bg-elevated/40 border-border/60 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between mt-4 gap-3">
+              {isThumbnail ? (
+                <div className="text-xs text-muted-foreground">
+                  {usage ? (
+                    usage.isPremium ? (
+                      <span className="text-accent">Premium — unlimited</span>
+                    ) : (
+                      <span>
+                        {Math.max(0, usage.limit - usage.used)} / {usage.limit} free today
+                      </span>
+                    )
+                  ) : (
+                    <span className="opacity-50">…</span>
+                  )}
+                </div>
+              ) : (
+                <div />
+              )}
 
               <button
                 onClick={() =>
                   input.trim() && mut.mutate({ tool: active, value: input.trim() })
                 }
-                disabled={mut.isPending || !input.trim()}
+                disabled={mut.isPending || !input.trim() || (isThumbnail && limitReached)}
                 className="h-11 px-6 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {mut.isPending ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating
                   </>
+                ) : isThumbnail && limitReached ? (
+                  <>Daily limit reached</>
                 ) : (
                   <>
                     <Sparkles className="h-3.5 w-3.5" /> Generate
                   </>
                 )}
+
               </button>
             </div>
 
