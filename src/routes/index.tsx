@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { Nav } from "@/components/landing/Nav";
 import { Hero } from "@/components/landing/Hero";
 import { SocialProof } from "@/components/landing/SocialProof";
@@ -10,7 +9,6 @@ import { Testimonials } from "@/components/landing/Testimonials";
 import { FAQ } from "@/components/landing/FAQ";
 import { CtaFooter } from "@/components/landing/CtaFooter";
 import { MobileStickyCTA } from "@/components/landing/MobileStickyCTA";
-import { AmbientParticles, Reveal, ScrollProgress } from "@/components/motion/primitives";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -25,28 +23,18 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  if (typeof window !== "undefined") {
-    if ("scrollRestoration" in window.history) {
-      window.history.scrollRestoration = "manual";
-    }
-  }
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden relative">
-      <ScrollProgress />
-      <AmbientParticles count={8} />
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <Nav />
-      <main className="relative z-10">
+      <main>
         <Hero />
-        <Reveal><SocialProof /></Reveal>
+        <SocialProof />
         <Features />
-        <Reveal><VaultPreview /></Reveal>
+        <VaultPreview />
         <Pricing />
-        <Reveal><Testimonials /></Reveal>
-        <Reveal><FAQ /></Reveal>
-        <Reveal><CtaFooter /></Reveal>
+        <Testimonials />
+        <FAQ />
+        <CtaFooter />
         <div className="md:hidden h-20" aria-hidden />
       </main>
       <MobileStickyCTA />
