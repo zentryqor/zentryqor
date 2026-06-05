@@ -261,7 +261,7 @@ export function Hero() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="sm:col-span-2 rounded-xl bg-elevated/60 border border-border p-4 h-44 relative overflow-hidden">
+                  <div className="sm:col-span-2 rounded-xl bg-elevated/60 border border-border p-4 sm:h-44 min-w-0 relative overflow-hidden">
                     <div className="text-xs text-muted-foreground mb-2">
                       Trending pack
                     </div>
@@ -278,7 +278,7 @@ export function Hero() {
                       <span className="h-1.5 w-1.5 rounded-full bg-primary/60 animate-pulse [animation-delay:200ms]" />
                     </div>
                   </div>
-                  <div className="rounded-xl bg-elevated/60 border border-border p-4 h-44">
+                  <div className="rounded-xl bg-elevated/60 border border-border p-4 sm:h-44 min-w-0 overflow-hidden">
                     <div className="text-xs text-muted-foreground mb-2">AI Studio</div>
                     <div className="text-[12px] text-foreground/80 leading-snug min-h-[3em]">
                       <Typewriter
@@ -290,7 +290,7 @@ export function Hero() {
                         ]}
                       />
                     </div>
-                    <div className="mt-3 space-y-1.5">
+                    <div className="mt-3 space-y-1.5 min-w-0">
                       {["Hook generator", "Caption AI", "Trend finder"].map((t) => (
                         <div
                           key={t}
