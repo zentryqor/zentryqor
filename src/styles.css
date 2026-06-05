@@ -242,3 +242,33 @@
   .animate-drift-x { animation: drift-x 9s ease-in-out infinite; }
 }
 
+/* Mobile smoothness: tame expensive effects on small / touch devices */
+@media (max-width: 767px), (pointer: coarse) {
+  html, body {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeSpeed;
+  }
+  /* Allow native momentum scrolling without jank */
+  body { overscroll-behavior-y: none; }
+
+  /* Cheaper glass — large backdrop-filters tank Safari/Android */
+  .glass {
+    backdrop-filter: blur(10px) saturate(120%);
+    -webkit-backdrop-filter: blur(10px) saturate(120%);
+  }
+  .glass-strong {
+    backdrop-filter: blur(14px) saturate(130%);
+    -webkit-backdrop-filter: blur(14px) saturate(130%);
+  }
+
+  /* Slow down infinite animations that constantly repaint */
+  .animate-marquee { animation-duration: 60s; }
+  .text-aurora { animation-duration: 14s; }
+  .animate-shine { animation: none; background: none; }
+  .border-beam-host::before { animation-duration: 12s; }
+
+  /* Disable 3D tilt perspective + glare on touch — saves compositor work */
+  .magnetic { transition: none; }
+}
+
