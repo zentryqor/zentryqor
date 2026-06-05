@@ -49,21 +49,15 @@ export function Pricing() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="flex justify-center mb-10"
         >
-          <div className="glass-strong rounded-full p-1 flex items-center relative text-xs select-none">
+          <div className="glass-strong rounded-full p-1 grid grid-cols-2 items-center relative text-xs select-none w-[280px]">
             <motion.div
-              layout
-              layoutId="pricing-toggle-pill"
-              transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="absolute top-1 bottom-1 rounded-full bg-foreground"
-              style={{
-                left: annual ? "50%" : "4px",
-                right: annual ? "4px" : "50%",
-                width: annual ? "calc(50% - 4px)" : "calc(50% - 4px)",
-              }}
+              transition={{ type: "spring", stiffness: 400, damping: 32 }}
+              animate={{ x: annual ? "100%" : "0%" }}
+              className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] rounded-full bg-foreground"
             />
             <button
               onClick={() => setAnnual(false)}
-              className={`relative z-10 px-5 h-8 rounded-full text-xs font-medium transition-colors duration-200 ${
+              className={`relative z-10 h-8 rounded-full text-xs font-medium transition-colors duration-200 flex items-center justify-center ${
                 !annual ? "text-background" : "text-muted-foreground"
               }`}
             >
@@ -71,7 +65,7 @@ export function Pricing() {
             </button>
             <button
               onClick={() => setAnnual(true)}
-              className={`relative z-10 px-5 h-8 rounded-full text-xs font-medium transition-colors duration-200 flex items-center gap-1.5 ${
+              className={`relative z-10 h-8 rounded-full text-xs font-medium transition-colors duration-200 flex items-center justify-center gap-1.5 ${
                 annual ? "text-background" : "text-muted-foreground"
               }`}
             >
