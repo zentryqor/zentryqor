@@ -4,19 +4,19 @@ import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 
 const free = [
-  "Limited daily downloads",
+  "30 downloads / month",
   "Watermarked previews",
-  "Basic creator tools",
-  "Limited vault access",
+  "3 AI tool runs / day",
+  "Limited vault — free packs only",
 ];
 
 const premium = [
-  "Unlimited downloads",
-  "Full vault access — premium packs",
-  "All AI tools, no limits",
-  "Exclusive drops & early access",
-  "Priority support",
-  "No watermarks, ever",
+  "Unlimited downloads — no caps, ever",
+  "Full vault — 3,200+ premium packs",
+  "Unlimited AI tool runs",
+  "Early access to weekly drops",
+  "Priority support — under 12h",
+  "Zero watermarks",
 ];
 
 export function Pricing() {
@@ -26,20 +26,22 @@ export function Pricing() {
     <section id="pricing" className="py-28 px-4">
       <div className="max-w-5xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="text-center max-w-2xl mx-auto mb-14"
         >
-          <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3">Pricing</div>
-          <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em] text-gradient leading-[1.05]">
-            One price. Everything unlocked.
+          <div className="text-xs uppercase tracking-[0.22em] text-accent mb-3">Pricing</div>
+          <h2 className="text-4xl sm:text-6xl font-semibold tracking-[-0.035em] text-gradient leading-[1.02]">
+            One price.
+            <span className="text-aurora italic font-medium"> Everything unlocked.</span>
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Start free. Upgrade when you're ready to take it seriously.
+            Start free. Upgrade the moment it stops feeling like a hobby.
           </p>
         </motion.div>
+
 
         {/* Toggle */}
         <motion.div
@@ -119,10 +121,11 @@ export function Pricing() {
 
           {/* Premium */}
           <motion.div
-            whileHover={{ y: -4 }}
+            whileHover={{ y: -6, scale: 1.01 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
-            className="relative rounded-3xl p-7 flex flex-col bg-gradient-to-b from-elevated to-surface border border-border overflow-hidden"
+            className="relative rounded-3xl p-7 flex flex-col bg-gradient-to-b from-elevated to-surface border border-border overflow-hidden border-beam-host"
           >
+
             <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/30 blur-3xl" />
             <div className="absolute -bottom-32 -left-10 h-64 w-64 rounded-full bg-accent/20 blur-3xl" />
 
@@ -180,6 +183,7 @@ export function Pricing() {
                 )}
               </AnimatePresence>
               <p className="text-sm text-muted-foreground mt-3">Everything. Unlocked. Forever-iterating.</p>
+
 
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
                 <Link

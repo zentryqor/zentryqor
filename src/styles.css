@@ -194,4 +194,51 @@
     background-size: 200% 100%;
     animation: shine 3s linear infinite;
   }
+
+  @keyframes aurora {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .text-aurora {
+    background: linear-gradient(120deg, var(--primary-glow) 0%, var(--primary) 25%, oklch(0.78 0.18 320) 50%, var(--primary) 75%, var(--primary-glow) 100%);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: aurora 8s ease-in-out infinite;
+  }
+
+  @keyframes border-beam {
+    100% { offset-distance: 100%; }
+  }
+  .border-beam-host { position: relative; }
+  .border-beam-host::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(from var(--beam-angle, 0deg), transparent 0deg, var(--primary-glow) 30deg, var(--primary) 60deg, transparent 90deg);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    animation: beam-rotate 6s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes beam-rotate {
+    to { --beam-angle: 360deg; }
+  }
+  @property --beam-angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
+  @keyframes drift-x {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(20px); }
+  }
+  .animate-drift-x { animation: drift-x 9s ease-in-out infinite; }
 }
+

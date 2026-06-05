@@ -1,80 +1,89 @@
 import { motion } from "framer-motion";
+import { Quote } from "lucide-react";
+import { Reveal } from "@/components/motion/Reveal";
+import { TiltCard } from "@/components/motion/TiltCard";
 
 const testimonials = [
   {
-    q: "Zentry Qor replaced 6 tools. My output doubled in a month.",
-    a: "Maya R.", r: "Reels creator · 480K",
+    q: "Cancelled six subscriptions. Doubled my output. Zentry is the only tab I keep open.",
+    a: "Maya R.",
+    r: "Reels creator · 480K",
+    offset: "md:translate-y-0",
+    height: "h-72",
   },
   {
-    q: "The vault alone is worth it. The AI tools are the cherry on top.",
-    a: "Daniel K.", r: "Video editor",
+    q: "The vault is worth the price alone. The AI tools are the cherry on top.",
+    a: "Daniel K.",
+    r: "Video editor",
+    offset: "md:translate-y-10",
+    height: "h-60",
   },
   {
-    q: "Finally a creator app that doesn't feel like a template.",
-    a: "Sora T.", r: "Designer · founder",
+    q: "Finally a creator app that doesn't feel like a Bootstrap template with a dark mode toggle.",
+    a: "Sora T.",
+    r: "Designer · founder",
+    offset: "md:-translate-y-6",
+    height: "h-72",
   },
   {
-    q: "I plan, edit, and ship without leaving the app.",
-    a: "Liam P.", r: "YouTuber · 1.2M",
+    q: "Plan, edit, ship — without leaving the app. My weekends are mine again.",
+    a: "Liam P.",
+    r: "YouTuber · 1.2M",
+    offset: "md:translate-y-12",
+    height: "h-60",
   },
 ];
 
-const containerVariants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
-};
-
 export function Testimonials() {
   return (
-    <section className="py-28 px-4 border-y border-border">
+    <section className="py-28 px-4">
       <div className="max-w-6xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="max-w-2xl mb-12"
-        >
-          <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3">Loved by creators</div>
-          <h2 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em] text-gradient leading-[1.05]">
-            Built with feedback from real operators.
+        <Reveal className="max-w-2xl mb-16">
+          <div className="text-xs uppercase tracking-[0.22em] text-accent mb-3">
+            Loved by operators
+          </div>
+          <h2 className="text-4xl sm:text-6xl font-semibold tracking-[-0.035em] text-gradient leading-[1.02]">
+            Built with feedback from
+            <br />
+            <span className="text-aurora italic font-medium">people who ship.</span>
           </h2>
-        </motion.div>
+        </Reveal>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-60px" }}
-          className="grid md:grid-cols-2 lg:grid-cols-4 gap-3"
-        >
-          {testimonials.map((t) => (
-            <motion.figure
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {testimonials.map((t, i) => (
+            <motion.div
               key={t.a}
-              variants={itemVariants}
-              whileHover={{ y: -4, transition: { type: "spring", stiffness: 300, damping: 20 } }}
-              className="glass rounded-2xl p-6 magnetic cursor-default"
+              initial={{ opacity: 0, y: 30, filter: "blur(8px)" }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{
+                duration: 0.6,
+                delay: i * 0.08,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className={`${t.offset}`}
             >
-              <blockquote className="text-[15px] leading-relaxed tracking-tight">"{t.q}"</blockquote>
-              <figcaption className="mt-6 flex items-center gap-3">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-accent" />
-                <div>
-                  <div className="text-sm font-medium">{t.a}</div>
-                  <div className="text-xs text-muted-foreground">{t.r}</div>
+              <TiltCard
+                maxTilt={5}
+                className={`glass rounded-2xl p-6 cursor-default relative overflow-hidden ${t.height}`}
+              >
+                <Quote className="absolute -top-4 -right-4 h-32 w-32 text-foreground/5" />
+                <div className="relative h-full flex flex-col">
+                  <blockquote className="text-[15px] leading-relaxed tracking-tight">
+                    "{t.q}"
+                  </blockquote>
+                  <figcaption className="mt-auto pt-6 flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-accent" />
+                    <div>
+                      <div className="text-sm font-medium">{t.a}</div>
+                      <div className="text-xs text-muted-foreground">{t.r}</div>
+                    </div>
+                  </figcaption>
                 </div>
-              </figcaption>
-            </motion.figure>
+              </TiltCard>
+            </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
