@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { Nav } from "@/components/landing/Nav";
 import { Hero } from "@/components/landing/Hero";
 import { SocialProof } from "@/components/landing/SocialProof";
@@ -24,10 +25,18 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  if (typeof window !== "undefined") {
+    if ("scrollRestoration" in window.history) {
+      window.history.scrollRestoration = "manual";
+    }
+  }
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden relative">
       <ScrollProgress />
-      <AmbientParticles count={22} />
+      <AmbientParticles count={8} />
       <Nav />
       <main className="relative z-10">
         <Hero />
