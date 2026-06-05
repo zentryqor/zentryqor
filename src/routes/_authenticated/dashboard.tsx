@@ -336,8 +336,9 @@ function Dashboard() {
                   <h3 className="text-2xl font-semibold tracking-[-0.02em] mt-2">Unlock the full vault & every AI tool.</h3>
                   <p className="text-sm text-muted-foreground mt-1">Cancel anytime. $12.99/month.</p>
                 </div>
-                <Link to="/billing" className="h-11 px-5 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary">
+                <Link to="/billing" className="inline-flex items-center justify-center gap-1.5 h-11 px-5 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary hover:opacity-90 transition-opacity">
                   Upgrade now
+                  <ArrowUpRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </BentoCard>
