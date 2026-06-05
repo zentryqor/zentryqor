@@ -38,27 +38,68 @@ export function ScrollStory() {
   });
 
   return (
-    <section ref={ref} className="relative" style={{ height: "320vh" }}>
-      <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
+    <>
+      {/* Mobile: static stacked layout — no pinned scroll story (avoids large empty black area on small screens) */}
+      <section className="md:hidden relative py-20 px-4 overflow-hidden">
         <div className="absolute inset-0 ring-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
-
-        <div className="relative max-w-6xl w-full px-4">
-          <Header progress={scrollYProgress} />
-
-          <div className="relative mt-12 sm:mt-16 h-[420px] sm:h-[480px]">
-            {stages.map((s, i) => (
-              <Stage key={s.title} index={i} total={stages.length} progress={scrollYProgress} stage={s} reduce={!!reduce} />
-            ))}
-
-            {/* Connecting beam */}
-            <ConnectingBeam progress={scrollYProgress} />
+        <div className="relative max-w-xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="text-xs uppercase tracking-[0.22em] text-accent mb-3">
+              The creator loop
+            </div>
+            <h2 className="text-3xl font-semibold tracking-[-0.035em] text-gradient leading-[1.05]">
+              From spark to ship —
+              <span className="text-aurora italic font-medium"> without leaving.</span>
+            </h2>
           </div>
-
-          {/* Stage indicator */}
-          <StageDots progress={scrollYProgress} />
+          <div className="space-y-6">
+            {stages.map((s, i) => {
+              const Icon = s.icon;
+              return (
+                <div key={s.title} className="relative glass rounded-2xl p-5 flex gap-4 items-start">
+                  <div className={`absolute -inset-2 bg-gradient-to-b ${s.accent} blur-2xl opacity-40 -z-10`} />
+                  <div className="h-12 w-12 rounded-xl glass-strong flex items-center justify-center shrink-0">
+                    <Icon className="h-5 w-5 text-accent" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+                      Stage 0{i + 1} / 04
+                    </div>
+                    <h3 className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-gradient">
+                      {s.title}
+                    </h3>
+                    <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
+                      {s.sub}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      {/* Desktop: pinned scroll storytelling */}
+      <section ref={ref} className="hidden md:block relative" style={{ height: "320vh" }}>
+        <div className="sticky top-0 h-screen flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 ring-grid opacity-30 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
+
+          <div className="relative max-w-6xl w-full px-4">
+            <Header progress={scrollYProgress} />
+
+            <div className="relative mt-12 sm:mt-16 h-[420px] sm:h-[480px]">
+              {stages.map((s, i) => (
+                <Stage key={s.title} index={i} total={stages.length} progress={scrollYProgress} stage={s} reduce={!!reduce} />
+              ))}
+
+              <ConnectingBeam progress={scrollYProgress} />
+            </div>
+
+            <StageDots progress={scrollYProgress} />
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
 
