@@ -324,7 +324,10 @@ function AiStudio() {
 
             <div className="flex items-center justify-between mt-4">
               <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-                <Flame className="h-3 w-3 text-accent" /> Powered by gpt-oss-120b
+                <Flame className="h-3 w-3 text-accent" />{" "}
+                {active.id === "thumbnail"
+                  ? "Powered by riverflow-v2.5-pro"
+                  : "Powered by gpt-oss-120b"}
               </span>
               <button
                 onClick={() =>
@@ -353,6 +356,26 @@ function AiStudio() {
                 <div className="prose prose-sm prose-invert max-w-none">
                   <ReactMarkdown>{output}</ReactMarkdown>
                 </div>
+              </div>
+            )}
+
+            {imageOutput && (
+              <div className="mt-6 p-5 rounded-2xl bg-elevated/40 border border-border/60">
+                <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3 flex items-center justify-between">
+                  <span>Thumbnail</span>
+                  <a
+                    href={imageOutput}
+                    download="thumbnail.png"
+                    className="text-muted-foreground hover:text-foreground normal-case tracking-normal"
+                  >
+                    Download
+                  </a>
+                </div>
+                <img
+                  src={imageOutput}
+                  alt="Generated thumbnail"
+                  className="w-full rounded-xl border border-border/60"
+                />
               </div>
             )}
           </div>
