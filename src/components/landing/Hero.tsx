@@ -1,51 +1,86 @@
 import { ArrowUpRight, Sparkles, Play } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { motion } from "framer-motion";
+import { AnimatedOrbs } from "./AnimatedOrbs";
 
 export function Hero() {
   return (
     <section className="relative pt-32 sm:pt-44 pb-20 sm:pb-24 px-4 overflow-hidden">
       {/* Background atmosphere */}
       <div className="absolute inset-0 ring-grid opacity-60 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 h-[600px] w-[900px] rounded-full bg-primary/20 blur-[120px] opacity-60 animate-pulse-glow" />
-      <div className="absolute top-20 right-10 h-72 w-72 rounded-full bg-accent/20 blur-[100px] opacity-50" />
+      <AnimatedOrbs />
       <div className="absolute inset-0 noise opacity-40" />
 
       <div className="relative mx-auto max-w-5xl text-center">
-        <div className="inline-flex items-center gap-2 glass rounded-full px-3.5 py-1.5 text-xs text-muted-foreground mb-7">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="inline-flex items-center gap-2 glass rounded-full px-3.5 py-1.5 text-xs text-muted-foreground mb-7"
+        >
           <Sparkles className="h-3.5 w-3.5 text-accent" />
           <span>Introducing Zentry Qor v1 — built for creators</span>
           <span className="text-foreground/60">→</span>
-        </div>
+        </motion.div>
 
-        <h1 className="text-5xl sm:text-7xl md:text-[88px] font-semibold tracking-[-0.04em] leading-[0.95] text-gradient">
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+          className="text-5xl sm:text-7xl md:text-[88px] font-semibold tracking-[-0.04em] leading-[0.95] text-gradient"
+        >
           Your ultimate creator
           <br />
           <span className="text-gradient-brand">operating system.</span>
-        </h1>
+        </motion.h1>
 
-        <p className="mt-7 max-w-2xl mx-auto text-base sm:text-lg text-muted-foreground leading-relaxed">
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.25, ease: "easeOut" }}
+          className="mt-7 max-w-2xl mx-auto text-base sm:text-lg text-muted-foreground leading-relaxed"
+        >
           One premium ecosystem to create, organize, and grow faster. Vault, AI tools,
           analytics, and a creator workspace — engineered for serious creators.
-        </p>
+        </motion.p>
 
-        <div className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:flex-wrap">
-          <Link to="/auth" className="group inline-flex items-center justify-center gap-2 h-12 px-5 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary w-full sm:w-auto">
-            Start creating free
-            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </Link>
-          <a href="#pricing" className="group inline-flex items-center justify-center gap-2 h-12 px-5 rounded-xl glass text-sm font-medium magnetic w-full sm:w-auto">
-            <Play className="h-3.5 w-3.5 fill-foreground" />
-            See pricing
-          </a>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+          className="mt-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:flex-wrap"
+        >
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+            <Link to="/auth" className="group inline-flex items-center justify-center gap-2 h-12 px-5 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary w-full sm:w-auto">
+              Start creating free
+              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+            <a href="#pricing" className="group inline-flex items-center justify-center gap-2 h-12 px-5 rounded-xl glass text-sm font-medium magnetic w-full sm:w-auto">
+              <Play className="h-3.5 w-3.5 fill-foreground" />
+              See pricing
+            </a>
+          </motion.div>
+        </motion.div>
 
-        <p className="mt-5 text-xs text-muted-foreground">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="mt-5 text-xs text-muted-foreground"
+        >
           No card required · 14-day premium trial · Cancel anytime
-        </p>
+        </motion.p>
       </div>
 
       {/* Product preview card */}
-      <div className="relative mx-auto max-w-6xl mt-20">
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+        className="relative mx-auto max-w-6xl mt-20"
+      >
         <div className="absolute -inset-x-10 top-10 h-[400px] bg-gradient-to-b from-primary/30 to-transparent blur-3xl opacity-50" />
         <div className="relative glass-strong rounded-3xl p-2 shadow-[0_60px_160px_-30px_oklch(0_0_0/0.8)]">
           <div className="rounded-[20px] bg-surface overflow-hidden border border-border">
@@ -119,7 +154,8 @@ export function Hero() {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
+
