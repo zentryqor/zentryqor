@@ -29,13 +29,12 @@ export function Nav() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Link to="/auth" className="hidden sm:inline-flex text-sm text-muted-foreground hover:text-foreground h-9 px-3 rounded-lg transition-colors items-center">
-            Sign in
+          <Link to="/auth" className="inline-flex text-sm text-muted-foreground hover:text-foreground h-9 px-3 rounded-lg transition-colors items-center">
+            Log in
           </Link>
           <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-            <Link to="/auth" className="group inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity">
+            <Link to="/auth" className="inline-flex items-center justify-center h-9 px-4 rounded-xl bg-[oklch(0.62_0.19_255)] text-white text-sm font-semibold hover:opacity-90 transition-opacity shadow-[0_4px_14px_oklch(0.62_0.19_255/0.4)]">
               Get started
-              <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
           </motion.div>
         </div>
