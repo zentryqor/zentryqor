@@ -234,7 +234,7 @@ function Dashboard() {
           <BentoCard className="md:col-span-6">
             <div className="flex items-center justify-between">
               <CardHeader icon={<Sparkles className="h-4 w-4" />} title="Picked for you" />
-              <Link to="/" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+              <Link to="/assets" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
                 Browse vault <ArrowUpRight className="h-3 w-3" />
               </Link>
             </div>
