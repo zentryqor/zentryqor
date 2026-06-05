@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
-import { generateAiText } from "@/lib/ai.functions";
+import { generateAiText, generateAiImage } from "@/lib/ai.functions";
 
 export const Route = createFileRoute("/_authenticated/ai")({
   head: () => ({
@@ -100,15 +100,15 @@ const TOOLS: Tool[] = [
   },
   {
     id: "thumbnail",
-    name: "Thumbnail Idea Generator",
-    tagline: "Click-worthy YouTube visuals.",
+    name: "Thumbnail Photo Generator",
+    tagline: "AI-generated thumbnail images.",
     icon: ImageIcon,
     accent: "text-emerald-400",
-    placeholder: "Video: I tried the carnivore diet for 30 days",
-    inputLabel: "Video title or topic",
-    system:
-      "You are a top YouTube thumbnail designer. Generate 5 thumbnail concepts. For each: **Concept name**, then describe (a) background, (b) subject pose/expression, (c) bold 3-5 word text overlay, (d) color palette, (e) emotional trigger. Make them high-contrast and curiosity-driven.",
-    buildPrompt: (i) => `Thumbnail ideas for: ${i}`,
+    placeholder: "Bold YouTube thumbnail: shocked man holding a giant burger, neon background, 'I ATE THIS' text",
+    inputLabel: "Describe the thumbnail",
+    system: "",
+    buildPrompt: (i) =>
+      `A high-contrast, click-worthy YouTube thumbnail, 16:9, vivid colors, dramatic lighting, bold composition. Subject: ${i}`,
   },
   {
     id: "bio",
@@ -176,14 +176,30 @@ function AiStudio() {
   const [activeId, setActiveId] = useState<ToolId | null>(null);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
+  const [imageOutput, setImageOutput] = useState<string | null>(null);
 
   const runText = useServerFn(generateAiText);
+  const runImage = useServerFn(generateAiImage);
   const active = TOOLS.find((t) => t.id === activeId) ?? null;
 
   const mut = useMutation({
-    mutationFn: async ({ tool, value }: { tool: Tool; value: string }) =>
-      runText({ data: { prompt: tool.buildPrompt(value), system: tool.system } }),
-    onSuccess: (r) => setOutput(r.text),
+    mutationFn: async ({ tool, value }: { tool: Tool; value: string }) => {
+      if (tool.id === "thumbnail") {
+        const r = await runImage({ data: { prompt: tool.buildPrompt(value) } });
+        return { kind: "image" as const, image: r.image };
+      }
+      const r = await runText({ data: { prompt: tool.buildPrompt(value), system: tool.system } });
+      return { kind: "text" as const, text: r.text };
+    },
+    onSuccess: (r) => {
+      if (r.kind === "image") {
+        setImageOutput(r.image);
+        setOutput("");
+      } else {
+        setOutput(r.text);
+        setImageOutput(null);
+      }
+    },
     onError: (e: any) => toast.error(e?.message ?? "Generation failed"),
   });
 
@@ -191,6 +207,7 @@ function AiStudio() {
     setActiveId(id);
     setInput("");
     setOutput("");
+    setImageOutput(null);
   };
 
   return (
@@ -307,7 +324,10 @@ function AiStudio() {
 
             <div className="flex items-center justify-between mt-4">
               <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-                <Flame className="h-3 w-3 text-accent" /> Powered by gpt-oss-120b
+                <Flame className="h-3 w-3 text-accent" />{" "}
+                {active.id === "thumbnail"
+                  ? "Powered by riverflow-v2.5-pro"
+                  : "Powered by gpt-oss-120b"}
               </span>
               <button
                 onClick={() =>
@@ -336,6 +356,26 @@ function AiStudio() {
                 <div className="prose prose-sm prose-invert max-w-none">
                   <ReactMarkdown>{output}</ReactMarkdown>
                 </div>
+              </div>
+            )}
+
+            {imageOutput && (
+              <div className="mt-6 p-5 rounded-2xl bg-elevated/40 border border-border/60">
+                <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3 flex items-center justify-between">
+                  <span>Thumbnail</span>
+                  <a
+                    href={imageOutput}
+                    download="thumbnail.png"
+                    className="text-muted-foreground hover:text-foreground normal-case tracking-normal"
+                  >
+                    Download
+                  </a>
+                </div>
+                <img
+                  src={imageOutput}
+                  alt="Generated thumbnail"
+                  className="w-full rounded-xl border border-border/60"
+                />
               </div>
             )}
           </div>
