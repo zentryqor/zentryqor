@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { Logo } from "./Logo";
 
 export function Nav() {
   return (
@@ -13,7 +12,9 @@ export function Nav() {
     >
       <nav className="glass-strong w-full max-w-6xl rounded-2xl px-4 sm:px-6 h-14 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5 group">
-          <Logo className="h-8 w-8 drop-shadow-[0_4px_12px_rgba(30,107,230,0.4)]" />
+          <div className="relative h-7 w-7 rounded-lg bg-gradient-to-br from-primary-glow to-primary glow-primary flex items-center justify-center">
+            <div className="h-2.5 w-2.5 rounded-sm bg-background" />
+          </div>
           <span className="font-semibold tracking-tight text-[15px]">
             Zentry <span className="text-muted-foreground font-medium">Qor</span>
           </span>
