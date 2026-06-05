@@ -17,9 +17,6 @@ export function Nav() {
           <span className="font-semibold tracking-tight text-[15px]">
             Zentry <span className="text-muted-foreground font-medium">Qor</span>
           </span>
-          <span className="font-semibold tracking-tight text-[15px]">
-            Zentry <span className="text-muted-foreground font-medium">Qor</span>
-          </span>
         </Link>
 
         <div className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
