@@ -53,7 +53,6 @@ export const generateAiImage = createServerFn({ method: "POST" })
     const json = await callOpenRouter(
       "sourceful/riverflow-v2.5-pro:free",
       [{ role: "user", content: data.prompt }],
-      ["image", "text"],
     );
 
     const message = json.choices?.[0]?.message;
