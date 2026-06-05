@@ -108,8 +108,12 @@
   }
 
   ::selection {
-    background: color-mix(in oklab, var(--primary) 40%, transparent);
-    color: var(--foreground);
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+  ::-moz-selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
   }
 }
 
