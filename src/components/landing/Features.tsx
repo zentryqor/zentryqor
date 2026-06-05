@@ -21,22 +21,22 @@ export function Features() {
           </h2>
         </Reveal>
 
-        {/* Bento grid — 6 cols, asymmetric */}
-        <div className="grid grid-cols-1 md:grid-cols-6 auto-rows-[180px] gap-3">
-          {/* Vault — large hero card (4 cols, 2 rows) */}
+        {/* Bento grid — 6 cols, asymmetric on md+, natural stacking on mobile */}
+        <div className="grid grid-cols-1 md:grid-cols-6 md:auto-rows-[180px] gap-3">
+          {/* Vault — large hero card (4 cols, 2 rows on md+) */}
           <TiltCard
             maxTilt={4}
             className="md:col-span-4 md:row-span-2 group rounded-3xl glass overflow-hidden cursor-default relative"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative h-full p-7 flex flex-col">
+            <div className="relative h-full p-6 md:p-7 flex flex-col gap-5 md:gap-0">
               <div className="flex items-center justify-between">
                 <div className="h-11 w-11 rounded-xl bg-elevated border border-border flex items-center justify-center">
                   <Library className="h-5 w-5 text-accent" />
                 </div>
                 <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
               </div>
-              <div className="mt-auto">
+              <div className="md:mt-auto">
                 <h3 className="text-2xl font-semibold tracking-tight">
                   Creator Vault
                 </h3>
@@ -46,7 +46,7 @@ export function Features() {
                 </p>
               </div>
 
-              {/* Floating asset thumbnails */}
+              {/* Floating asset thumbnails — desktop only */}
               <div className="absolute right-6 top-16 hidden md:flex gap-3 -rotate-6">
                 {[
                   "from-primary/40 to-accent/20",
@@ -70,7 +70,7 @@ export function Features() {
                 ))}
               </div>
 
-              <div className="mt-4 flex items-center gap-4 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+              <div className="md:mt-4 flex items-center gap-4 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
                 <span>
                   <CountUp to={3200} suffix="+" className="text-foreground font-semibold not-italic normal-case tracking-normal text-base" /> assets
                 </span>
@@ -123,7 +123,7 @@ export function Features() {
               </div>
               <h3 className="text-lg font-semibold tracking-tight mt-4">Analytics</h3>
               {/* Mini chart */}
-              <svg viewBox="0 0 120 40" className="w-full h-10 mt-auto">
+              <svg viewBox="0 0 120 40" className="w-full h-10 md:mt-auto">
                 <motion.path
                   d="M0,32 L15,28 L30,30 L45,18 L60,22 L75,10 L90,14 L105,6 L120,8"
                   fill="none"
@@ -161,7 +161,7 @@ export function Features() {
               <div className="h-10 w-10 rounded-xl bg-elevated border border-border flex items-center justify-center">
                 <LayoutGrid className="h-4 w-4 text-accent" />
               </div>
-              <h3 className="text-lg font-semibold tracking-tight mt-auto">Workspace</h3>
+              <h3 className="text-lg font-semibold tracking-tight md:mt-auto">Workspace</h3>
               <p className="text-xs text-muted-foreground mt-1.5">
                 Moodboards, projects, drag-and-drop. Built for flow state.
               </p>
@@ -177,7 +177,7 @@ export function Features() {
               <div className="h-10 w-10 rounded-xl bg-elevated border border-border flex items-center justify-center">
                 <Users className="h-4 w-4 text-accent" />
               </div>
-              <h3 className="text-lg font-semibold tracking-tight mt-auto">Community</h3>
+              <h3 className="text-lg font-semibold tracking-tight md:mt-auto">Community</h3>
               <p className="text-xs text-muted-foreground mt-1.5">
                 Real feedback. Weekly challenges. Zero hustle-bros.
               </p>
@@ -193,7 +193,7 @@ export function Features() {
               <div className="h-10 w-10 rounded-xl bg-elevated border border-border flex items-center justify-center">
                 <Sparkles className="h-4 w-4 text-accent" />
               </div>
-              <h3 className="text-lg font-semibold tracking-tight mt-auto">
+              <h3 className="text-lg font-semibold tracking-tight md:mt-auto">
                 Tuned to you
               </h3>
               <p className="text-xs text-muted-foreground mt-1.5">
