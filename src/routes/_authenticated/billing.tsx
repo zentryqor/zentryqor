@@ -46,7 +46,17 @@ function Billing() {
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
       <PaymentTestModeBanner />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[500px] w-[800px] rounded-full bg-primary/15 blur-3xl pointer-events-none" />
+      <AnimatedOrbs />
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+        aria-hidden
+      />
+
 
       <div className="relative max-w-2xl mx-auto px-6 py-14">
         <Link
