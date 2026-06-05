@@ -176,14 +176,30 @@ function AiStudio() {
   const [activeId, setActiveId] = useState<ToolId | null>(null);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
+  const [imageOutput, setImageOutput] = useState<string | null>(null);
 
   const runText = useServerFn(generateAiText);
+  const runImage = useServerFn(generateAiImage);
   const active = TOOLS.find((t) => t.id === activeId) ?? null;
 
   const mut = useMutation({
-    mutationFn: async ({ tool, value }: { tool: Tool; value: string }) =>
-      runText({ data: { prompt: tool.buildPrompt(value), system: tool.system } }),
-    onSuccess: (r) => setOutput(r.text),
+    mutationFn: async ({ tool, value }: { tool: Tool; value: string }) => {
+      if (tool.id === "thumbnail") {
+        const r = await runImage({ data: { prompt: tool.buildPrompt(value) } });
+        return { kind: "image" as const, image: r.image };
+      }
+      const r = await runText({ data: { prompt: tool.buildPrompt(value), system: tool.system } });
+      return { kind: "text" as const, text: r.text };
+    },
+    onSuccess: (r) => {
+      if (r.kind === "image") {
+        setImageOutput(r.image);
+        setOutput("");
+      } else {
+        setOutput(r.text);
+        setImageOutput(null);
+      }
+    },
     onError: (e: any) => toast.error(e?.message ?? "Generation failed"),
   });
 
@@ -191,6 +207,7 @@ function AiStudio() {
     setActiveId(id);
     setInput("");
     setOutput("");
+    setImageOutput(null);
   };
 
   return (
