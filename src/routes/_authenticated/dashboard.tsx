@@ -9,7 +9,6 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import {
   ArrowUpRight,
   Bookmark,
-  Clock,
   Download,
   Flame,
   Lock,
@@ -110,7 +109,6 @@ function Dashboard() {
     .slice(0, 4);
 
   const trending = ALL_PACKS.slice(0, 3);
-  const continueItems = activity.slice(0, 3);
 
   async function openPack(p: typeof ALL_PACKS[number]) {
     if (p.premium && !isPremium) return;
