@@ -451,7 +451,7 @@ function AiStudio() {
                     left today.
                     {credits.isPremium
                       ? " Your daily allowance resets at midnight UTC."
-                      : " Upgrade to Premium for 1,000 credits/day."}
+                      : " Upgrade for 1,000 credits/day."}
                   </div>
                 </div>
                 {!credits.isPremium && (
