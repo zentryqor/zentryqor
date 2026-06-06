@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
+import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { generateAiText, generateAiImage, getAiCredits } from "@/lib/ai.functions";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
