@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
-import { generateAiText, generateAiImage, getThumbnailUsage } from "@/lib/ai.functions";
+import { generateAiText, generateAiImage, getAiCredits } from "@/lib/ai.functions";
 
 export const Route = createFileRoute("/_authenticated/ai")({
   head: () => ({
@@ -183,21 +183,20 @@ function AiStudio() {
 
   const runText = useServerFn(generateAiText);
   const runImage = useServerFn(generateAiImage);
-  const fetchUsage = useServerFn(getThumbnailUsage);
+  const fetchCredits = useServerFn(getAiCredits);
   const active = TOOLS.find((t) => t.id === activeId) ?? null;
 
-  const usageQuery = useQuery({
-    queryKey: ["thumbnail-usage"],
-    queryFn: () => fetchUsage(),
-    enabled: activeId === "thumbnail",
-    staleTime: 30_000,
+  const creditsQuery = useQuery({
+    queryKey: ["ai-credits"],
+    queryFn: () => fetchCredits(),
+    staleTime: 15_000,
   });
 
   const mut = useMutation({
     mutationFn: async ({ tool, value }: { tool: Tool; value: string }) => {
       if (tool.id === "thumbnail") {
         const r = await runImage({ data: { prompt: tool.buildPrompt(value), aspectRatio } });
-        return { kind: "image" as const, image: r.image, usage: r.usage };
+        return { kind: "image" as const, image: r.image };
       }
       const r = await runText({ data: { prompt: tool.buildPrompt(value), system: tool.system } });
       return { kind: "text" as const, text: r.text };
@@ -206,13 +205,16 @@ function AiStudio() {
       if (r.kind === "image") {
         setImageOutput(r.image);
         setOutput("");
-        usageQuery.refetch();
       } else {
         setOutput(r.text);
         setImageOutput(null);
       }
+      creditsQuery.refetch();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Generation failed"),
+    onError: (e: any) => {
+      toast.error(e?.message ?? "Generation failed");
+      creditsQuery.refetch();
+    },
   });
 
   const openTool = (id: ToolId) => {
@@ -224,8 +226,9 @@ function AiStudio() {
   };
 
   const isThumbnail = active?.id === "thumbnail";
-  const usage = usageQuery.data;
-  const limitReached = !!usage && !usage.isPremium && usage.used >= usage.limit;
+  const credits = creditsQuery.data;
+  const cost = isThumbnail ? (credits?.costs.image ?? 30) : (credits?.costs.text ?? 10);
+  const insufficient = !!credits && credits.remaining < cost;
 
 
   return (
@@ -255,8 +258,17 @@ function AiStudio() {
                 Zentry Qor
               </Link>
             </div>
-            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
-              <Sparkles className="h-3 w-3 text-accent" /> AI Studio
+            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-3">
+              {credits && (
+                <span className="normal-case tracking-normal flex items-center gap-1 px-2.5 py-1 rounded-full glass border border-border/60">
+                  <Zap className="h-3 w-3 text-accent" />
+                  <span className="text-foreground font-medium">{credits.remaining}</span>
+                  <span className="text-muted-foreground">/ {credits.limit}</span>
+                </span>
+              )}
+              <span className="hidden sm:flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3 text-accent" /> AI Studio
+              </span>
             </div>
           </div>
         </header>
@@ -365,45 +377,41 @@ function AiStudio() {
             )}
 
             <div className="flex items-center justify-between mt-4 gap-3">
-              {isThumbnail ? (
-                <div className="text-xs text-muted-foreground">
-                  {usage ? (
-                    usage.isPremium ? (
-                      <span className="text-accent">Premium — unlimited</span>
-                    ) : (
-                      <span>
-                        {Math.max(0, usage.limit - usage.used)} / {usage.limit} free today
-                      </span>
-                    )
-                  ) : (
-                    <span className="opacity-50">…</span>
-                  )}
-                </div>
-              ) : (
-                <div />
-              )}
+              <div className="text-xs text-muted-foreground">
+                {credits ? (
+                  <span>
+                    <span className="text-foreground font-medium">{cost} credits</span>
+                    {" · "}
+                    {credits.remaining} / {credits.limit} left today
+                    {credits.isPremium ? " (Premium)" : ""}
+                  </span>
+                ) : (
+                  <span className="opacity-50">…</span>
+                )}
+              </div>
 
               <button
                 onClick={() =>
                   input.trim() && mut.mutate({ tool: active, value: input.trim() })
                 }
-                disabled={mut.isPending || !input.trim() || (isThumbnail && limitReached)}
+                disabled={mut.isPending || !input.trim() || insufficient}
                 className="h-11 px-6 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {mut.isPending ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating
                   </>
-                ) : isThumbnail && limitReached ? (
-                  <>Daily limit reached</>
+                ) : insufficient ? (
+                  <>Not enough credits</>
                 ) : (
                   <>
-                    <Sparkles className="h-3.5 w-3.5" /> Generate
+                    <Sparkles className="h-3.5 w-3.5" /> Generate · {cost}
                   </>
                 )}
 
               </button>
             </div>
+
 
             {output && (
               <div className="mt-6 p-5 rounded-2xl bg-elevated/40 border border-border/60">

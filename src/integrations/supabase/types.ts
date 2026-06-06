@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_credit_usage: {
+        Row: {
+          created_at: string
+          day: string
+          id: string
+          updated_at: string
+          used: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day?: string
+          id?: string
+          updated_at?: string
+          used?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          id?: string
+          updated_at?: string
+          used?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       assets: {
         Row: {
           category: string
