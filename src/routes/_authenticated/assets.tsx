@@ -15,6 +15,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
+import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 
 export const Route = createFileRoute("/_authenticated/assets")({
   ssr: false,
