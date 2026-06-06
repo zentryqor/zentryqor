@@ -265,11 +265,18 @@ function AiStudio() {
                   <PopoverTrigger asChild>
                     <button
                       type="button"
-                      className="normal-case tracking-normal flex items-center gap-1 px-2.5 py-1 rounded-full glass border border-border/60 hover:border-foreground/40 transition-colors"
+                      className="group relative normal-case tracking-normal flex items-center gap-1.5 pl-2 pr-3 py-1.5 rounded-full bg-gradient-to-br from-primary/15 via-elevated/60 to-accent/15 border border-border/60 hover:border-accent/60 hover:shadow-[0_0_24px_-6px_hsl(var(--accent)/0.45)] transition-all"
                     >
-                      <Zap className="h-3 w-3 text-accent" />
-                      <span className="text-foreground font-medium">{credits.remaining}</span>
-                      <span className="text-muted-foreground">/ {credits.limit}</span>
+                      <span className="h-5 w-5 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-[0_0_12px_-2px_hsl(var(--accent)/0.6)]">
+                        <Zap className="h-2.5 w-2.5 text-background" />
+                      </span>
+                      <span className="text-foreground font-semibold tabular-nums">{credits.remaining}</span>
+                      <span className="text-muted-foreground text-[11px] tabular-nums">/ {credits.limit}</span>
+                      {credits.isPremium && (
+                        <span className="ml-1 text-[9px] uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full bg-accent/20 text-accent font-medium">
+                          Pro
+                        </span>
+                      )}
                     </button>
                   </PopoverTrigger>
                   <PopoverContent
