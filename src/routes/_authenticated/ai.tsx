@@ -317,7 +317,7 @@ function AiStudio() {
                         className="mt-5 w-full h-11 px-4 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary flex items-center justify-center gap-1.5"
                       >
                         <Sparkles className="h-3.5 w-3.5" />
-                        Upgrade to Premium — get 1,000 credits/day
+                        Upgrade — get 1,000 credits/day
                       </Link>
                     )}
                     {credits.isPremium && (
@@ -451,7 +451,7 @@ function AiStudio() {
                     left today.
                     {credits.isPremium
                       ? " Your daily allowance resets at midnight UTC."
-                      : " Upgrade to Premium for 1,000 credits/day."}
+                      : " Upgrade for 1,000 credits/day."}
                   </div>
                 </div>
                 {!credits.isPremium && (
