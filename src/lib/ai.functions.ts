@@ -116,18 +116,27 @@ export const generateAiImage = createServerFn({ method: "POST" })
     const apiKey = process.env.LOVABLE_API_KEY;
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const promptWithAspect = `${data.prompt}\n\nImage aspect ratio: ${data.aspectRatio}. Compose the image to fully fill a ${data.aspectRatio} frame.`;
+    // Map aspect ratio to OpenAI gpt-image supported sizes
+    const sizeMap: Record<string, string> = {
+      "16:9": "1536x1024",
+      "9:16": "1024x1536",
+      "4:3": "1536x1024",
+      "3:4": "1024x1536",
+    };
+    const size = sizeMap[data.aspectRatio];
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/images/generations", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
-        messages: [{ role: "user", content: promptWithAspect }],
-        modalities: ["image", "text"],
+        model: "openai/gpt-image-1-mini",
+        prompt: data.prompt,
+        size,
+        quality: "low",
+        n: 1,
       }),
     });
 
@@ -139,10 +148,8 @@ export const generateAiImage = createServerFn({ method: "POST" })
     }
 
     const json = await res.json();
-    const message = json.choices?.[0]?.message;
-    const images: string[] = (message?.images ?? [])
-      .map((img: any) => img?.image_url?.url)
-      .filter(Boolean);
+    const b64: string | undefined = json.data?.[0]?.b64_json;
+    const images: string[] = b64 ? [`data:image/png;base64,${b64}`] : [];
 
     if (images.length === 0) {
       throw new Error("No image returned");
