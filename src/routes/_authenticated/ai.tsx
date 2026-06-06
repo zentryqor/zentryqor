@@ -23,6 +23,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { generateAiText, generateAiImage, getAiCredits } from "@/lib/ai.functions";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export const Route = createFileRoute("/_authenticated/ai")({
   head: () => ({
@@ -260,11 +261,65 @@ function AiStudio() {
             </div>
             <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-3">
               {credits && (
-                <span className="normal-case tracking-normal flex items-center gap-1 px-2.5 py-1 rounded-full glass border border-border/60">
-                  <Zap className="h-3 w-3 text-accent" />
-                  <span className="text-foreground font-medium">{credits.remaining}</span>
-                  <span className="text-muted-foreground">/ {credits.limit}</span>
-                </span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="normal-case tracking-normal flex items-center gap-1 px-2.5 py-1 rounded-full glass border border-border/60 hover:border-foreground/40 transition-colors"
+                    >
+                      <Zap className="h-3 w-3 text-accent" />
+                      <span className="text-foreground font-medium">{credits.remaining}</span>
+                      <span className="text-muted-foreground">/ {credits.limit}</span>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    sideOffset={8}
+                    className="w-[320px] p-5 rounded-2xl glass-strong border border-border/60"
+                  >
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-base font-semibold tracking-tight">Credits</div>
+                      <div className="text-sm text-muted-foreground">
+                        {credits.remaining} left
+                      </div>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-elevated/60 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-primary to-accent transition-all"
+                        style={{
+                          width: `${Math.min(100, Math.max(0, (credits.remaining / credits.limit) * 100))}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
+                      Daily credits reset at midnight UTC
+                    </div>
+                    <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground border-t border-border/60 pt-3">
+                      <span>Text tools</span>
+                      <span className="text-foreground font-medium">{credits.costs.text} credits</span>
+                    </div>
+                    <div className="mt-1.5 flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Thumbnail image</span>
+                      <span className="text-foreground font-medium">{credits.costs.image} credits</span>
+                    </div>
+
+                    {!credits.isPremium && (
+                      <Link
+                        to="/billing"
+                        className="mt-5 w-full h-11 px-4 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary flex items-center justify-center gap-1.5"
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Upgrade to Premium — get 1,000 credits/day
+                      </Link>
+                    )}
+                    {credits.isPremium && (
+                      <div className="mt-5 text-center text-xs text-accent uppercase tracking-[0.2em]">
+                        Premium — 1,000 / day
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
               )}
               <span className="hidden sm:flex items-center gap-1.5">
                 <Sparkles className="h-3 w-3 text-accent" /> AI Studio
