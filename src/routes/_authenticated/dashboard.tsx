@@ -144,35 +144,33 @@ function Dashboard() {
           to keep Premium access.
         </div>
       )}
-      {/* Top bar */}
-      <header className="sticky top-0 z-30 glass border-b border-border/60">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <Link to="/" className="font-semibold tracking-tight text-gradient">Zentry Qor</Link>
-            <nav className="hidden md:flex items-center gap-1 text-sm">
-              <NavTab active>Dashboard</NavTab>
-              <Link to="/assets" className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors">Assets</Link>
-              <Link to="/admin" className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors">Admin</Link>
-              <Link to="/ai" className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors">AI Studio</Link>
-            </nav>
-          </div>
-          <div className="flex items-center gap-3">
+      <AppHeader
+        nav={
+          <>
+            <AppHeaderLink to="/dashboard" active>Dashboard</AppHeaderLink>
+            <AppHeaderLink to="/assets">Assets</AppHeaderLink>
+            <AppHeaderLink to="/admin">Admin</AppHeaderLink>
+            <AppHeaderLink to="/ai">AI Studio</AppHeaderLink>
+          </>
+        }
+        right={
+          <>
             {!isPremium && (
-              <Link to="/billing" className="hidden sm:inline-flex h-9 px-3 rounded-full glass-strong items-center gap-1.5 text-xs font-medium">
+              <Link to="/billing" className="hidden sm:inline-flex h-8 sm:h-9 px-3 rounded-full glass items-center gap-1.5 text-xs font-medium">
                 <Sparkles className="h-3 w-3 text-accent" /> Upgrade
               </Link>
             )}
-            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-semibold text-primary-foreground">
+            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-semibold text-primary-foreground">
               {firstName[0]?.toUpperCase()}
             </div>
-            <button onClick={signOut} className="h-9 w-9 rounded-full glass flex items-center justify-center text-muted-foreground hover:text-foreground">
+            <button onClick={signOut} className="h-8 w-8 sm:h-9 sm:w-9 rounded-full glass flex items-center justify-center text-muted-foreground hover:text-foreground">
               <LogOut className="h-3.5 w-3.5" />
             </button>
-          </div>
-        </div>
-      </header>
+          </>
+        }
+      />
 
-      <main className="max-w-7xl mx-auto px-6 py-10">
+      <main className="max-w-7xl mx-auto px-6 pt-28 pb-10">
         {/* Greeting */}
         <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
           <div>
