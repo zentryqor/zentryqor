@@ -14,6 +14,7 @@ export const Route = createFileRoute("/_authenticated/billing")({
 
 const PERKS = [
   "Unlimited vault downloads",
+  "1,000 AI credits / day",
   "Every premium AI tool, no limits",
   "Exclusive drops & early access",
   "No watermarks, ever",

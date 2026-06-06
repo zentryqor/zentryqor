@@ -13,6 +13,7 @@ const free = [
 const premium = [
   "Unlimited downloads — no caps, ever",
   "Full vault — 3,200+ premium packs",
+  "1,000 AI credits / day",
   "Unlimited AI tool runs",
   "Early access to weekly drops",
   "Priority support — under 12h",
