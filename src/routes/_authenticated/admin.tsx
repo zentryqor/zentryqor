@@ -207,31 +207,27 @@ function AdminPage() {
       />
 
       <div className="relative">
-        <header className="sticky top-0 z-30 glass border-b border-border/60">
-          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <Link to="/" className="font-semibold tracking-tight text-gradient">
-                Zentry Qor
-              </Link>
-              <nav className="hidden md:flex items-center gap-1 text-sm">
-                <Link to="/dashboard" className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors">
-                  Dashboard
-                </Link>
-                <Link to="/assets" className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground transition-colors">
-                  Vault
-                </Link>
-                <span className="px-3 py-1.5 rounded-full bg-elevated text-foreground flex items-center gap-1.5">
-                  <Shield className="h-3 w-3 text-accent" /> Admin
-                </span>
-              </nav>
-            </div>
-            <Link to="/assets" className="hidden sm:inline-flex h-9 px-3 rounded-full glass-strong items-center gap-1.5 text-xs font-medium magnetic">
+        <AppHeader
+          nav={
+            <>
+              <AppHeaderLink to="/dashboard">Dashboard</AppHeaderLink>
+              <AppHeaderLink to="/assets">Vault</AppHeaderLink>
+              <span className="px-3 py-1.5 rounded-full bg-elevated text-foreground flex items-center gap-1.5">
+                <Shield className="h-3 w-3 text-accent" /> Admin
+              </span>
+            </>
+          }
+          right={
+            <Link
+              to="/assets"
+              className="hidden sm:inline-flex h-8 sm:h-9 px-3 rounded-full glass items-center gap-1.5 text-xs font-medium"
+            >
               View vault <ArrowUpRight className="h-3 w-3" />
             </Link>
-          </div>
-        </header>
+          }
+        />
 
-        <main className="max-w-7xl mx-auto px-6 py-12">
+        <main className="max-w-7xl mx-auto px-6 pt-28 pb-12">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
