@@ -258,8 +258,17 @@ function AiStudio() {
                 Zentry Qor
               </Link>
             </div>
-            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-1.5">
-              <Sparkles className="h-3 w-3 text-accent" /> AI Studio
+            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-3">
+              {credits && (
+                <span className="normal-case tracking-normal flex items-center gap-1 px-2.5 py-1 rounded-full glass border border-border/60">
+                  <Zap className="h-3 w-3 text-accent" />
+                  <span className="text-foreground font-medium">{credits.remaining}</span>
+                  <span className="text-muted-foreground">/ {credits.limit}</span>
+                </span>
+              )}
+              <span className="hidden sm:flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3 text-accent" /> AI Studio
+              </span>
             </div>
           </div>
         </header>
