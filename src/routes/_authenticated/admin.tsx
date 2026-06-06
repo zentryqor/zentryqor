@@ -15,6 +15,7 @@ import {
   Users,
 } from "lucide-react";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
+import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin — Zentry Qor" }] }),
