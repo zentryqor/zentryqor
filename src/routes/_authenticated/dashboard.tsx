@@ -198,34 +198,6 @@ function Dashboard() {
 
         {/* Bento grid */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-          {/* Continue */}
-          <BentoCard className="md:col-span-4 md:row-span-2">
-            <CardHeader icon={<Clock className="h-4 w-4" />} title="Continue where you left off" />
-            {continueItems.length === 0 ? (
-              <div className="mt-4 py-10 text-center text-sm text-muted-foreground">
-                Nothing in progress yet. Open a pack from the vault to start.
-              </div>
-            ) : (
-              <div className="mt-4 space-y-2">
-                {continueItems.map((a) => (
-                  <button
-                    key={a.id}
-                    className="w-full text-left p-3 rounded-xl glass hover:bg-elevated transition-colors flex items-center gap-3"
-                  >
-                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center">
-                      <Play className="h-3.5 w-3.5" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">{a.pack_title}</div>
-                      <div className="text-xs text-muted-foreground">{a.pack_category}</div>
-                    </div>
-                    <div className="text-xs text-muted-foreground">{Math.round(Number(a.progress) * 100)}%</div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </BentoCard>
-
           {/* Stats */}
           <BentoCard className="md:col-span-2">
             <CardHeader icon={<Download className="h-4 w-4" />} title="Downloads" />
