@@ -183,21 +183,20 @@ function AiStudio() {
 
   const runText = useServerFn(generateAiText);
   const runImage = useServerFn(generateAiImage);
-  const fetchUsage = useServerFn(getThumbnailUsage);
+  const fetchCredits = useServerFn(getAiCredits);
   const active = TOOLS.find((t) => t.id === activeId) ?? null;
 
-  const usageQuery = useQuery({
-    queryKey: ["thumbnail-usage"],
-    queryFn: () => fetchUsage(),
-    enabled: activeId === "thumbnail",
-    staleTime: 30_000,
+  const creditsQuery = useQuery({
+    queryKey: ["ai-credits"],
+    queryFn: () => fetchCredits(),
+    staleTime: 15_000,
   });
 
   const mut = useMutation({
     mutationFn: async ({ tool, value }: { tool: Tool; value: string }) => {
       if (tool.id === "thumbnail") {
         const r = await runImage({ data: { prompt: tool.buildPrompt(value), aspectRatio } });
-        return { kind: "image" as const, image: r.image, usage: r.usage };
+        return { kind: "image" as const, image: r.image };
       }
       const r = await runText({ data: { prompt: tool.buildPrompt(value), system: tool.system } });
       return { kind: "text" as const, text: r.text };
@@ -206,13 +205,16 @@ function AiStudio() {
       if (r.kind === "image") {
         setImageOutput(r.image);
         setOutput("");
-        usageQuery.refetch();
       } else {
         setOutput(r.text);
         setImageOutput(null);
       }
+      creditsQuery.refetch();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Generation failed"),
+    onError: (e: any) => {
+      toast.error(e?.message ?? "Generation failed");
+      creditsQuery.refetch();
+    },
   });
 
   const openTool = (id: ToolId) => {
@@ -224,8 +226,9 @@ function AiStudio() {
   };
 
   const isThumbnail = active?.id === "thumbnail";
-  const usage = usageQuery.data;
-  const limitReached = !!usage && !usage.isPremium && usage.used >= usage.limit;
+  const credits = creditsQuery.data;
+  const cost = isThumbnail ? (credits?.costs.image ?? 30) : (credits?.costs.text ?? 10);
+  const insufficient = !!credits && credits.remaining < cost;
 
 
   return (
