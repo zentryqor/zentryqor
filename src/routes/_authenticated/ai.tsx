@@ -376,6 +376,34 @@ function AiStudio() {
               </div>
             )}
 
+            {insufficient && credits && (
+              <div className="mt-5 p-4 rounded-2xl border border-accent/30 bg-gradient-to-br from-primary/10 to-accent/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <div className="text-sm font-medium flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-accent" />
+                    Insufficient credits
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    This tool costs <span className="text-foreground font-medium">{cost}</span>{" "}
+                    credits, but you only have <span className="text-foreground font-medium">{credits.remaining}</span>{" "}
+                    left today.
+                    {credits.isPremium
+                      ? " Your daily allowance resets at midnight UTC."
+                      : " Upgrade to Premium for 1,000 credits/day."}
+                  </div>
+                </div>
+                {!credits.isPremium && (
+                  <Link
+                    to="/billing"
+                    className="shrink-0 h-10 px-5 rounded-xl bg-foreground text-background text-xs font-medium flex items-center gap-1.5 magnetic glow-primary"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" /> Upgrade to Premium
+                  </Link>
+                )}
+              </div>
+            )}
+
+
             <div className="flex items-center justify-between mt-4 gap-3">
               <div className="text-xs text-muted-foreground">
                 {credits ? (
