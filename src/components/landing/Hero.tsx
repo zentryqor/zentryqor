@@ -133,7 +133,7 @@ export function Hero() {
               transition={{ duration: 0.8, delay: 0.7 }}
               className="mt-4 text-[11px] text-muted-foreground uppercase tracking-[0.18em]"
             >
-              No card · 14-day Premium trial · Cancel anytime
+              No card required · Cancel anytime
             </motion.p>
           </div>
         </motion.div>
