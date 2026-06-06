@@ -368,45 +368,41 @@ function AiStudio() {
             )}
 
             <div className="flex items-center justify-between mt-4 gap-3">
-              {isThumbnail ? (
-                <div className="text-xs text-muted-foreground">
-                  {usage ? (
-                    usage.isPremium ? (
-                      <span className="text-accent">Premium — unlimited</span>
-                    ) : (
-                      <span>
-                        {Math.max(0, usage.limit - usage.used)} / {usage.limit} free today
-                      </span>
-                    )
-                  ) : (
-                    <span className="opacity-50">…</span>
-                  )}
-                </div>
-              ) : (
-                <div />
-              )}
+              <div className="text-xs text-muted-foreground">
+                {credits ? (
+                  <span>
+                    <span className="text-foreground font-medium">{cost} credits</span>
+                    {" · "}
+                    {credits.remaining} / {credits.limit} left today
+                    {credits.isPremium ? " (Premium)" : ""}
+                  </span>
+                ) : (
+                  <span className="opacity-50">…</span>
+                )}
+              </div>
 
               <button
                 onClick={() =>
                   input.trim() && mut.mutate({ tool: active, value: input.trim() })
                 }
-                disabled={mut.isPending || !input.trim() || (isThumbnail && limitReached)}
+                disabled={mut.isPending || !input.trim() || insufficient}
                 className="h-11 px-6 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 {mut.isPending ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating
                   </>
-                ) : isThumbnail && limitReached ? (
-                  <>Daily limit reached</>
+                ) : insufficient ? (
+                  <>Not enough credits</>
                 ) : (
                   <>
-                    <Sparkles className="h-3.5 w-3.5" /> Generate
+                    <Sparkles className="h-3.5 w-3.5" /> Generate · {cost}
                   </>
                 )}
 
               </button>
             </div>
+
 
             {output && (
               <div className="mt-6 p-5 rounded-2xl bg-elevated/40 border border-border/60">
