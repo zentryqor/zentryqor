@@ -117,7 +117,7 @@ export const generateAiImage = createServerFn({ method: "POST" })
     if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
     // Map aspect ratio to OpenAI gpt-image supported sizes
-    const sizeMap: Record<AspectRatio, string> = {
+    const sizeMap: Record<string, string> = {
       "16:9": "1536x1024",
       "9:16": "1024x1536",
       "4:3": "1536x1024",
