@@ -87,8 +87,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Zentry Qor" },
       { name: "twitter:description", content: "Zentry Qor is a premium creator productivity vault for digital creators." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/aac4d8e8-3e47-496e-9572-b22c31d0f706/id-preview-8a20b096--5fa35906-01f4-4906-9823-8c857851a941.lovable.app-1780607583243.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/aac4d8e8-3e47-496e-9572-b22c31d0f706/id-preview-8a20b096--5fa35906-01f4-4906-9823-8c857851a941.lovable.app-1780607583243.png" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9fdaca04-989d-40a7-8f07-be2a4fd6aa50" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/9fdaca04-989d-40a7-8f07-be2a4fd6aa50" },
     ],
     links: [
       {
