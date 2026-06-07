@@ -28,7 +28,7 @@ const faqs = [
   { q: "Can I cancel anytime?", a: "Yes — one click in Billing. You keep Premium until the end of the period." },
   { q: "Do you offer refunds?", a: "We offer a 30-day money-back guarantee. Refunds are processed by our payment provider, Paddle, at paddle.net." },
   { q: "Is my work private?", a: "Yes. Your projects are encrypted in transit and at rest. We never train models on your private content." },
-  { q: "How do I contact support?", a: "Email support@zentryqor.com or use the contact form. We reply within one business day." },
+  { q: "How do I contact support?", a: "Email zentryqor@gmail.com or use the contact form. We reply within one business day." },
 ];
 
 function HelpPage() {
