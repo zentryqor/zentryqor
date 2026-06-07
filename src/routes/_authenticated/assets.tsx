@@ -156,6 +156,7 @@ function AssetsPage() {
             <>
               <AppHeaderLink to="/dashboard">Dashboard</AppHeaderLink>
               <AppHeaderLink to="/assets" active>Vault</AppHeaderLink>
+              <AppHeaderLink to="/saved">Saved</AppHeaderLink>
               <AppHeaderLink to="/ai">AI Studio</AppHeaderLink>
             </>
           }
