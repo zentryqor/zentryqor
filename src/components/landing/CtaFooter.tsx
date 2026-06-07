@@ -55,18 +55,37 @@ export function CtaFooter() {
         whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="max-w-6xl mx-auto mt-14 flex flex-wrap items-center justify-between gap-4 text-xs text-muted-foreground"
+        className="max-w-6xl mx-auto mt-14"
       >
-        <div className="flex items-center gap-2">
-          <div className="h-5 w-5 rounded-md bg-gradient-to-br from-primary-glow to-primary" />
-          <span>© {new Date().getFullYear()} Zentry Qor — Made for people who ship.</span>
+        <div className="grid sm:grid-cols-4 gap-8 pb-10 border-b border-border">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground sm:col-span-1">
+            <div className="h-5 w-5 rounded-md bg-gradient-to-br from-primary-glow to-primary" />
+            <span>Zentry Qor</span>
+          </div>
+          <div className="space-y-2">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70">Product</p>
+            <Link to="/roadmap" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Roadmap</Link>
+            <Link to="/changelog" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Changelog</Link>
+            <Link to="/status" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Status</Link>
+          </div>
+          <div className="space-y-2">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70">Company</p>
+            <Link to="/about" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">About</Link>
+            <Link to="/contact" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Contact</Link>
+            <Link to="/help" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Help Center</Link>
+          </div>
+          <div className="space-y-2">
+            <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70">Legal</p>
+            <Link to="/privacy" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy</Link>
+            <Link to="/terms" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Terms</Link>
+          </div>
         </div>
-        <div className="flex gap-6">
-          <a className="hover:text-foreground transition-colors" href="#">Privacy</a>
-          <a className="hover:text-foreground transition-colors" href="#">Terms</a>
-          <a className="hover:text-foreground transition-colors" href="#">Twitter</a>
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-6 text-xs text-muted-foreground">
+          <span>© {new Date().getFullYear()} Zentry Qor — Made for people who ship.</span>
+          <span>Payments by Paddle, our Merchant of Record.</span>
         </div>
       </motion.footer>
+
     </section>
   );
 }
