@@ -244,7 +244,95 @@
     50% { transform: translateX(20px); }
   }
   .animate-drift-x { animation: drift-x 9s ease-in-out infinite; }
+
+  /* ============================================================
+     Premium icon micro-interactions
+     Apply `.icon-fx` to any icon (or icon container) for a
+     consistent cinematic hover: lift, scale, ambient glow,
+     liquid-glass shimmer. GPU-only transforms.
+     ============================================================ */
+  .icon-fx {
+    position: relative;
+    transition:
+      transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      filter 320ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 380ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform, filter;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  .icon-fx:hover {
+    transform: translateY(-3px) scale(1.06);
+    filter: drop-shadow(0 6px 14px color-mix(in oklab, var(--accent) 40%, transparent));
+  }
+  /* When parent has `group`, also react to group hover */
+  .group:hover .icon-fx {
+    transform: translateY(-2px) scale(1.05);
+    filter: drop-shadow(0 4px 12px color-mix(in oklab, var(--accent) 35%, transparent));
+  }
+
+  /* Ambient glow ring revealed on hover */
+  .icon-fx-glow::after {
+    content: "";
+    position: absolute;
+    inset: -30%;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle at center,
+      color-mix(in oklab, var(--accent) 35%, transparent) 0%,
+      transparent 65%
+    );
+    opacity: 0;
+    transition: opacity 380ms ease;
+    pointer-events: none;
+    z-index: -1;
+  }
+  .icon-fx-glow:hover::after,
+  .group:hover .icon-fx-glow::after {
+    opacity: 1;
+  }
+
+  /* Liquid-glass shimmer sweep on hover */
+  .icon-fx-shimmer { overflow: hidden; isolation: isolate; }
+  .icon-fx-shimmer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      115deg,
+      transparent 35%,
+      oklch(1 0 0 / 0.18) 50%,
+      transparent 65%
+    );
+    transform: translateX(-120%);
+    transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+  }
+  .icon-fx-shimmer:hover::before,
+  .group:hover .icon-fx-shimmer::before {
+    transform: translateX(120%);
+  }
+
+  /* Subtle ambient pulse — slow, calm, every 8s */
+  @keyframes icon-pulse {
+    0%, 100% { filter: brightness(1) drop-shadow(0 0 0 transparent); }
+    50% {
+      filter: brightness(1.12)
+        drop-shadow(0 0 8px color-mix(in oklab, var(--accent) 35%, transparent));
+    }
+  }
+  .icon-pulse { animation: icon-pulse 8s ease-in-out infinite; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .icon-fx,
+    .icon-fx:hover,
+    .group:hover .icon-fx { transform: none; filter: none; transition: none; }
+    .icon-fx-shimmer::before { display: none; }
+    .icon-pulse { animation: none; }
+  }
 }
+
 
 /* Mobile smoothness: tame expensive effects on small / touch devices */
 @media (max-width: 767px), (pointer: coarse) {
