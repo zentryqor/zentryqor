@@ -213,11 +213,13 @@ function Dashboard() {
             <DeltaLabel value={stats?.downloadsDelta} />
           </BentoCard>
 
-          <BentoCard className="md:col-span-3">
-            <CardHeader icon={<Bookmark className="h-4 w-4" />} title="Saved" />
-            <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.saved ?? activity.length}</div>
-            <DeltaLabel value={stats?.savedDelta} />
-          </BentoCard>
+          <Link to="/saved" className="md:col-span-3 group">
+            <BentoCard className="h-full transition-colors group-hover:bg-elevated/40">
+              <CardHeader icon={<Bookmark className="h-4 w-4" />} title="Saved" />
+              <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.saved ?? activity.length}</div>
+              <DeltaLabel value={stats?.savedDelta} />
+            </BentoCard>
+          </Link>
 
           <BentoCard className="md:col-span-3">
             <CardHeader icon={<Bot className="h-4 w-4" />} title="AI runs" />
