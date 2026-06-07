@@ -375,3 +375,11 @@ function CardHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
     </div>
   );
 }
+
+function Sparkline({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 80 28" className={`h-7 w-20 ${className}`} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="2,22 14,18 26,20 38,12 50,14 62,8 78,4" />
+    </svg>
+  );
+}
