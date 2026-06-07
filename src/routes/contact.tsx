@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageShell } from "@/components/PageShell";
-import { Mail, MessageCircle, Send } from "lucide-react";
+import { Mail, Handshake, MessageCircle, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
       { title: "Contact — Zentry Qor" },
-      { name: "description", content: "Get in touch with the Zentry Qor team." },
+      { name: "description", content: "Get in touch with the Zentry Qor team — support, partnerships, and press." },
       { property: "og:title", content: "Contact — Zentry Qor" },
       { property: "og:description", content: "Get in touch with the Zentry Qor team." },
     ],
@@ -17,7 +17,9 @@ export const Route = createFileRoute("/contact")({
 });
 
 const channels = [
-  { icon: MessageCircle, title: "Support", body: "Account, billing, or product questions.", value: "zentriqor@gmail.com" },
+  { icon: MessageCircle, title: "Support", body: "Account, billing, or product questions.", value: "support@zentryqor.com" },
+  { icon: Handshake, title: "Partnerships", body: "Brand collabs, integrations, and resellers.", value: "partners@zentryqor.com" },
+  { icon: Mail, title: "Press", body: "Media kits, interviews, and quotes.", value: "press@zentryqor.com" },
 ];
 
 function ContactPage() {
@@ -25,22 +27,10 @@ function ContactPage() {
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const data = new FormData(form);
-    const name = String(data.get("name") ?? "");
-    const email = String(data.get("email") ?? "");
-    const subject = String(data.get("subject") ?? "");
-    const message = String(data.get("message") ?? "");
-
-    const mailto = `mailto:zentriqor@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
-      `Name: ${name}\nEmail: ${email}\n\n${message}`
-    )}`;
-
     setSending(true);
-    window.location.href = mailto;
     setTimeout(() => {
       setSending(false);
-      form.reset();
+      (e.target as HTMLFormElement).reset();
       toast.success("Message sent — we'll reply within one business day.");
     }, 700);
   };
@@ -49,9 +39,9 @@ function ContactPage() {
     <PageShell
       eyebrow="Contact"
       title={<>Let's <span className="text-aurora italic font-medium">talk.</span></>}
-      description="Send us a note directly — we read every message."
+      description="Pick the right channel below — or send us a note directly. We read every message."
     >
-      <div className="grid sm:grid-cols-1 gap-3 mb-10 max-w-sm">
+      <div className="grid sm:grid-cols-3 gap-3 mb-10">
         {channels.map((c) => (
           <a key={c.title} href={`mailto:${c.value}`} className="glass rounded-2xl p-5 hover:bg-elevated/40 transition-colors block">
             <c.icon className="h-5 w-5 text-accent icon-fx mb-3" />
