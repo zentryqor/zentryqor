@@ -205,32 +205,34 @@ function Dashboard() {
             <CardHeader icon={<Download className="h-4 w-4" />} title="Downloads" />
             <div className="mt-3 flex items-end justify-between">
               <div className="text-4xl font-semibold tracking-tight text-gradient-brand">
-                {isPremium ? "1,284" : "0/3"}
+                {isPremium ? (stats?.downloads ?? 0).toLocaleString() : `${stats?.downloads ?? 0}/3`}
               </div>
-              <Sparkline className="text-accent" />
+              <Sparkline data={stats?.sparkline} className="text-accent" />
             </div>
-            <div className="text-xs text-emerald-400 mt-1">+12% this week</div>
+            <DeltaLabel value={stats?.downloadsDelta} />
           </BentoCard>
 
           <BentoCard className="md:col-span-3">
             <CardHeader icon={<Bookmark className="h-4 w-4" />} title="Saved" />
-            <div className="mt-3 text-4xl font-semibold tracking-tight">{activity.length || 342}</div>
-            <div className="text-xs text-emerald-400 mt-1">+4% this week</div>
+            <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.saved ?? activity.length}</div>
+            <DeltaLabel value={stats?.savedDelta} />
           </BentoCard>
 
           <BentoCard className="md:col-span-3">
             <CardHeader icon={<Bot className="h-4 w-4" />} title="AI runs" />
-            <div className="mt-3 text-4xl font-semibold tracking-tight">89</div>
-            <div className="text-xs text-emerald-400 mt-1">+27% this week</div>
+            <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.aiRuns ?? 0}</div>
+            <DeltaLabel value={stats?.aiRunsDelta} />
           </BentoCard>
 
           <BentoCard className="md:col-span-3">
             <CardHeader icon={<Flame className="h-4 w-4" />} title="Streak" />
             <div className="mt-3 flex items-end gap-2">
-              <div className="text-4xl font-semibold tracking-tight">14d</div>
+              <div className="text-4xl font-semibold tracking-tight">{stats?.streak ?? 0}d</div>
               <div className="text-2xl pb-1">🔥</div>
             </div>
-            <div className="text-xs text-muted-foreground mt-1">Keep the fire alive</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {(stats?.streak ?? 0) > 0 ? "Keep the fire alive" : "Start your streak today"}
+            </div>
           </BentoCard>
 
           {/* Featured Trending Pack */}
