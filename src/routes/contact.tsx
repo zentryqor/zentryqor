@@ -25,10 +25,22 @@ function ContactPage() {
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const data = new FormData(form);
+    const name = String(data.get("name") ?? "");
+    const email = String(data.get("email") ?? "");
+    const subject = String(data.get("subject") ?? "");
+    const message = String(data.get("message") ?? "");
+
+    const mailto = `mailto:zentriqor@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
+      `Name: ${name}\nEmail: ${email}\n\n${message}`
+    )}`;
+
     setSending(true);
+    window.location.href = mailto;
     setTimeout(() => {
       setSending(false);
-      (e.target as HTMLFormElement).reset();
+      form.reset();
       toast.success("Message sent — we'll reply within one business day.");
     }, 700);
   };
@@ -37,9 +49,9 @@ function ContactPage() {
     <PageShell
       eyebrow="Contact"
       title={<>Let's <span className="text-aurora italic font-medium">talk.</span></>}
-      description="Pick the right channel below — or send us a note directly. We read every message."
+      description="Send us a note directly — we read every message."
     >
-      <div className="grid sm:grid-cols-3 gap-3 mb-10">
+      <div className="grid sm:grid-cols-1 gap-3 mb-10 max-w-sm">
         {channels.map((c) => (
           <a key={c.title} href={`mailto:${c.value}`} className="glass rounded-2xl p-5 hover:bg-elevated/40 transition-colors block">
             <c.icon className="h-5 w-5 text-accent icon-fx mb-3" />
