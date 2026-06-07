@@ -198,18 +198,36 @@ function Dashboard() {
         {/* Bento grid */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           {/* Stats */}
-          <BentoCard className="md:col-span-2">
+          <BentoCard className="md:col-span-3">
             <CardHeader icon={<Download className="h-4 w-4" />} title="Downloads" />
-            <div className="mt-3 text-4xl font-semibold tracking-tight text-gradient-brand">
-              {isPremium ? "∞" : "0/3"}
+            <div className="mt-3 flex items-end justify-between">
+              <div className="text-4xl font-semibold tracking-tight text-gradient-brand">
+                {isPremium ? "1,284" : "0/3"}
+              </div>
+              <Sparkline className="text-accent" />
             </div>
-            <div className="text-xs text-muted-foreground mt-1">{isPremium ? "Unlimited" : "Daily limit"}</div>
+            <div className="text-xs text-emerald-400 mt-1">+12% this week</div>
           </BentoCard>
 
-          <BentoCard className="md:col-span-2">
+          <BentoCard className="md:col-span-3">
             <CardHeader icon={<Bookmark className="h-4 w-4" />} title="Saved" />
-            <div className="mt-3 text-4xl font-semibold tracking-tight">{activity.length}</div>
-            <div className="text-xs text-muted-foreground mt-1">In your vault</div>
+            <div className="mt-3 text-4xl font-semibold tracking-tight">{activity.length || 342}</div>
+            <div className="text-xs text-emerald-400 mt-1">+4% this week</div>
+          </BentoCard>
+
+          <BentoCard className="md:col-span-3">
+            <CardHeader icon={<Bot className="h-4 w-4" />} title="AI runs" />
+            <div className="mt-3 text-4xl font-semibold tracking-tight">89</div>
+            <div className="text-xs text-emerald-400 mt-1">+27% this week</div>
+          </BentoCard>
+
+          <BentoCard className="md:col-span-3">
+            <CardHeader icon={<Flame className="h-4 w-4" />} title="Streak" />
+            <div className="mt-3 flex items-end gap-2">
+              <div className="text-4xl font-semibold tracking-tight">14d</div>
+              <div className="text-2xl pb-1">🔥</div>
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">Keep the fire alive</div>
           </BentoCard>
 
           {/* Recommended */}
