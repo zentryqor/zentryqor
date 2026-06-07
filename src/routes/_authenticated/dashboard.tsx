@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Wand2,
   Zap,
+  Bot,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyContext, trackVaultView } from "@/lib/preferences.functions";
