@@ -54,12 +54,23 @@ const GRADIENTS = [
 function AssetsPage() {
   const { user } = useAuth();
   const { isPremium } = useSubscription(user?.id);
+  const qc = useQueryClient();
+  const fetchSavedIds = useServerFn(getMySavedIds);
+  const saveFn = useServerFn(toggleSave);
+  const trackDl = useServerFn(recordDownload);
+
   const [assets, setAssets] = useState<AssetRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("all");
   const [tier, setTier] = useState<string>("all");
+
+  const { data: savedIds = [] } = useQuery({
+    queryKey: ["my-saved-ids"],
+    queryFn: () => fetchSavedIds(),
+  });
+  const savedSet = useMemo(() => new Set(savedIds), [savedIds]);
 
   useEffect(() => {
     (async () => {
@@ -108,8 +119,21 @@ function AssetsPage() {
       toast.error(error?.message ?? "Download failed");
       return;
     }
+    await trackDl({ data: { asset_id: a.id } }).catch(() => {});
     window.open(data.signedUrl, "_blank");
+    qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
   };
+
+  const toggleSaved = async (e: React.MouseEvent, a: AssetRow) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const res = await saveFn({ data: { asset_id: a.id } });
+    toast.success(res.saved ? "Saved" : "Removed from saved");
+    qc.invalidateQueries({ queryKey: ["my-saved-ids"] });
+    qc.invalidateQueries({ queryKey: ["saved-assets"] });
+    qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+  };
+
 
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
