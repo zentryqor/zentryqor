@@ -14,7 +14,7 @@ export function MobileStickyCTA() {
         <div className="flex-1 pl-2">
           <div className="text-[11px] text-muted-foreground leading-tight">From $12.99/mo</div>
           <div className="text-[13px] font-medium leading-tight flex items-center gap-1">
-            <Sparkles className="h-3 w-3 text-accent" /> Unlock Premium
+            <Sparkles className="h-3 w-3 text-accent icon-fx" /> Unlock Premium
           </div>
         </div>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
@@ -23,7 +23,7 @@ export function MobileStickyCTA() {
             className="inline-flex items-center gap-1 h-10 px-4 rounded-xl bg-foreground text-background text-sm font-medium glow-primary"
           >
             Start free
-            <ArrowUpRight className="h-3.5 w-3.5" />
+            <ArrowUpRight className="h-3.5 w-3.5 icon-fx" />
           </Link>
         </motion.div>
       </div>

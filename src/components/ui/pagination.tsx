@@ -56,7 +56,7 @@ const PaginationPrevious = ({
     className={cn("gap-1 pl-2.5", className)}
     {...props}
   >
-    <ChevronLeft className="h-4 w-4" />
+    <ChevronLeft className="h-4 w-4 icon-fx" />
     <span>Previous</span>
   </PaginationLink>
 );
@@ -70,7 +70,7 @@ const PaginationNext = ({ className, ...props }: React.ComponentProps<typeof Pag
     {...props}
   >
     <span>Next</span>
-    <ChevronRight className="h-4 w-4" />
+    <ChevronRight className="h-4 w-4 icon-fx" />
   </PaginationLink>
 );
 PaginationNext.displayName = "PaginationNext";

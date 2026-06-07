@@ -136,7 +136,7 @@ function AssetsPage() {
                 to="/billing"
                 className="hidden sm:inline-flex h-8 sm:h-9 px-3 rounded-full glass items-center gap-1.5 text-xs font-medium"
               >
-                <Sparkles className="h-3 w-3 text-accent" /> Upgrade
+                <Sparkles className="h-3 w-3 text-accent icon-fx" /> Upgrade
               </Link>
             )
           }
@@ -177,7 +177,7 @@ function AssetsPage() {
             className="glass-strong rounded-2xl p-3 mb-8 flex flex-col md:flex-row gap-3"
           >
             <div className="relative flex-1">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground icon-fx" />
               <input
                 placeholder="Search title, tags, description…"
                 value={search}
@@ -189,7 +189,7 @@ function AssetsPage() {
                   onClick={() => setSearch("")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-elevated transition"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3 w-3 icon-fx" />
                 </button>
               )}
             </div>
@@ -206,7 +206,7 @@ function AssetsPage() {
                 onClick={() => setTier("premium")}
                 accent
               >
-                <Sparkles className="h-3 w-3" /> Premium
+                <Sparkles className="h-3 w-3 icon-fx" /> Premium
               </Chip>
             </div>
           </motion.div>
@@ -277,15 +277,15 @@ function AssetsPage() {
                         </div>
                         {a.premium_only && (
                           <div className="absolute top-2 right-2 glass-strong rounded-full px-2 py-0.5 text-[10px] flex items-center gap-1">
-                            {locked && <Lock className="h-2.5 w-2.5" />}
-                            <Sparkles className="h-2.5 w-2.5 text-accent" />
+                            {locked && <Lock className="h-2.5 w-2.5 icon-fx" />}
+                            <Sparkles className="h-2.5 w-2.5 text-accent icon-fx" />
                             Premium
                           </div>
                         )}
                         {locked && (
                           <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center">
                             <div className="glass-strong rounded-full h-10 w-10 flex items-center justify-center">
-                              <Lock className="h-4 w-4 text-foreground/80" />
+                              <Lock className="h-4 w-4 text-foreground/80 icon-fx" />
                             </div>
                           </div>
                         )}
@@ -332,12 +332,12 @@ function AssetsPage() {
                       >
                         {locked ? (
                           <>
-                            <Lock className="h-3.5 w-3.5" /> Unlock with Premium
+                            <Lock className="h-3.5 w-3.5 icon-fx" /> Unlock with Premium
                           </>
                         ) : (
                           <>
                             <Download className="h-3.5 w-3.5" /> Download
-                            <ArrowUpRight className="h-3 w-3 opacity-60 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                            <ArrowUpRight className="h-3 w-3 opacity-60 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform icon-fx" />
                           </>
                         )}
                       </button>
@@ -362,7 +362,7 @@ function AssetsPage() {
               <div className="relative flex flex-wrap items-center justify-between gap-6">
                 <div>
                   <div className="text-xs uppercase tracking-[0.2em] text-accent flex items-center gap-1.5">
-                    <Sparkles className="h-3 w-3" /> Premium
+                    <Sparkles className="h-3 w-3 icon-fx" /> Premium
                   </div>
                   <h3 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em] mt-2">
                     Unlock the full vault.
@@ -375,7 +375,7 @@ function AssetsPage() {
                   to="/billing"
                   className="h-11 px-6 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground text-sm font-medium glow-primary magnetic flex items-center gap-2"
                 >
-                  Upgrade now <ArrowUpRight className="h-3.5 w-3.5" />
+                  Upgrade now <ArrowUpRight className="h-3.5 w-3.5 icon-fx" />
                 </Link>
               </div>
             </motion.div>
@@ -479,7 +479,7 @@ function EmptyState({ onReset }: { onReset: () => void }) {
   return (
     <div className="glass rounded-3xl py-20 text-center">
       <div className="mx-auto h-12 w-12 rounded-full bg-elevated flex items-center justify-center mb-4">
-        <Search className="h-5 w-5 text-muted-foreground" />
+        <Search className="h-5 w-5 text-muted-foreground icon-fx" />
       </div>
       <h3 className="text-base font-medium">Nothing matches yet</h3>
       <p className="text-sm text-muted-foreground mt-1">

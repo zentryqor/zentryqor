@@ -223,7 +223,7 @@ function AdminPage() {
               to="/assets"
               className="hidden sm:inline-flex h-8 sm:h-9 px-3 rounded-full glass items-center gap-1.5 text-xs font-medium"
             >
-              View vault <ArrowUpRight className="h-3 w-3" />
+              View vault <ArrowUpRight className="h-3 w-3 icon-fx" />
             </Link>
           }
         />
@@ -249,9 +249,9 @@ function AdminPage() {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-10">
             <StatCard icon={<Users className="h-4 w-4" />} label="Accounts" value={accounts.length} />
-            <StatCard icon={<Sparkles className="h-4 w-4" />} label="Active subs" value={subscribed} accent />
+            <StatCard icon={<Sparkles className="h-4 w-4 icon-fx" />} label="Active subs" value={subscribed} accent />
             <StatCard icon={<Database className="h-4 w-4" />} label="Assets" value={assets.length} />
-            <StatCard icon={<Sparkles className="h-4 w-4" />} label="Premium" value={premiumCount} accent />
+            <StatCard icon={<Sparkles className="h-4 w-4 icon-fx" />} label="Premium" value={premiumCount} accent />
           </div>
 
           {/* Upload */}
