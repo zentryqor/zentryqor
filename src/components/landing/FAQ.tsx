@@ -16,10 +16,6 @@ const faqs = [
     a: "Yes — one click in Billing. You keep Premium until the end of the period. No retention emails, no dark patterns.",
   },
   {
-    q: "Student discount?",
-    a: "40% off for verified students. Sign up with your .edu address, then email support — we apply it within a day.",
-  },
-  {
     q: "Is my work safe?",
     a: "Encrypted in transit and at rest. We do not train models on your private projects. Ever.",
   },
