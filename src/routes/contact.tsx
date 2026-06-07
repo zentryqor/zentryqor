@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PageShell } from "@/components/PageShell";
-import { Mail, Handshake, MessageCircle, Send } from "lucide-react";
+import { Mail, MessageCircle, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
       { title: "Contact — Zentry Qor" },
-      { name: "description", content: "Get in touch with the Zentry Qor team — support, partnerships, and press." },
+      { name: "description", content: "Get in touch with the Zentry Qor team." },
       { property: "og:title", content: "Contact — Zentry Qor" },
       { property: "og:description", content: "Get in touch with the Zentry Qor team." },
     ],
@@ -17,9 +17,7 @@ export const Route = createFileRoute("/contact")({
 });
 
 const channels = [
-  { icon: MessageCircle, title: "Support", body: "Account, billing, or product questions.", value: "support@zentryqor.com" },
-  { icon: Handshake, title: "Partnerships", body: "Brand collabs, integrations, and resellers.", value: "partners@zentryqor.com" },
-  { icon: Mail, title: "Press", body: "Media kits, interviews, and quotes.", value: "press@zentryqor.com" },
+  { icon: MessageCircle, title: "Support", body: "Account, billing, or product questions.", value: "zentriqor@gmail.com" },
 ];
 
 function ContactPage() {
