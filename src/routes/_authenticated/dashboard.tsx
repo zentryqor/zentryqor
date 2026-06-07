@@ -156,14 +156,14 @@ function Dashboard() {
           <>
             {!isPremium && (
               <Link to="/billing" className="hidden sm:inline-flex h-8 sm:h-9 px-3 rounded-full glass items-center gap-1.5 text-xs font-medium">
-                <Sparkles className="h-3 w-3 text-accent" /> Upgrade
+                <Sparkles className="h-3 w-3 text-accent icon-fx" /> Upgrade
               </Link>
             )}
             <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-semibold text-primary-foreground">
               {firstName[0]?.toUpperCase()}
             </div>
             <button onClick={signOut} className="h-8 w-8 sm:h-9 sm:w-9 rounded-full glass flex items-center justify-center text-muted-foreground hover:text-foreground">
-              <LogOut className="h-3.5 w-3.5" />
+              <LogOut className="h-3.5 w-3.5 icon-fx" />
             </button>
           </>
         }
@@ -189,7 +189,7 @@ function Dashboard() {
             <PremiumBadge />
           ) : (
             <Link to="/billing" className="h-10 px-4 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground text-sm font-medium glow-primary magnetic flex items-center gap-2">
-              <Sparkles className="h-3.5 w-3.5" /> Upgrade to Premium
+              <Sparkles className="h-3.5 w-3.5 icon-fx" /> Upgrade to Premium
             </Link>
           )}
         </div>
@@ -214,9 +214,9 @@ function Dashboard() {
           {/* Recommended */}
           <BentoCard className="md:col-span-6">
             <div className="flex items-center justify-between">
-              <CardHeader icon={<Sparkles className="h-4 w-4" />} title="Picked for you" />
+              <CardHeader icon={<Sparkles className="h-4 w-4 icon-fx" />} title="Picked for you" />
               <Link to="/assets" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-                Browse vault <ArrowUpRight className="h-3 w-3" />
+                Browse vault <ArrowUpRight className="h-3 w-3 icon-fx" />
               </Link>
             </div>
             <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -231,12 +231,12 @@ function Dashboard() {
                     <div className="absolute inset-0 ring-grid opacity-30" />
                     {p.premium && (
                       <div className="absolute top-2 right-2 glass-strong rounded-full px-2 py-0.5 text-[10px] flex items-center gap-1">
-                        {!isPremium && <Lock className="h-2.5 w-2.5" />} Premium
+                        {!isPremium && <Lock className="h-2.5 w-2.5 icon-fx" />} Premium
                       </div>
                     )}
                     {p.premium && !isPremium && (
                       <div className="absolute inset-0 bg-background/40 backdrop-blur-sm flex items-center justify-center">
-                        <Lock className="h-4 w-4 text-foreground/80" />
+                        <Lock className="h-4 w-4 text-foreground/80 icon-fx" />
                       </div>
                     )}
                   </div>
@@ -254,7 +254,7 @@ function Dashboard() {
             <div className="flex items-center justify-between">
               <CardHeader icon={<Wand2 className="h-4 w-4" />} title="AI Studio" />
               <Link to="/ai" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-                Open <ArrowUpRight className="h-3 w-3" />
+                Open <ArrowUpRight className="h-3 w-3 icon-fx" />
               </Link>
             </div>
             <div className="mt-4 grid grid-cols-2 gap-2">
@@ -300,14 +300,14 @@ function Dashboard() {
               <div className="relative flex items-center justify-between flex-wrap gap-4">
                 <div>
                   <div className="text-xs uppercase tracking-[0.2em] text-accent flex items-center gap-1.5">
-                    <Sparkles className="h-3 w-3" /> Premium
+                    <Sparkles className="h-3 w-3 icon-fx" /> Premium
                   </div>
                   <h3 className="text-2xl font-semibold tracking-[-0.02em] mt-2">Unlock the full vault & every AI tool.</h3>
                   <p className="text-sm text-muted-foreground mt-1">Cancel anytime. $12.99/month.</p>
                 </div>
                 <Link to="/billing" className="inline-flex items-center justify-center gap-1.5 h-11 px-5 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary hover:opacity-90 transition-opacity">
                   Upgrade now
-                  <ArrowUpRight className="h-3.5 w-3.5" />
+                  <ArrowUpRight className="h-3.5 w-3.5 icon-fx" />
                 </Link>
               </div>
             </BentoCard>

@@ -64,12 +64,12 @@ function Billing() {
           to="/dashboard"
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-10"
         >
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to dashboard
+          <ArrowLeft className="h-3.5 w-3.5 icon-fx" /> Back to dashboard
         </Link>
 
         <div className="text-center mb-10">
           <div className="text-xs uppercase tracking-[0.3em] text-accent mb-3 flex items-center justify-center gap-1.5">
-            <Sparkles className="h-3 w-3" /> Premium
+            <Sparkles className="h-3 w-3 icon-fx" /> Premium
           </div>
           <h1 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em] text-gradient leading-[1.05]">
             One price. Everything unlocked.
@@ -147,7 +147,7 @@ function Billing() {
               {PERKS.map((p) => (
                 <li key={p} className="flex items-start gap-2.5 text-sm">
                   <div className="h-5 w-5 mt-0.5 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                    <Check className="h-3 w-3 text-accent" />
+                    <Check className="h-3 w-3 text-accent icon-fx" />
                   </div>
                   <span>{p}</span>
                 </li>
@@ -157,7 +157,7 @@ function Billing() {
             {isPremium ? (
               <div className="mt-7 space-y-2">
                 <div className="h-12 rounded-xl glass-strong text-sm font-medium flex items-center justify-center">
-                  <Sparkles className="h-3.5 w-3.5 text-accent mr-1.5" /> You're on Premium
+                  <Sparkles className="h-3.5 w-3.5 text-accent mr-1.5 icon-fx" /> You're on Premium
                 </div>
                 {isCanceling && subscription?.current_period_end && (
                   <p className="text-xs text-muted-foreground text-center">

@@ -112,7 +112,7 @@ function Onboarding() {
       <div className="relative max-w-2xl mx-auto px-6 pt-14 pb-24">
         <div className="text-center mb-10">
           <div className="text-xs uppercase tracking-[0.3em] text-accent mb-3 flex items-center justify-center gap-2">
-            <Sparkles className="h-3 w-3" /> Step {step + 1} of {steps.length}
+            <Sparkles className="h-3 w-3 icon-fx" /> Step {step + 1} of {steps.length}
           </div>
           <div className="flex items-center justify-center gap-1.5">
             {steps.map((_, i) => (
@@ -176,7 +176,7 @@ function Onboarding() {
                           : "glass border-border hover:border-foreground/30"
                       }`}
                     >
-                      {active && <Check className="h-3 w-3" />} {i}
+                      {active && <Check className="h-3 w-3 icon-fx" />} {i}
                     </button>
                   );
                 })}
@@ -224,7 +224,7 @@ function Onboarding() {
                       <div className="font-medium">{s.l}</div>
                       <div className="text-xs text-muted-foreground mt-0.5">{s.d}</div>
                     </div>
-                    {skill === s.v && <Check className="h-4 w-4 text-accent" />}
+                    {skill === s.v && <Check className="h-4 w-4 text-accent icon-fx" />}
                   </button>
                 ))}
               </div>
@@ -237,7 +237,7 @@ function Onboarding() {
               disabled={step === 0}
               className="h-10 px-4 rounded-xl text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 disabled:opacity-30"
             >
-              <ArrowLeft className="h-4 w-4" /> Back
+              <ArrowLeft className="h-4 w-4 icon-fx" /> Back
             </button>
             {step < steps.length - 1 ? (
               <button
@@ -245,7 +245,7 @@ function Onboarding() {
                 disabled={!canNext}
                 className="h-10 px-5 rounded-xl bg-foreground text-background text-sm font-medium magnetic disabled:opacity-30 flex items-center gap-1.5"
               >
-                Continue <ArrowRight className="h-4 w-4" />
+                Continue <ArrowRight className="h-4 w-4 icon-fx" />
               </button>
             ) : (
               <button

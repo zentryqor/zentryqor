@@ -263,7 +263,7 @@ function AiStudio() {
                     className="group relative flex items-center gap-1.5 pl-2 pr-3 py-1.5 rounded-full bg-gradient-to-br from-primary/15 via-elevated/60 to-accent/15 border border-border/60 hover:border-accent/60 hover:shadow-[0_0_24px_-6px_hsl(var(--accent)/0.45)] transition-all"
                   >
                     <span className="h-5 w-5 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-[0_0_12px_-2px_hsl(var(--accent)/0.6)]">
-                      <Zap className="h-2.5 w-2.5 text-background" />
+                      <Zap className="h-2.5 w-2.5 text-background icon-fx" />
                     </span>
                     <span className="text-foreground font-semibold tabular-nums text-xs">{credits.remaining}</span>
                     <span className="text-muted-foreground text-[11px] tabular-nums">/ {credits.limit}</span>
@@ -311,7 +311,7 @@ function AiStudio() {
                       to="/billing"
                       className="mt-5 w-full h-11 px-4 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary flex items-center justify-center gap-1.5"
                     >
-                      <Sparkles className="h-3.5 w-3.5" />
+                      <Sparkles className="h-3.5 w-3.5 icon-fx" />
                       Upgrade — get 1,000 credits/day
                     </Link>
                   )}
@@ -355,7 +355,7 @@ function AiStudio() {
                     <div className="h-10 w-10 rounded-xl bg-elevated/50 border border-border/60 flex items-center justify-center">
                       <Icon className={`h-5 w-5 ${t.accent}`} />
                     </div>
-                    <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors icon-fx" />
                   </div>
                   <div className="text-base font-medium tracking-tight">{t.name}</div>
                   <div className="text-xs text-muted-foreground mt-1">{t.tagline}</div>
@@ -433,7 +433,7 @@ function AiStudio() {
               <div className="mt-5 p-4 rounded-2xl border border-accent/30 bg-gradient-to-br from-primary/10 to-accent/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <div className="text-sm font-medium flex items-center gap-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-accent" />
+                    <Sparkles className="h-3.5 w-3.5 text-accent icon-fx" />
                     Insufficient credits
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
@@ -450,7 +450,7 @@ function AiStudio() {
                     to="/billing"
                     className="shrink-0 h-10 px-5 rounded-xl bg-foreground text-background text-xs font-medium flex items-center gap-1.5 magnetic glow-primary"
                   >
-                    <Sparkles className="h-3.5 w-3.5" /> Upgrade to Premium
+                    <Sparkles className="h-3.5 w-3.5 icon-fx" /> Upgrade to Premium
                   </Link>
                 )}
               </div>
@@ -486,7 +486,7 @@ function AiStudio() {
                   <>Not enough credits</>
                 ) : (
                   <>
-                    <Sparkles className="h-3.5 w-3.5" /> Generate · {cost}
+                    <Sparkles className="h-3.5 w-3.5 icon-fx" /> Generate · {cost}
                   </>
                 )}
 

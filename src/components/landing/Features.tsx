@@ -4,6 +4,8 @@ import { TiltCard } from "@/components/motion/TiltCard";
 import { Reveal } from "@/components/motion/Reveal";
 import { Typewriter } from "@/components/motion/Typewriter";
 import { CountUp } from "@/components/motion/CountUp";
+import { MotionIcon } from "@/components/motion/MotionIcon";
+
 
 export function Features() {
   return (
@@ -31,10 +33,10 @@ export function Features() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="relative h-full p-6 md:p-7 flex flex-col gap-5 md:gap-0">
               <div className="flex items-center justify-between">
-                <div className="h-11 w-11 rounded-xl bg-elevated border border-border flex items-center justify-center">
-                  <Library className="h-5 w-5 text-accent" />
-                </div>
-                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <MotionIcon className="h-11 w-11 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
+                  <Library className="h-5 w-5 text-accent icon-fx" />
+                </MotionIcon>
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors icon-fx" />
               </div>
               <div className="md:mt-auto">
                 <h3 className="text-2xl font-semibold tracking-tight">
@@ -87,9 +89,9 @@ export function Features() {
           >
             <div className="absolute inset-0 bg-gradient-to-br from-accent/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative h-full p-6 flex flex-col">
-              <div className="h-10 w-10 rounded-xl bg-elevated border border-border flex items-center justify-center">
-                <Wand2 className="h-4 w-4 text-accent" />
-              </div>
+              <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
+                <Wand2 className="h-4 w-4 text-accent icon-fx" />
+              </MotionIcon>
               <h3 className="text-lg font-semibold tracking-tight mt-4">AI that ships</h3>
               <div className="text-[12px] text-muted-foreground mt-2 min-h-[3em] leading-snug">
                 <Typewriter
@@ -111,9 +113,9 @@ export function Features() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative h-full p-6 flex flex-col">
               <div className="flex items-start justify-between">
-                <div className="h-10 w-10 rounded-xl bg-elevated border border-border flex items-center justify-center">
-                  <LineChart className="h-4 w-4 text-accent" />
-                </div>
+                <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
+                  <LineChart className="h-4 w-4 text-accent icon-fx" />
+                </MotionIcon>
                 <div className="text-right">
                   <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
                     7d
@@ -158,9 +160,9 @@ export function Features() {
             className="md:col-span-2 group rounded-3xl glass overflow-hidden cursor-default relative"
           >
             <div className="relative h-full p-6 flex flex-col">
-              <div className="h-10 w-10 rounded-xl bg-elevated border border-border flex items-center justify-center">
-                <LayoutGrid className="h-4 w-4 text-accent" />
-              </div>
+              <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
+                <LayoutGrid className="h-4 w-4 text-accent icon-fx" />
+              </MotionIcon>
               <h3 className="text-lg font-semibold tracking-tight md:mt-auto">Workspace</h3>
               <p className="text-xs text-muted-foreground mt-1.5">
                 Moodboards, projects, drag-and-drop. Built for flow state.
@@ -174,9 +176,9 @@ export function Features() {
             className="md:col-span-2 group rounded-3xl glass overflow-hidden cursor-default relative"
           >
             <div className="relative h-full p-6 flex flex-col">
-              <div className="h-10 w-10 rounded-xl bg-elevated border border-border flex items-center justify-center">
-                <Users className="h-4 w-4 text-accent" />
-              </div>
+              <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
+                <Users className="h-4 w-4 text-accent icon-fx" />
+              </MotionIcon>
               <h3 className="text-lg font-semibold tracking-tight md:mt-auto">Community</h3>
               <p className="text-xs text-muted-foreground mt-1.5">
                 Real feedback. Weekly challenges. Zero hustle-bros.
@@ -190,9 +192,9 @@ export function Features() {
             className="md:col-span-2 group rounded-3xl glass overflow-hidden cursor-default relative"
           >
             <div className="relative h-full p-6 flex flex-col">
-              <div className="h-10 w-10 rounded-xl bg-elevated border border-border flex items-center justify-center">
-                <Sparkles className="h-4 w-4 text-accent" />
-              </div>
+              <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
+                <Sparkles className="h-4 w-4 text-accent icon-fx" />
+              </MotionIcon>
               <h3 className="text-lg font-semibold tracking-tight md:mt-auto">
                 Tuned to you
               </h3>
