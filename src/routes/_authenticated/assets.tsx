@@ -296,8 +296,10 @@ function AssetsPage() {
                       className="group relative glass rounded-3xl p-5 flex flex-col hover:bg-elevated/60 transition-colors"
                     >
                       {/* Thumbnail */}
-                      <div
-                        className={`relative aspect-[16/10] rounded-2xl bg-gradient-to-br ${grad} overflow-hidden ring-1 ring-border mb-4`}
+                      <Link
+                        to="/assets/$id"
+                        params={{ id: a.id }}
+                        className={`relative aspect-[16/10] rounded-2xl bg-gradient-to-br ${grad} overflow-hidden ring-1 ring-border mb-4 block`}
                       >
                         <div className="absolute inset-0 ring-grid opacity-30" />
                         <div className="absolute inset-0 flex items-center justify-center">
@@ -305,6 +307,15 @@ function AssetsPage() {
                             {a.title.slice(0, 1).toUpperCase()}
                           </span>
                         </div>
+                        <button
+                          onClick={(e) => toggleSaved(e, a)}
+                          className={`absolute top-2 left-2 h-8 w-8 rounded-full glass-strong flex items-center justify-center transition-colors ${
+                            savedSet.has(a.id) ? "text-accent" : "text-muted-foreground hover:text-foreground"
+                          }`}
+                          aria-label={savedSet.has(a.id) ? "Unsave" : "Save"}
+                        >
+                          {savedSet.has(a.id) ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
+                        </button>
                         {a.premium_only && (
                           <div className="absolute top-2 right-2 glass-strong rounded-full px-2 py-0.5 text-[10px] flex items-center gap-1">
                             {locked && <Lock className="h-2.5 w-2.5 icon-fx" />}
@@ -319,7 +330,7 @@ function AssetsPage() {
                             </div>
                           </div>
                         )}
-                      </div>
+                      </Link>
 
                       {/* Meta */}
                       <div className="flex items-start justify-between gap-2 mb-1">
@@ -332,9 +343,9 @@ function AssetsPage() {
                           </div>
                         ) : null}
                       </div>
-                      <h3 className="text-base font-medium tracking-tight">
+                      <Link to="/assets/$id" params={{ id: a.id }} className="text-base font-medium tracking-tight hover:text-accent transition-colors">
                         {a.title}
-                      </h3>
+                      </Link>
                       {a.description && (
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                           {a.description}
