@@ -381,10 +381,30 @@ function CardHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
   );
 }
 
-function Sparkline({ className = "" }: { className?: string }) {
+function Sparkline({ className = "", data }: { className?: string; data?: number[] }) {
+  const values = data && data.length > 0 ? data : [2, 4, 3, 5, 4, 6, 7];
+  const max = Math.max(...values, 1);
+  const w = 80;
+  const h = 28;
+  const stepX = values.length > 1 ? w / (values.length - 1) : w;
+  const points = values
+    .map((v, i) => `${(i * stepX).toFixed(1)},${(h - (v / max) * (h - 4) - 2).toFixed(1)}`)
+    .join(" ");
   return (
-    <svg viewBox="0 0 80 28" className={`h-7 w-20 ${className}`} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="2,22 14,18 26,20 38,12 50,14 62,8 78,4" />
+    <svg viewBox={`0 0 ${w} ${h}`} className={`h-7 w-20 ${className}`} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points={points} />
     </svg>
+  );
+}
+
+function DeltaLabel({ value }: { value?: number }) {
+  if (value === undefined) return <div className="text-xs text-muted-foreground mt-1">—</div>;
+  if (value === 0) return <div className="text-xs text-muted-foreground mt-1">No change this week</div>;
+  const positive = value > 0;
+  return (
+    <div className={`text-xs mt-1 ${positive ? "text-emerald-400" : "text-muted-foreground"}`}>
+      {positive ? "+" : ""}
+      {value}% this week
+    </div>
   );
 }
