@@ -3,8 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowUpRight,
+  Bookmark,
+  BookmarkCheck,
   Download,
   Layers,
   Lock,
@@ -16,6 +20,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
+import { getMySavedIds, recordDownload, toggleSave } from "@/lib/assets.functions";
 
 export const Route = createFileRoute("/_authenticated/assets")({
   ssr: false,
