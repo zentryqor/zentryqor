@@ -70,7 +70,7 @@ export function FAQ() {
                     animate={{ rotate: isOpen ? 45 : 0 }}
                     transition={{ duration: 0.25, ease: "easeInOut" }}
                   >
-                    <Plus className="h-4 w-4 text-muted-foreground" />
+                    <Plus className="h-4 w-4 text-muted-foreground icon-fx" />
                   </motion.div>
                 </button>
                 <AnimatePresence initial={false}>

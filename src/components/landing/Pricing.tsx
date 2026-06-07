@@ -112,7 +112,7 @@ export function Pricing() {
             <ul className="mt-7 space-y-3">
               {free.map((f) => (
                 <li key={f} className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                  <Check className="h-4 w-4 mt-0.5 text-muted-foreground/60" />
+                  <Check className="h-4 w-4 mt-0.5 text-muted-foreground/60 icon-fx" />
                   {f}
                 </li>
               ))}
@@ -132,7 +132,7 @@ export function Pricing() {
             <div className="relative">
               <div className="flex items-center justify-between">
                 <div className="text-sm font-medium flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-accent" />
+                  <Sparkles className="h-3.5 w-3.5 text-accent icon-fx" />
                   Premium
                 </div>
                 <div className="text-[10px] uppercase tracking-wider glass-strong rounded-full px-2.5 py-1">
@@ -199,7 +199,7 @@ export function Pricing() {
                 {premium.map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-sm">
                     <div className="h-4 w-4 mt-0.5 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                      <Check className="h-2.5 w-2.5 text-accent" />
+                      <Check className="h-2.5 w-2.5 text-accent icon-fx" />
                     </div>
                     <span>{f}</span>
                   </li>

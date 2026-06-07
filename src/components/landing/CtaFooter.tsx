@@ -36,7 +36,7 @@ export function CtaFooter() {
               className="group inline-flex items-center gap-2 h-12 px-6 rounded-xl bg-foreground text-background text-sm font-semibold glow-primary"
             >
               Start free
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 icon-fx" />
             </MagneticButton>
             <MagneticButton
               as="a"

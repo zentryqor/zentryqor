@@ -64,7 +64,7 @@ export function Hero() {
             <span>v1 — shipping daily for creators</span>
           </div>
           <div className="hidden sm:flex items-center gap-2 text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
-            <Zap className="h-3 w-3 text-accent" /> 24,000+ creators
+            <Zap className="h-3 w-3 text-accent icon-fx" /> 24,000+ creators
           </div>
         </motion.div>
 
@@ -114,7 +114,7 @@ export function Hero() {
                 className="group inline-flex items-center justify-center gap-2 h-12 px-5 rounded-xl bg-foreground text-background text-sm font-semibold glow-primary w-full sm:w-auto"
               >
                 Start free
-                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 icon-fx" />
               </MagneticButton>
               <MagneticButton
                 as="a"
@@ -122,7 +122,7 @@ export function Hero() {
                 strength={10}
                 className="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-xl glass text-sm font-medium w-full sm:w-auto"
               >
-                <Sparkles className="h-3.5 w-3.5 text-accent" />
+                <Sparkles className="h-3.5 w-3.5 text-accent icon-fx" />
                 See pricing
               </MagneticButton>
             </motion.div>

@@ -34,9 +34,9 @@ export function Features() {
             <div className="relative h-full p-6 md:p-7 flex flex-col gap-5 md:gap-0">
               <div className="flex items-center justify-between">
                 <MotionIcon className="h-11 w-11 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                  <Library className="h-5 w-5 text-accent" />
+                  <Library className="h-5 w-5 text-accent icon-fx" />
                 </MotionIcon>
-                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors icon-fx" />
               </div>
               <div className="md:mt-auto">
                 <h3 className="text-2xl font-semibold tracking-tight">
@@ -90,7 +90,7 @@ export function Features() {
             <div className="absolute inset-0 bg-gradient-to-br from-accent/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
             <div className="relative h-full p-6 flex flex-col">
               <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                <Wand2 className="h-4 w-4 text-accent" />
+                <Wand2 className="h-4 w-4 text-accent icon-fx" />
               </MotionIcon>
               <h3 className="text-lg font-semibold tracking-tight mt-4">AI that ships</h3>
               <div className="text-[12px] text-muted-foreground mt-2 min-h-[3em] leading-snug">
@@ -114,7 +114,7 @@ export function Features() {
             <div className="relative h-full p-6 flex flex-col">
               <div className="flex items-start justify-between">
                 <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                  <LineChart className="h-4 w-4 text-accent" />
+                  <LineChart className="h-4 w-4 text-accent icon-fx" />
                 </MotionIcon>
                 <div className="text-right">
                   <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
@@ -161,7 +161,7 @@ export function Features() {
           >
             <div className="relative h-full p-6 flex flex-col">
               <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                <LayoutGrid className="h-4 w-4 text-accent" />
+                <LayoutGrid className="h-4 w-4 text-accent icon-fx" />
               </MotionIcon>
               <h3 className="text-lg font-semibold tracking-tight md:mt-auto">Workspace</h3>
               <p className="text-xs text-muted-foreground mt-1.5">
@@ -177,7 +177,7 @@ export function Features() {
           >
             <div className="relative h-full p-6 flex flex-col">
               <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                <Users className="h-4 w-4 text-accent" />
+                <Users className="h-4 w-4 text-accent icon-fx" />
               </MotionIcon>
               <h3 className="text-lg font-semibold tracking-tight md:mt-auto">Community</h3>
               <p className="text-xs text-muted-foreground mt-1.5">
@@ -193,7 +193,7 @@ export function Features() {
           >
             <div className="relative h-full p-6 flex flex-col">
               <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                <Sparkles className="h-4 w-4 text-accent" />
+                <Sparkles className="h-4 w-4 text-accent icon-fx" />
               </MotionIcon>
               <h3 className="text-lg font-semibold tracking-tight md:mt-auto">
                 Tuned to you
