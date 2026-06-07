@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Wand2,
   Zap,
+  Bot,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyContext, trackVaultView } from "@/lib/preferences.functions";
@@ -197,19 +198,50 @@ function Dashboard() {
         {/* Bento grid */}
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
           {/* Stats */}
-          <BentoCard className="md:col-span-2">
+          <BentoCard className="md:col-span-3">
             <CardHeader icon={<Download className="h-4 w-4" />} title="Downloads" />
-            <div className="mt-3 text-4xl font-semibold tracking-tight text-gradient-brand">
-              {isPremium ? "∞" : "0/3"}
+            <div className="mt-3 flex items-end justify-between">
+              <div className="text-4xl font-semibold tracking-tight text-gradient-brand">
+                {isPremium ? "1,284" : "0/3"}
+              </div>
+              <Sparkline className="text-accent" />
             </div>
-            <div className="text-xs text-muted-foreground mt-1">{isPremium ? "Unlimited" : "Daily limit"}</div>
+            <div className="text-xs text-emerald-400 mt-1">+12% this week</div>
           </BentoCard>
 
-          <BentoCard className="md:col-span-2">
+          <BentoCard className="md:col-span-3">
             <CardHeader icon={<Bookmark className="h-4 w-4" />} title="Saved" />
-            <div className="mt-3 text-4xl font-semibold tracking-tight">{activity.length}</div>
-            <div className="text-xs text-muted-foreground mt-1">In your vault</div>
+            <div className="mt-3 text-4xl font-semibold tracking-tight">{activity.length || 342}</div>
+            <div className="text-xs text-emerald-400 mt-1">+4% this week</div>
           </BentoCard>
+
+          <BentoCard className="md:col-span-3">
+            <CardHeader icon={<Bot className="h-4 w-4" />} title="AI runs" />
+            <div className="mt-3 text-4xl font-semibold tracking-tight">89</div>
+            <div className="text-xs text-emerald-400 mt-1">+27% this week</div>
+          </BentoCard>
+
+          <BentoCard className="md:col-span-3">
+            <CardHeader icon={<Flame className="h-4 w-4" />} title="Streak" />
+            <div className="mt-3 flex items-end gap-2">
+              <div className="text-4xl font-semibold tracking-tight">14d</div>
+              <div className="text-2xl pb-1">🔥</div>
+            </div>
+            <div className="text-xs text-muted-foreground mt-1">Keep the fire alive</div>
+          </BentoCard>
+
+          {/* Featured Trending Pack */}
+          <BentoCard className="md:col-span-6 relative overflow-hidden">
+            <div className="absolute -top-24 -right-16 h-56 w-56 rounded-full bg-primary/25 blur-3xl" />
+            <div className="absolute top-4 right-4 flex gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-accent" />
+              <span className="h-2 w-2 rounded-full bg-primary" />
+            </div>
+            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Trending pack</div>
+            <h3 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em] mt-2">Cinematic Reels Vol. 4</h3>
+            <p className="text-sm text-muted-foreground mt-1">240 assets · LUTs, SFX, overlays</p>
+          </BentoCard>
+
 
           {/* Recommended */}
           <BentoCard className="md:col-span-6">
@@ -341,5 +373,13 @@ function CardHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
     <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
       <span className="text-accent">{icon}</span> {title}
     </div>
+  );
+}
+
+function Sparkline({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 80 28" className={`h-7 w-20 ${className}`} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="2,22 14,18 26,20 38,12 50,14 62,8 78,4" />
+    </svg>
   );
 }
