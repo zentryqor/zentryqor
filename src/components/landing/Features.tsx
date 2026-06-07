@@ -4,6 +4,8 @@ import { TiltCard } from "@/components/motion/TiltCard";
 import { Reveal } from "@/components/motion/Reveal";
 import { Typewriter } from "@/components/motion/Typewriter";
 import { CountUp } from "@/components/motion/CountUp";
+import { MotionIcon } from "@/components/motion/MotionIcon";
+
 
 export function Features() {
   return (
