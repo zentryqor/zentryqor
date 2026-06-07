@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyContext, trackVaultView } from "@/lib/preferences.functions";
+import { getDashboardStats } from "@/lib/stats.functions";
 import { PremiumBadge, PremiumLockOverlay } from "@/components/PremiumLock";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
@@ -52,8 +53,10 @@ function Dashboard() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const fetchCtx = useServerFn(getMyContext);
+  const fetchStats = useServerFn(getDashboardStats);
   const track = useServerFn(trackVaultView);
   const { data: ctx, isLoading } = useQuery({ queryKey: ["me"], queryFn: () => fetchCtx() });
+  const { data: stats } = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => fetchStats() });
   const { isPastDue, isPremium: liveIsPremium } = useSubscription(user?.id);
 
   useEffect(() => {
@@ -202,32 +205,34 @@ function Dashboard() {
             <CardHeader icon={<Download className="h-4 w-4" />} title="Downloads" />
             <div className="mt-3 flex items-end justify-between">
               <div className="text-4xl font-semibold tracking-tight text-gradient-brand">
-                {isPremium ? "1,284" : "0/3"}
+                {isPremium ? (stats?.downloads ?? 0).toLocaleString() : `${stats?.downloads ?? 0}/3`}
               </div>
-              <Sparkline className="text-accent" />
+              <Sparkline data={stats?.sparkline} className="text-accent" />
             </div>
-            <div className="text-xs text-emerald-400 mt-1">+12% this week</div>
+            <DeltaLabel value={stats?.downloadsDelta} />
           </BentoCard>
 
           <BentoCard className="md:col-span-3">
             <CardHeader icon={<Bookmark className="h-4 w-4" />} title="Saved" />
-            <div className="mt-3 text-4xl font-semibold tracking-tight">{activity.length || 342}</div>
-            <div className="text-xs text-emerald-400 mt-1">+4% this week</div>
+            <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.saved ?? activity.length}</div>
+            <DeltaLabel value={stats?.savedDelta} />
           </BentoCard>
 
           <BentoCard className="md:col-span-3">
             <CardHeader icon={<Bot className="h-4 w-4" />} title="AI runs" />
-            <div className="mt-3 text-4xl font-semibold tracking-tight">89</div>
-            <div className="text-xs text-emerald-400 mt-1">+27% this week</div>
+            <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.aiRuns ?? 0}</div>
+            <DeltaLabel value={stats?.aiRunsDelta} />
           </BentoCard>
 
           <BentoCard className="md:col-span-3">
             <CardHeader icon={<Flame className="h-4 w-4" />} title="Streak" />
             <div className="mt-3 flex items-end gap-2">
-              <div className="text-4xl font-semibold tracking-tight">14d</div>
+              <div className="text-4xl font-semibold tracking-tight">{stats?.streak ?? 0}d</div>
               <div className="text-2xl pb-1">🔥</div>
             </div>
-            <div className="text-xs text-muted-foreground mt-1">Keep the fire alive</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              {(stats?.streak ?? 0) > 0 ? "Keep the fire alive" : "Start your streak today"}
+            </div>
           </BentoCard>
 
           {/* Featured Trending Pack */}
@@ -376,10 +381,30 @@ function CardHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
   );
 }
 
-function Sparkline({ className = "" }: { className?: string }) {
+function Sparkline({ className = "", data }: { className?: string; data?: number[] }) {
+  const values = data && data.length > 0 ? data : [2, 4, 3, 5, 4, 6, 7];
+  const max = Math.max(...values, 1);
+  const w = 80;
+  const h = 28;
+  const stepX = values.length > 1 ? w / (values.length - 1) : w;
+  const points = values
+    .map((v, i) => `${(i * stepX).toFixed(1)},${(h - (v / max) * (h - 4) - 2).toFixed(1)}`)
+    .join(" ");
   return (
-    <svg viewBox="0 0 80 28" className={`h-7 w-20 ${className}`} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="2,22 14,18 26,20 38,12 50,14 62,8 78,4" />
+    <svg viewBox={`0 0 ${w} ${h}`} className={`h-7 w-20 ${className}`} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points={points} />
     </svg>
+  );
+}
+
+function DeltaLabel({ value }: { value?: number }) {
+  if (value === undefined) return <div className="text-xs text-muted-foreground mt-1">—</div>;
+  if (value === 0) return <div className="text-xs text-muted-foreground mt-1">No change this week</div>;
+  const positive = value > 0;
+  return (
+    <div className={`text-xs mt-1 ${positive ? "text-emerald-400" : "text-muted-foreground"}`}>
+      {positive ? "+" : ""}
+      {value}% this week
+    </div>
   );
 }
