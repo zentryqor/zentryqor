@@ -230,6 +230,19 @@ function Dashboard() {
             <div className="text-xs text-muted-foreground mt-1">Keep the fire alive</div>
           </BentoCard>
 
+          {/* Featured Trending Pack */}
+          <BentoCard className="md:col-span-6 relative overflow-hidden">
+            <div className="absolute -top-24 -right-16 h-56 w-56 rounded-full bg-primary/25 blur-3xl" />
+            <div className="absolute top-4 right-4 flex gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-accent" />
+              <span className="h-2 w-2 rounded-full bg-primary" />
+            </div>
+            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Trending pack</div>
+            <h3 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em] mt-2">Cinematic Reels Vol. 4</h3>
+            <p className="text-sm text-muted-foreground mt-1">240 assets · LUTs, SFX, overlays</p>
+          </BentoCard>
+
+
           {/* Recommended */}
           <BentoCard className="md:col-span-6">
             <div className="flex items-center justify-between">
