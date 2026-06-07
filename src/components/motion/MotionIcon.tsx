@@ -58,18 +58,17 @@ export function MotionIcon({
       onMouseMove={handleMove}
       onMouseLeave={handleLeave}
       whileHover={reduce ? undefined : { y: -lift, scale }}
-      transition={{ type: "spring", stiffness: 320, damping: 22, mass: 0.6 }}
       animate={
         pulse && !reduce
           ? { filter: ["brightness(1)", "brightness(1.15)", "brightness(1)"] }
           : undefined
       }
-      // @ts-expect-error duration only valid when animate is present
-      transition-pulse={
-        pulse
+      transition={
+        pulse && !reduce
           ? { duration: pulse, repeat: Infinity, ease: "easeInOut" }
-          : undefined
+          : { type: "spring", stiffness: 320, damping: 22, mass: 0.6 }
       }
+
       style={
         tilt && !reduce
           ? { rotateX, rotateY, transformStyle: "preserve-3d" }
