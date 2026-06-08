@@ -15,7 +15,6 @@ import {
   LogOut,
   Play,
   Sparkles,
-  TrendingUp,
   Wand2,
   Zap,
   Bot,
@@ -112,7 +111,7 @@ function Dashboard() {
     .sort((a, b) => b.score - a.score)
     .slice(0, 4);
 
-  const trending = ALL_PACKS.slice(0, 3);
+  
 
   async function openPack(p: typeof ALL_PACKS[number]) {
     if (p.premium && !isPremium) return;
@@ -314,23 +313,6 @@ function Dashboard() {
             </div>
           </BentoCard>
 
-          {/* Trending */}
-          <BentoCard className="md:col-span-3">
-            <CardHeader icon={<TrendingUp className="h-4 w-4" />} title="Trending this week" />
-            <div className="mt-4 space-y-2">
-              {trending.map((p, i) => (
-                <button key={p.slug} onClick={() => openPack(p)} className="w-full p-2.5 rounded-xl hover:bg-elevated transition-colors flex items-center gap-3 text-left">
-                  <div className="text-xs text-muted-foreground w-4">{i + 1}</div>
-                  <div className={`h-10 w-10 rounded-lg bg-gradient-to-br ${p.grad} ring-1 ring-border`} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">{p.title}</div>
-                    <div className="text-xs text-muted-foreground">{p.tag}</div>
-                  </div>
-                  <Flame className="h-3.5 w-3.5 text-accent" />
-                </button>
-              ))}
-            </div>
-          </BentoCard>
 
           {/* Upgrade CTA (free only) */}
           {!isPremium && (
