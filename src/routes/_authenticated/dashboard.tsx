@@ -256,10 +256,6 @@ function Dashboard() {
                 </button>
               </PopoverContent>
             </Popover>
-            <button onClick={signOut} className="hidden sm:flex h-8 w-8 sm:h-9 sm:w-9 rounded-full glass items-center justify-center text-muted-foreground hover:text-foreground">
-              <LogOut className="h-3.5 w-3.5 icon-fx" />
-
-            </button>
           </>
         }
       />
