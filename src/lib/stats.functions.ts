@@ -66,6 +66,9 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     const dl7 = dlRows.filter((r) => new Date(r.created_at) >= start7).length;
     const dlPrev = dlRows.length - dl7;
 
+    const todayStr = now.toISOString().slice(0, 10);
+    const downloadsToday = dlRows.filter((r) => r.created_at.slice(0, 10) === todayStr).length;
+
     const saveRows = (saves14.data ?? []) as { created_at: string }[];
     const sv7 = saveRows.filter((r) => new Date(r.created_at) >= start7).length;
     const svPrev = saveRows.length - sv7;
