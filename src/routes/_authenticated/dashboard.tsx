@@ -22,9 +22,13 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { getMyContext, trackVaultView } from "@/lib/preferences.functions";
 import { getDashboardStats } from "@/lib/stats.functions";
+import { getAiCredits } from "@/lib/ai.functions";
 import { PremiumBadge, PremiumLockOverlay } from "@/components/PremiumLock";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ChevronRight } from "lucide-react";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Zentry Qor" }] }),
@@ -53,9 +57,12 @@ function Dashboard() {
   const { user } = useAuth();
   const fetchCtx = useServerFn(getMyContext);
   const fetchStats = useServerFn(getDashboardStats);
+  const fetchCredits = useServerFn(getAiCredits);
   const track = useServerFn(trackVaultView);
   const { data: ctx, isLoading } = useQuery({ queryKey: ["me"], queryFn: () => fetchCtx() });
   const { data: stats } = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => fetchStats() });
+  const { data: credits } = useQuery({ queryKey: ["ai-credits"], queryFn: () => fetchCredits() });
+
   const { isPastDue, isPremium: liveIsPremium } = useSubscription(user?.id);
 
   useEffect(() => {
@@ -163,12 +170,92 @@ function Dashboard() {
                 <Sparkles className="h-3 w-3 text-accent icon-fx" /> Upgrade
               </Link>
             )}
-            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-semibold text-primary-foreground">
-              {firstName[0]?.toUpperCase()}
-            </div>
-            <button onClick={signOut} className="h-8 w-8 sm:h-9 sm:w-9 rounded-full glass flex items-center justify-center text-muted-foreground hover:text-foreground">
-              <LogOut className="h-3.5 w-3.5 icon-fx" />
-            </button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  aria-label="Account"
+                  className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-semibold text-primary-foreground ring-0 hover:ring-2 hover:ring-primary/40 transition"
+                >
+                  {firstName[0]?.toUpperCase()}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent
+                align="end"
+                sideOffset={10}
+                className="w-[320px] p-3 rounded-2xl border-border/60 bg-card/95 backdrop-blur-xl"
+              >
+                <div className="px-2 pt-1 pb-3 border-b border-border/50 mb-3">
+                  <div className="text-sm font-semibold truncate">{profile?.display_name ?? firstName}</div>
+                  <div className="text-xs text-muted-foreground truncate">{user?.email}</div>
+                </div>
+
+                <Link
+                  to="/ai"
+                  className="block rounded-xl p-3 bg-elevated/60 hover:bg-elevated transition mb-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold">Credits</span>
+                    <span className="text-sm text-muted-foreground flex items-center gap-1">
+                      {credits ? `${credits.remaining} left` : "—"}
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </span>
+                  </div>
+                  <div className="mt-2 h-1.5 rounded-full bg-foreground/10 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary to-accent"
+                      style={{
+                        width: credits
+                          ? `${Math.max(2, Math.min(100, (credits.remaining / credits.limit) * 100))}%`
+                          : "0%",
+                      }}
+                    />
+                  </div>
+                  <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
+                    Daily credits reset at midnight UTC
+                  </div>
+                </Link>
+
+                <Link
+                  to="/saved"
+                  className="block rounded-xl p-3 bg-elevated/60 hover:bg-elevated transition mb-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold">Asset downloads</span>
+                    <span className="text-sm text-muted-foreground flex items-center gap-1">
+                      {stats?.downloads ?? 0} total
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </span>
+                  </div>
+                  <div className="mt-1 text-[11px] text-muted-foreground">
+                    {stats?.downloadsDelta !== undefined && stats.downloadsDelta !== 0
+                      ? `${stats.downloadsDelta > 0 ? "+" : ""}${stats.downloadsDelta}% vs last week`
+                      : "Unlimited downloads on every plan"}
+                  </div>
+                </Link>
+
+                {!isPremium && (
+                  <Link
+                    to="/billing"
+                    className="block rounded-xl p-3 bg-gradient-to-r from-primary/15 to-accent/15 hover:from-primary/25 hover:to-accent/25 transition mb-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold flex items-center gap-1.5">
+                        <Sparkles className="h-3.5 w-3.5 text-accent" /> Upgrade to Premium
+                      </span>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                    </div>
+                  </Link>
+                )}
+
+                <button
+                  onClick={signOut}
+                  className="w-full mt-1 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-elevated/60 transition flex items-center gap-2"
+                >
+                  <LogOut className="h-3.5 w-3.5" /> Sign out
+                </button>
+              </PopoverContent>
+            </Popover>
           </>
         }
       />
