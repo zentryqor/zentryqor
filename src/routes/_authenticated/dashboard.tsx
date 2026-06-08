@@ -15,7 +15,6 @@ import {
   LogOut,
   Play,
   Sparkles,
-  TrendingUp,
   Wand2,
   Zap,
   Bot,
