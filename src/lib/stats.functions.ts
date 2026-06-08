@@ -112,6 +112,7 @@ export const getDashboardStats = createServerFn({ method: "GET" })
 
     return {
       downloads: downloadsTotal,
+      downloadsToday,
       downloadsDelta: pctDelta(dl7, dlPrev),
       saved,
       savedDelta: pctDelta(sv7, svPrev),
