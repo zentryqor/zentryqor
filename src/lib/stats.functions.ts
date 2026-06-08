@@ -3,6 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type DashboardStats = {
   downloads: number;
+  downloadsToday: number;
   downloadsDelta: number;
   saved: number;
   savedDelta: number;
