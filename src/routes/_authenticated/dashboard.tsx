@@ -57,9 +57,12 @@ function Dashboard() {
   const { user } = useAuth();
   const fetchCtx = useServerFn(getMyContext);
   const fetchStats = useServerFn(getDashboardStats);
+  const fetchCredits = useServerFn(getAiCredits);
   const track = useServerFn(trackVaultView);
   const { data: ctx, isLoading } = useQuery({ queryKey: ["me"], queryFn: () => fetchCtx() });
   const { data: stats } = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => fetchStats() });
+  const { data: credits } = useQuery({ queryKey: ["ai-credits"], queryFn: () => fetchCredits() });
+
   const { isPastDue, isPremium: liveIsPremium } = useSubscription(user?.id);
 
   useEffect(() => {
