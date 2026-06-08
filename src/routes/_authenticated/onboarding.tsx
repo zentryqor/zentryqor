@@ -149,7 +149,7 @@ function Onboarding() {
           )}
 
           {step === 1 && (
-            <Step title="What's your niche?" subtitle="e.g. fitness, tech reviews, indie SaaS, weddings…">
+            <Step title="What's your niche?" subtitle="e.g. gaming, tech reviews, indie SaaS, weddings…">
               <input
                 autoFocus
                 value={niche}
