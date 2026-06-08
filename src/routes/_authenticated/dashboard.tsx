@@ -229,9 +229,9 @@ function Dashboard() {
                     </span>
                   </div>
                   <div className="mt-1 text-[11px] text-muted-foreground">
-                    {stats?.downloadsDelta !== undefined && stats.downloadsDelta !== 0
-                      ? `${stats.downloadsDelta > 0 ? "+" : ""}${stats.downloadsDelta}% vs last week`
-                      : "Unlimited downloads on every plan"}
+                    {isPremium
+                      ? "Unlimited downloads"
+                      : `${stats?.downloadsToday ?? 0}/3 downloads today`}
                   </div>
                 </Link>
 
