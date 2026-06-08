@@ -129,7 +129,7 @@ const TOOLS: Tool[] = [
     tagline: "7-day calendar in seconds.",
     icon: Calendar,
     accent: "text-violet-400",
-    placeholder: "Fitness creator on Instagram & TikTok",
+    placeholder: "Gaming creator on Instagram & TikTok",
     inputLabel: "Niche, platform & goal",
     system:
       "You are a content strategist. Build a 7-day content calendar as a markdown table with columns: Day | Platform | Format | Hook | Topic | CTA. Mix educational, entertaining, and promotional content (60/30/10 rule).",
