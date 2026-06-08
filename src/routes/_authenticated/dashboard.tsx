@@ -280,7 +280,7 @@ function Dashboard() {
             </h1>
             {preferences?.niche && (
               <p className="text-sm text-muted-foreground mt-2">
-                Curated for {preferences.niche} · {preferences.platforms?.join(" · ") || "all platforms"}
+                Hand-picked for {preferences.niche} · {preferences.platforms?.join(" · ") || "all platforms"}
               </p>
             )}
           </div>
