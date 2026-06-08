@@ -27,7 +27,8 @@ import { PremiumBadge, PremiumLockOverlay } from "@/components/PremiumLock";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Settings } from "lucide-react";
+
 
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -248,12 +249,19 @@ function Dashboard() {
                   </Link>
                 )}
 
+                <Link
+                  to="/settings"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-elevated/60 transition flex items-center gap-2"
+                >
+                  <Settings className="h-3.5 w-3.5" /> Settings
+                </Link>
                 <button
                   onClick={signOut}
                   className="w-full mt-1 rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-elevated/60 transition flex items-center gap-2"
                 >
                   <LogOut className="h-3.5 w-3.5" /> Sign out
                 </button>
+
               </PopoverContent>
             </Popover>
           </>
