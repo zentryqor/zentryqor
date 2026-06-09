@@ -9,7 +9,7 @@ import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
-import { getSavedAssets, toggleSave } from "@/lib/assets.functions";
+import { getSavedAssets, recordDownload, toggleSave } from "@/lib/assets.functions";
 
 export const Route = createFileRoute("/_authenticated/saved")({
   ssr: false,
