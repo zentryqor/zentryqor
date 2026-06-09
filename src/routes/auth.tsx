@@ -12,8 +12,12 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in — Zentry Qor" },
-      { name: "description", content: "Access your Zentry Qor creator vault." },
+      { name: "description", content: "Sign in to your Zentry Qor creator vault to access your assets, AI tools, and workspace." },
+      { property: "og:title", content: "Sign in — Zentry Qor" },
+      { property: "og:description", content: "Sign in to your Zentry Qor creator vault to access your assets, AI tools, and workspace." },
+      { property: "og:url", content: "https://zentryqor.lovable.app/auth" },
     ],
+    links: [{ rel: "canonical", href: "https://zentryqor.lovable.app/auth" }],
   }),
   component: AuthPage,
 });

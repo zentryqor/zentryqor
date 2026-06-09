@@ -1,0 +1,20 @@
+# Zentry Qor
+
+> The creator OS — a premium asset vault, AI tools that ship, and a workspace built for daily output. One subscription, zero context-switching.
+
+Zentry Qor gives digital creators 3,200+ premium asset packs, nine AI tools tuned for short-form content, project workspaces, and analytics — all under one subscription.
+
+## Pages
+
+- [Home](/): Overview of Zentry Qor, the creator OS for editors, designers, and filmmakers.
+- [About](/about): Mission, product principles, and the story behind Zentry Qor.
+- [Help Center](/help): FAQs and guides for using Zentry Qor.
+- [Contact](/contact): Reach the Zentry Qor team for support or feedback.
+- [Changelog](/changelog): Recent product updates and shipped features.
+- [Roadmap](/roadmap): What we're building next.
+- [Status](/status): Real-time platform status.
+
+## Optional
+
+- [Privacy Policy](/privacy): How we handle your data.
+- [Terms of Service](/terms): Terms that govern use of Zentry Qor.

@@ -4,13 +4,36 @@ import { BookOpen, CreditCard, Sparkles, Shield, LifeBuoy, Plus } from "lucide-r
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+const HELP_FAQS = [
+  { q: "How do AI credits work?", a: "Premium gets 1000 credits per day. Credits reset every 24 hours and do not roll over. Each tool lists its cost before you run it." },
+  { q: "Can I cancel anytime?", a: "Yes — one click in Billing. You keep Premium until the end of the period." },
+  { q: "Do you offer refunds?", a: "We offer a 30-day money-back guarantee. Refunds are processed by our payment provider, Paddle, at paddle.net." },
+  { q: "Is my work private?", a: "Yes. Your projects are encrypted in transit and at rest. We never train models on your private content." },
+];
+
 export const Route = createFileRoute("/help")({
   head: () => ({
     meta: [
       { title: "Help Center — Zentry Qor" },
-      { name: "description", content: "FAQs, guides, and support for Zentry Qor." },
+      { name: "description", content: "Find answers to frequently asked questions and guides on using the Zentry Qor creator OS." },
       { property: "og:title", content: "Help Center — Zentry Qor" },
-      { property: "og:description", content: "FAQs, guides, and support." },
+      { property: "og:description", content: "Find answers to frequently asked questions and guides on using the Zentry Qor creator OS." },
+      { property: "og:url", content: "https://zentryqor.lovable.app/help" },
+    ],
+    links: [{ rel: "canonical", href: "https://zentryqor.lovable.app/help" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: HELP_FAQS.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        }),
+      },
     ],
   }),
   component: HelpPage,
