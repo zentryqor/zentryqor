@@ -228,7 +228,7 @@ function Dashboard() {
                       <ChevronRight className="h-3.5 w-3.5" />
                     </span>
                   </div>
-                  <div className="mt-1 text-[11px] text-muted-foreground whitespace-nowrap">
+                  <div className="mt-1 text-[11px] text-muted-foreground">
                     {isPremium
                       ? "Unlimited downloads"
                       : `${stats?.downloadsToday ?? 0}/3 downloads today`}
