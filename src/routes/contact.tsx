@@ -8,10 +8,12 @@ export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
       { title: "Contact — Zentry Qor" },
-      { name: "description", content: "Get in touch with the Zentry Qor team." },
+      { name: "description", content: "Get in touch with the Zentry Qor team for support, billing questions, or feedback." },
       { property: "og:title", content: "Contact — Zentry Qor" },
-      { property: "og:description", content: "Get in touch with the Zentry Qor team." },
+      { property: "og:description", content: "Get in touch with the Zentry Qor team for support, billing questions, or feedback." },
+      { property: "og:url", content: "https://zentryqor.lovable.app/contact" },
     ],
+    links: [{ rel: "canonical", href: "https://zentryqor.lovable.app/contact" }],
   }),
   component: ContactPage,
 });

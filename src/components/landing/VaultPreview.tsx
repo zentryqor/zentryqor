@@ -146,6 +146,7 @@ export function VaultPreview() {
                     <motion.button
                       whileHover={{ scale: 1.15 }}
                       whileTap={{ scale: 0.9 }}
+                      aria-label={`Bookmark ${p.title}`}
                       className="h-8 w-8 rounded-lg glass-strong flex items-center justify-center"
                     >
                       <Bookmark className="h-3.5 w-3.5" />
@@ -153,6 +154,7 @@ export function VaultPreview() {
                     <motion.button
                       whileHover={{ scale: 1.15 }}
                       whileTap={{ scale: 0.9 }}
+                      aria-label={`Download ${p.title}`}
                       className="h-8 w-8 rounded-lg bg-foreground text-background flex items-center justify-center"
                     >
                       <Download className="h-3.5 w-3.5" />

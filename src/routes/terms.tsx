@@ -5,10 +5,12 @@ export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
       { title: "Terms of Service — Zentry Qor" },
-      { name: "description", content: "The terms that govern your use of Zentry Qor." },
+      { name: "description", content: "Read the Terms of Service that govern your use of the Zentry Qor platform and services." },
       { property: "og:title", content: "Terms of Service — Zentry Qor" },
-      { property: "og:description", content: "The terms that govern your use of Zentry Qor." },
+      { property: "og:description", content: "Read the Terms of Service that govern your use of the Zentry Qor platform and services." },
+      { property: "og:url", content: "https://zentryqor.lovable.app/terms" },
     ],
+    links: [{ rel: "canonical", href: "https://zentryqor.lovable.app/terms" }],
   }),
   component: TermsPage,
 });
