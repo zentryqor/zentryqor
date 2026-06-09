@@ -80,6 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Zentry Qor" },
       { name: "description", content: "Zentry Qor is a premium creator productivity vault for digital creators." },
       { name: "author", content: "Zentry Qor" },
+      { name: "google-site-verification", content: "vOuTxkxNavC3Xbw52B2bKlrbLYPcXgdt_sOCDk7v72A" },
       { property: "og:title", content: "Zentry Qor — The Creator OS" },
       { property: "og:description", content: "The creator OS — a premium asset vault, AI tools, and a workspace built for daily output." },
       { property: "og:site_name", content: "Zentry Qor" },
