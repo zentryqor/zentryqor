@@ -21,6 +21,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as GuidesUgcEssentialsRouteImport } from './routes/guides/ugc-essentials'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSavedRouteImport } from './routes/_authenticated/saved'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -89,6 +90,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GuidesUgcEssentialsRoute = GuidesUgcEssentialsRouteImport.update({
+  id: '/guides/ugc-essentials',
+  path: '/guides/ugc-essentials',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/saved': typeof AuthenticatedSavedRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/saved': typeof AuthenticatedSavedRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -211,6 +219,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/saved': typeof AuthenticatedSavedRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/_authenticated/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
@@ -236,6 +245,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/saved'
     | '/settings'
+    | '/guides/ugc-essentials'
     | '/assets/$id'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/saved'
     | '/settings'
+    | '/guides/ugc-essentials'
     | '/assets/$id'
     | '/api/public/payments/webhook'
   id:
@@ -283,6 +294,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/saved'
     | '/_authenticated/settings'
+    | '/guides/ugc-essentials'
     | '/_authenticated/assets/$id'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
@@ -300,6 +312,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
+  GuidesUgcEssentialsRoute: typeof GuidesUgcEssentialsRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
 }
 
@@ -387,6 +400,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/guides/ugc-essentials': {
+      id: '/guides/ugc-essentials'
+      path: '/guides/ugc-essentials'
+      fullPath: '/guides/ugc-essentials'
+      preLoaderRoute: typeof GuidesUgcEssentialsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings': {
@@ -511,8 +531,19 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
+  GuidesUgcEssentialsRoute: GuidesUgcEssentialsRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
