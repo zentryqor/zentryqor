@@ -81,7 +81,7 @@ export function VaultPreview() {
             <h2 className="text-4xl sm:text-6xl font-semibold tracking-[-0.035em] text-gradient leading-[1.02]">
               Assets that actually
               <br />
-              <span className="text-aurora italic font-medium">move</span> the needle.
+              <span className="text-aurora italic font-medium inline-block pr-2">move</span> the needle.
             </h2>
           </div>
           <div className="flex gap-2 text-xs">
