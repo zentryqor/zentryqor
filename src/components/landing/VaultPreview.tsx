@@ -79,8 +79,8 @@ export function VaultPreview() {
               Creator vault
             </div>
             <h2 className="text-4xl sm:text-6xl font-semibold tracking-[-0.035em] text-gradient leading-[1.02]">
-              Assets that
-              <span className="text-aurora italic font-medium"> actually move </span>
+              Assets that{" "}
+              <span className="text-aurora italic font-medium">actually move</span>{" "}
               the needle.
             </h2>
           </div>
