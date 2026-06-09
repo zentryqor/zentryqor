@@ -130,7 +130,6 @@
 
   .text-gradient {
     background: linear-gradient(180deg, oklch(1 0 0 / 1) 0%, oklch(1 0 0 / 0.55) 100%);
-    -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
@@ -138,7 +137,6 @@
 
   .text-gradient-brand {
     background: linear-gradient(135deg, var(--primary-glow), var(--primary) 60%, var(--primary-glow));
-    -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
@@ -204,7 +202,6 @@
   .text-aurora {
     background: linear-gradient(120deg, var(--primary-glow) 0%, var(--primary) 25%, oklch(0.78 0.18 320) 50%, var(--primary) 75%, var(--primary-glow) 100%);
     background-size: 300% 100%;
-    -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
