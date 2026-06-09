@@ -59,6 +59,12 @@ function AssetDetailsPage() {
       toast.error("Premium membership required");
       return;
     }
+    try {
+      await trackDl({ data: { asset_id: asset.id } });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Download failed");
+      return;
+    }
     const { data: signed, error } = await supabase.storage
       .from("assets")
       .createSignedUrl(asset.storage_path, 60, { download: asset.file_name });
@@ -66,7 +72,6 @@ function AssetDetailsPage() {
       toast.error(error?.message ?? "Download failed");
       return;
     }
-    await trackDl({ data: { asset_id: asset.id } }).catch(() => {});
     window.open(signed.signedUrl, "_blank");
     qc.invalidateQueries({ queryKey: ["asset-details", id] });
     qc.invalidateQueries({ queryKey: ["dashboard-stats"] });

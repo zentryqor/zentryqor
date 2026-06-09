@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Quote } from "lucide-react";
+import { Quote, Star } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
 import { TiltCard } from "@/components/motion/TiltCard";
 
@@ -69,6 +69,17 @@ export function Testimonials() {
               >
                 <Quote className="absolute -top-4 -right-4 h-32 w-32 text-foreground/5" />
                 <div className="relative h-full flex flex-col">
+                  <div
+                    className="flex items-center gap-0.5 mb-3"
+                    aria-label="Rated 5 out of 5 stars"
+                  >
+                    {Array.from({ length: 5 }).map((_, idx) => (
+                      <Star
+                        key={idx}
+                        className="h-3.5 w-3.5 fill-accent text-accent"
+                      />
+                    ))}
+                  </div>
                   <blockquote className="text-[15px] leading-relaxed tracking-tight">
                     "{t.q}"
                   </blockquote>

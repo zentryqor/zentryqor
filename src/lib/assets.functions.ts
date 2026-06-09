@@ -15,13 +15,36 @@ export type AssetRow = {
   created_at: string;
 };
 
+export const FREE_DAILY_DOWNLOAD_LIMIT = 3;
+
 export const recordDownload = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { asset_id: string }) => d)
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
+    const { supabase, userId } = context;
+
+    // Check premium status via security-definer RPC
+    const { data: premium } = await supabase.rpc("is_premium", { _user_id: userId });
+
+    if (!premium) {
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+      const { count, error: countErr } = await supabase
+        .from("asset_downloads")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .gte("created_at", startOfDay.toISOString());
+      if (countErr) throw countErr;
+      if ((count ?? 0) >= FREE_DAILY_DOWNLOAD_LIMIT) {
+        throw new Error(
+          `Daily download limit reached (${FREE_DAILY_DOWNLOAD_LIMIT}/day on Free). Upgrade to Premium for unlimited downloads.`,
+        );
+      }
+    }
+
+    const { error } = await supabase
       .from("asset_downloads")
-      .insert({ user_id: context.userId, asset_id: data.asset_id });
+      .insert({ user_id: userId, asset_id: data.asset_id });
     if (error) throw error;
     return { ok: true };
   });
