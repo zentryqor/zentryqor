@@ -84,7 +84,7 @@ export function Hero() {
               <br />
               nine apps.
               <br />
-              <span className="text-aurora italic font-medium">Ship like a studio.</span>
+              <span className="text-aurora italic font-medium whitespace-nowrap">Ship like a studio.</span>
             </motion.h1>
           </div>
 
