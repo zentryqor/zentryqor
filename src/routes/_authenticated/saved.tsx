@@ -32,6 +32,7 @@ function SavedPage() {
   const qc = useQueryClient();
   const fetchSaved = useServerFn(getSavedAssets);
   const unsaveFn = useServerFn(toggleSave);
+  const trackDl = useServerFn(recordDownload);
 
   const { data: saved = [], isLoading } = useQuery({
     queryKey: ["saved-assets"],
@@ -51,6 +52,12 @@ function SavedPage() {
       toast.error("Premium membership required");
       return;
     }
+    try {
+      await trackDl({ data: { asset_id: a.id } });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Download failed");
+      return;
+    }
     const { data, error } = await supabase.storage
       .from("assets")
       .createSignedUrl(a.storage_path, 60, { download: a.file_name });
@@ -59,6 +66,7 @@ function SavedPage() {
       return;
     }
     window.open(data.signedUrl, "_blank");
+    qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
   }
 
   return (
