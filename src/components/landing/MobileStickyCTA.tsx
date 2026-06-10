@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Sparkles, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/use-auth";
 
 export function MobileStickyCTA() {
   return (

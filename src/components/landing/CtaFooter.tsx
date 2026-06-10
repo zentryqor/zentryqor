@@ -2,6 +2,7 @@ import { ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "@tanstack/react-router";
 import { MagneticButton } from "@/components/motion/MagneticButton";
+import { useAuth } from "@/hooks/use-auth";
 
 export function CtaFooter() {
   return (
