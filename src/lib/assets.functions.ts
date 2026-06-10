@@ -1,5 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+const assetIdSchema = z.object({ asset_id: z.string().uuid() });
+const idSchema = z.object({ id: z.string().uuid() });
 
 export type AssetRow = {
   id: string;
