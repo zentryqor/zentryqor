@@ -1,5 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+const assetIdSchema = z.object({ asset_id: z.string().uuid() });
+const idSchema = z.object({ id: z.string().uuid() });
 
 export type AssetRow = {
   id: string;
@@ -19,7 +23,7 @@ export const FREE_DAILY_DOWNLOAD_LIMIT = 3;
 
 export const recordDownload = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { asset_id: string }) => d)
+  .inputValidator((d) => assetIdSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
@@ -51,7 +55,7 @@ export const recordDownload = createServerFn({ method: "POST" })
 
 export const toggleSave = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { asset_id: string }) => d)
+  .inputValidator((d) => assetIdSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const existing = await supabase
@@ -97,7 +101,7 @@ export const getSavedAssets = createServerFn({ method: "GET" })
 
 export const getAssetDetails = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { id: string }) => d)
+  .inputValidator((d) => idSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const [assetRes, savedRes, dlRes] = await Promise.all([
