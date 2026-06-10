@@ -100,6 +100,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           name: "Zentry Qor",
           url: "https://zentryqor.lovable.app",
           logo: "https://zentryqor.lovable.app/favicon.ico",
+          description:
+            "Zentry Qor is a premium creator productivity vault — assets, AI tools, and a workspace for digital creators.",
+          sameAs: [],
         }),
       },
       {
@@ -109,6 +112,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@type": "WebSite",
           name: "Zentry Qor",
           url: "https://zentryqor.lovable.app",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://zentryqor.lovable.app/?q={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
         }),
       },
     ],

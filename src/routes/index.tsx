@@ -45,6 +45,28 @@ export const Route = createFileRoute("/")({
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "Zentry Qor",
+          applicationCategory: "MultimediaApplication",
+          operatingSystem: "Web",
+          url: "https://zentryqor.lovable.app/",
+          description:
+            "Creator OS with 3,200+ premium asset packs, AI tools for short-form, and a workspace built for daily output.",
+          offers: [
+            { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD" },
+            { "@type": "Offer", name: "Premium", price: "19", priceCurrency: "USD" },
+          ],
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: "4.8",
+            ratingCount: "1200",
+          },
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
           "@type": "FAQPage",
           mainEntity: HOME_FAQS.map((f) => ({
             "@type": "Question",
