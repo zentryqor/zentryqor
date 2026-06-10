@@ -47,8 +47,9 @@ function TermsPage() {
         <Section title="5. Intellectual property">
           <p>We retain all rights, title, and interest in the Service, including software, documentation, and branding. You retain ownership of your content and grant us a limited license to host and process it solely to provide the Service.</p>
         </Section>
-        <Section title="6. Payments & subscriptions">
+        <Section title="6. Payments, subscriptions & refunds">
           <p>Our order process is conducted by our online reseller Paddle.com. Paddle.com is the Merchant of Record for all our orders. Paddle provides all customer service inquiries and handles returns. Subscriptions renew automatically until cancelled. For payment, billing, tax, cancellation, and refund mechanics, see Paddle's <a className="text-accent underline" href="https://www.paddle.com/legal/checkout-buyer-terms" target="_blank" rel="noreferrer">Buyer Terms</a>.</p>
+          <p>We offer a <strong>30-day money-back guarantee</strong> on all purchases. See our full <a className="text-accent underline" href="/refund">Refund Policy</a> for details on how to request a refund.</p>
         </Section>
         <Section title="7. Service level">
           <p>We do not guarantee that the Service will be uninterrupted or error-free. To the fullest extent permitted by law, we disclaim all implied warranties, including merchantability and fitness for a particular purpose.</p>

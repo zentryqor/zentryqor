@@ -92,6 +92,7 @@ export function CtaFooter() {
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70">Legal</p>
             <Link to="/privacy" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy</Link>
             <Link to="/terms" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Terms</Link>
+            <Link to="/refund" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Refund Policy</Link>
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-4 pt-6 text-xs text-muted-foreground">
