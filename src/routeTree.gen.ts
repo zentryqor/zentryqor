@@ -13,6 +13,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
+import { Route as RefundRouteImport } from './routes/refund'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as ContactRouteImport } from './routes/contact'
@@ -51,6 +52,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RoadmapRoute = RoadmapRouteImport.update({
   id: '/roadmap',
   path: '/roadmap',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundRoute = RefundRouteImport.update({
+  id: '/refund',
+  path: '/refund',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/help': typeof HelpRoute
   '/privacy': typeof PrivacyRoute
+  '/refund': typeof RefundRoute
   '/roadmap': typeof RoadmapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/help': typeof HelpRoute
   '/privacy': typeof PrivacyRoute
+  '/refund': typeof RefundRoute
   '/roadmap': typeof RoadmapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
@@ -207,6 +215,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/help': typeof HelpRoute
   '/privacy': typeof PrivacyRoute
+  '/refund': typeof RefundRoute
   '/roadmap': typeof RoadmapRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/status': typeof StatusRoute
@@ -233,6 +242,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/help'
     | '/privacy'
+    | '/refund'
     | '/roadmap'
     | '/sitemap.xml'
     | '/status'
@@ -257,6 +267,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/help'
     | '/privacy'
+    | '/refund'
     | '/roadmap'
     | '/sitemap.xml'
     | '/status'
@@ -282,6 +293,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/help'
     | '/privacy'
+    | '/refund'
     | '/roadmap'
     | '/sitemap.xml'
     | '/status'
@@ -308,6 +320,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   HelpRoute: typeof HelpRoute
   PrivacyRoute: typeof PrivacyRoute
+  RefundRoute: typeof RefundRoute
   RoadmapRoute: typeof RoadmapRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StatusRoute: typeof StatusRoute
@@ -344,6 +357,13 @@ declare module '@tanstack/react-router' {
       path: '/roadmap'
       fullPath: '/roadmap'
       preLoaderRoute: typeof RoadmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund': {
+      id: '/refund'
+      path: '/refund'
+      fullPath: '/refund'
+      preLoaderRoute: typeof RefundRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -527,6 +547,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   HelpRoute: HelpRoute,
   PrivacyRoute: PrivacyRoute,
+  RefundRoute: RefundRoute,
   RoadmapRoute: RoadmapRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StatusRoute: StatusRoute,
@@ -537,13 +558,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
