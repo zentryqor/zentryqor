@@ -27,6 +27,7 @@ export function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const isMobile = useIsMobile();
+  const { user } = useAuth();
   const disableParallax = reduce || isMobile;
   const { scrollYProgress } = useScroll({
     target: ref,
