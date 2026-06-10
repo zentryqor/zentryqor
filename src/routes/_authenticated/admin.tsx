@@ -1,7 +1,6 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   ArrowUpRight,
@@ -16,38 +15,36 @@ import {
 } from "lucide-react";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
+import {
+  adminDeleteAsset,
+  adminGetAssetSignedUrl,
+  adminListAccounts,
+  adminListAssets,
+  adminUploadAsset,
+  checkIsAdmin,
+  type AdminAccount,
+  type AdminAssetRow,
+} from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin — Zentry Qor" }] }),
+  beforeLoad: async () => {
+    try {
+      const { isAdmin } = await checkIsAdmin();
+      if (!isAdmin) throw redirect({ to: "/dashboard" });
+    } catch (err) {
+      if (err && typeof err === "object" && "to" in (err as object)) throw err;
+      throw redirect({ to: "/dashboard" });
+    }
+  },
   component: AdminPage,
 });
 
-type Account = {
-  id: string;
-  email: string | null;
-  display_name: string | null;
-  created_at: string;
-  roles: string[];
-  subscription_status: string | null;
-};
-
-type AssetRow = {
-  id: string;
-  title: string;
-  description: string | null;
-  category: string;
-  tags: string[];
-  file_name: string;
-  storage_path: string;
-  size_bytes: number | null;
-  premium_only: boolean;
-  created_at: string;
-};
+type Account = AdminAccount;
+type AssetRow = AdminAssetRow;
 
 function AdminPage() {
   const navigate = useNavigate();
-  const [checkingAdmin, setCheckingAdmin] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [assets, setAssets] = useState<AssetRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,54 +57,27 @@ function AdminPage() {
   const [premiumOnly, setPremiumOnly] = useState(false);
   const [file, setFile] = useState<File | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) {
-        navigate({ to: "/auth" });
-        return;
-      }
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userData.user.id);
-      const admin = (roles ?? []).some((r) => r.role === "admin");
-      setIsAdmin(admin);
-      setCheckingAdmin(false);
-      if (!admin) navigate({ to: "/dashboard" });
-    })();
-  }, [navigate]);
-
   const loadAll = async () => {
     setLoading(true);
-    const [{ data: profiles }, { data: roles }, { data: subs }, { data: assetRows }] =
-      await Promise.all([
-        supabase
-          .from("profiles")
-          .select("id, email, display_name, created_at")
-          .order("created_at", { ascending: false }),
-        supabase.from("user_roles").select("user_id, role"),
-        supabase.from("subscriptions").select("user_id, status, current_period_end"),
-        supabase.from("assets").select("*").order("created_at", { ascending: false }),
+    try {
+      const [accs, assetRows] = await Promise.all([
+        adminListAccounts(),
+        adminListAssets(),
       ]);
-
-    const accs: Account[] = (profiles ?? []).map((p: any) => ({
-      id: p.id,
-      email: p.email,
-      display_name: p.display_name,
-      created_at: p.created_at,
-      roles: (roles ?? []).filter((r: any) => r.user_id === p.id).map((r: any) => r.role),
-      subscription_status:
-        (subs ?? []).find((s: any) => s.user_id === p.id)?.status ?? null,
-    }));
-    setAccounts(accs);
-    setAssets((assetRows ?? []) as AssetRow[]);
-    setLoading(false);
+      setAccounts(accs);
+      setAssets(assetRows);
+    } catch (err: any) {
+      toast.error(err.message ?? "Failed to load");
+      if (err?.message === "Forbidden") navigate({ to: "/dashboard" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    if (isAdmin) loadAll();
-  }, [isAdmin]);
+    loadAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,30 +87,22 @@ function AdminPage() {
     }
     setUploading(true);
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      const uid = userData.user!.id;
-      const path = `${uid}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-
-      const { error: upErr } = await supabase.storage
-        .from("assets")
-        .upload(path, file, { contentType: file.type });
-      if (upErr) throw upErr;
-
       const tags = tagsInput.split(",").map((t) => t.trim()).filter(Boolean);
-
-      const { error: insErr } = await supabase.from("assets").insert({
-        title: title.trim(),
-        description: description.trim() || null,
-        category: category.trim() || "general",
-        tags,
-        storage_path: path,
-        file_name: file.name,
-        mime_type: file.type || null,
-        size_bytes: file.size,
-        premium_only: premiumOnly,
-        uploaded_by: uid,
-      });
-      if (insErr) throw insErr;
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append(
+        "meta",
+        JSON.stringify({
+          title: title.trim(),
+          description: description.trim() || null,
+          category: category.trim() || "general",
+          tags,
+          premium_only: premiumOnly,
+          file_name: file.name,
+          mime_type: file.type || null,
+        }),
+      );
+      await adminUploadAsset({ data: fd });
 
       toast.success("Asset uploaded");
       setTitle("");
@@ -161,35 +123,25 @@ function AdminPage() {
 
   const handleDelete = async (a: AssetRow) => {
     if (!confirm(`Delete "${a.title}"?`)) return;
-    await supabase.storage.from("assets").remove([a.storage_path]);
-    const { error } = await supabase.from("assets").delete().eq("id", a.id);
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      await adminDeleteAsset({ data: { id: a.id } });
+      toast.success("Deleted");
+      loadAll();
+    } catch (err: any) {
+      toast.error(err.message ?? "Delete failed");
     }
-    toast.success("Deleted");
-    loadAll();
   };
 
   const downloadAsset = async (a: AssetRow) => {
-    const { data, error } = await supabase.storage
-      .from("assets")
-      .createSignedUrl(a.storage_path, 60);
-    if (error || !data) {
-      toast.error(error?.message ?? "Could not download");
-      return;
+    try {
+      const { url } = await adminGetAssetSignedUrl({ data: { id: a.id } });
+      window.open(url, "_blank");
+    } catch (err: any) {
+      toast.error(err.message ?? "Could not download");
     }
-    window.open(data.signedUrl, "_blank");
   };
 
-  if (checkingAdmin) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-  if (!isAdmin) return null;
+
 
   const premiumCount = assets.filter((a) => a.premium_only).length;
   const subscribed = accounts.filter((a) => a.subscription_status === "active").length;
