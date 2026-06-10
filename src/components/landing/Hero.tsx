@@ -8,6 +8,7 @@ import { TiltCard } from "@/components/motion/TiltCard";
 import { CountUp } from "@/components/motion/CountUp";
 import { Typewriter } from "@/components/motion/Typewriter";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuth } from "@/hooks/use-auth";
 
 const marqueeWords = [
   "Creators",
