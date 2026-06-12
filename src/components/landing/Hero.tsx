@@ -50,22 +50,15 @@ export function Hero() {
       </motion.div>
       <div className="absolute inset-0 noise opacity-40" />
 
-      {/* Eyebrow */}
+      {/* Creator count */}
       <div className="relative mx-auto max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          className="flex items-center justify-between gap-4 mb-10 flex-wrap"
+          className="hidden sm:flex items-center justify-end mb-10"
         >
-          <div className="inline-flex items-center gap-2 glass rounded-full px-3.5 py-1.5 text-xs text-muted-foreground">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-75 animate-ping" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
-            </span>
-            <span>v1 — shipping daily for creators</span>
-          </div>
-          <div className="hidden sm:flex items-center gap-2 text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
+          <div className="flex items-center gap-2 text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
             <Zap className="h-3 w-3 text-accent icon-fx" /> 24,000+ creators
           </div>
         </motion.div>
