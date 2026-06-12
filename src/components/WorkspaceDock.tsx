@@ -41,9 +41,8 @@ export function WorkspaceDock() {
                   transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
-              <span className="relative z-10 flex min-w-0 items-center gap-1.5 sm:gap-2">
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className="truncate">{destination.label}</span>
+              <span className="relative z-10 flex min-w-0 items-center justify-center">
+                <Icon className="h-5 w-5 shrink-0" />
               </span>
             </Link>
           );
