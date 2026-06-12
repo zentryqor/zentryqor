@@ -590,6 +590,60 @@ function Dashboard() {
 }
 
 
+function FloatingGlassTabs({
+  activeTab,
+  onChange,
+}: {
+  activeTab: "overview" | "assets" | "ai" | "activity";
+  onChange: (tab: "overview" | "assets" | "ai" | "activity") => void;
+}) {
+  const tabs = [
+    { key: "overview" as const, label: "Overview", icon: LayoutDashboard },
+    { key: "assets" as const, label: "Assets", icon: Package },
+    { key: "ai" as const, label: "AI Studio", icon: Wand2 },
+    { key: "activity" as const, label: "Activity", icon: Activity },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.1 }}
+      className="mb-8 flex justify-center"
+    >
+      <div className="glass-strong rounded-2xl p-1.5 flex items-center gap-1">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => onChange(tab.key)}
+              className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                isActive
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="activeTabBg"
+                  className="absolute inset-0 bg-elevated rounded-xl"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                <Icon className="h-4 w-4" />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+}
+
 function NavTab({ children, active }: { children: React.ReactNode; active?: boolean }) {
   return (
     <button
