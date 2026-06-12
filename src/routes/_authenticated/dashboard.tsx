@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
@@ -19,9 +19,6 @@ import {
   Wand2,
   Zap,
   Bot,
-  LayoutDashboard,
-  Package,
-  Activity,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyContext, trackVaultView } from "@/lib/preferences.functions";
@@ -363,9 +360,9 @@ function Dashboard() {
               <BentoCard className="md:col-span-6">
                 <div className="flex items-center justify-between">
                   <CardHeader icon={<Sparkles className="h-4 w-4 icon-fx" />} title="Picked for you" />
-                  <button onClick={() => setActiveTab("assets")} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+                  <Link to="/assets" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
                     Browse vault <ArrowUpRight className="h-3 w-3 icon-fx" />
-                  </button>
+                  </Link>
                 </div>
                 <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
                   {recommended.map((p) => (
@@ -588,73 +585,6 @@ function Dashboard() {
   );
 }
 
-
-function FloatingGlassTabs({
-  activeTab,
-  onChange,
-}: {
-  activeTab: "overview" | "assets" | "ai" | "activity";
-  onChange: (tab: "overview" | "assets" | "ai" | "activity") => void;
-}) {
-  const tabs = [
-    { key: "overview" as const, label: "Overview", icon: LayoutDashboard },
-    { key: "assets" as const, label: "Assets", icon: Package },
-    { key: "ai" as const, label: "AI Studio", icon: Wand2 },
-    { key: "activity" as const, label: "Activity", icon: Activity },
-  ];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.1 }}
-      className="mb-8 flex justify-center"
-    >
-      <div className="glass-strong rounded-2xl p-1.5 flex items-center gap-1">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.key;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => onChange(tab.key)}
-              aria-label={tab.label}
-              className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                isActive
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {isActive && (
-                <motion.div
-                  layoutId="activeTabBg"
-                  className="absolute inset-0 bg-elevated rounded-xl"
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10 flex items-center gap-2">
-                <Icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </motion.div>
-  );
-}
-
-function NavTab({ children, active }: { children: React.ReactNode; active?: boolean }) {
-  return (
-    <button
-      className={`px-3 h-9 rounded-full text-sm transition-colors ${
-        active ? "bg-elevated text-foreground" : "text-muted-foreground hover:text-foreground"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
 
 function BentoCard({ className = "", children }: { className?: string; children: React.ReactNode }) {
   return <div className={`glass rounded-3xl p-6 ${className}`}>{children}</div>;
