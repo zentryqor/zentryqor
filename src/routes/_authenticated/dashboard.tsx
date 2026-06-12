@@ -30,6 +30,7 @@ import { getAiCredits } from "@/lib/ai.functions";
 import { PremiumBadge, PremiumLockOverlay } from "@/components/PremiumLock";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
+import { WorkspaceDock } from "@/components/WorkspaceDock";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ChevronRight, Settings } from "lucide-react";
 
@@ -297,9 +298,6 @@ function Dashboard() {
             </Link>
           )}
         </div>
-
-        {/* Floating Glass Navigation Tabs */}
-        <FloatingGlassTabs activeTab={activeTab} onChange={setActiveTab} />
 
         {/* Tab Content */}
         <AnimatePresence mode="wait">
@@ -584,6 +582,7 @@ function Dashboard() {
           )}
         </AnimatePresence>
       </main>
+      <WorkspaceDock />
       </div>
     </div>
   );

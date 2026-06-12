@@ -23,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getMyContext } from "@/lib/preferences.functions";
 import { updateProfile } from "@/lib/settings.functions";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
+import { WorkspaceDock } from "@/components/WorkspaceDock";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { PremiumBadge } from "@/components/PremiumLock";
 
@@ -135,7 +136,7 @@ function SettingsPage() {
         }}
         aria-hidden
       />
-      <div className="relative">
+      <div className="relative pb-28">
         <AppHeader
           nav={
             <>
@@ -151,6 +152,7 @@ function SettingsPage() {
             </div>
           }
         />
+        <WorkspaceDock />
 
         <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-16">
           <Link
