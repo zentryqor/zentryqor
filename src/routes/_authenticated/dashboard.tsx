@@ -619,6 +619,7 @@ function FloatingGlassTabs({
             <button
               key={tab.key}
               onClick={() => onChange(tab.key)}
+              aria-label={tab.label}
               className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                 isActive
                   ? "text-foreground"
