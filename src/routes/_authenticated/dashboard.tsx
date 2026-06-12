@@ -67,6 +67,7 @@ function Dashboard() {
   const { data: ctx, isLoading } = useQuery({ queryKey: ["me"], queryFn: () => fetchCtx() });
   const { data: stats } = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => fetchStats() });
   const { data: credits } = useQuery({ queryKey: ["ai-credits"], queryFn: () => fetchCredits() });
+  const [activeTab, setActiveTab] = useState<"overview" | "assets" | "ai" | "activity">("overview");
 
   const { isPastDue, isPremium: liveIsPremium } = useSubscription(user?.id);
 
