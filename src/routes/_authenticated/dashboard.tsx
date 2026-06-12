@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
@@ -18,6 +19,9 @@ import {
   Wand2,
   Zap,
   Bot,
+  LayoutDashboard,
+  Package,
+  Activity,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyContext, trackVaultView } from "@/lib/preferences.functions";
@@ -63,6 +67,7 @@ function Dashboard() {
   const { data: ctx, isLoading } = useQuery({ queryKey: ["me"], queryFn: () => fetchCtx() });
   const { data: stats } = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => fetchStats() });
   const { data: credits } = useQuery({ queryKey: ["ai-credits"], queryFn: () => fetchCredits() });
+  const [activeTab, setActiveTab] = useState<"overview" | "assets" | "ai" | "activity">("overview");
 
   const { isPastDue, isPremium: liveIsPremium } = useSubscription(user?.id);
 
@@ -270,7 +275,7 @@ function Dashboard() {
 
       <main className="max-w-7xl mx-auto px-6 pt-28 pb-10">
         {/* Greeting */}
-        <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
+        <div className="flex items-end justify-between flex-wrap gap-4 mb-6">
           <div>
             <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
               {new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
@@ -293,149 +298,352 @@ function Dashboard() {
           )}
         </div>
 
-        {/* Bento grid */}
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-          {/* Stats */}
-          <BentoCard className="md:col-span-3">
-            <CardHeader icon={<Download className="h-4 w-4" />} title="Downloads" />
-            <div className="mt-3 flex items-end justify-between">
-              <div className="text-4xl font-semibold tracking-tight text-gradient-brand">
-                {isPremium ? (stats?.downloads ?? 0).toLocaleString() : `${stats?.downloads ?? 0}/3`}
-              </div>
-              <Sparkline data={stats?.sparkline} className="text-accent" />
-            </div>
-            <DeltaLabel value={stats?.downloadsDelta} />
-          </BentoCard>
+        {/* Floating Glass Navigation Tabs */}
+        <FloatingGlassTabs activeTab={activeTab} onChange={setActiveTab} />
 
-          <Link to="/saved" className="md:col-span-3 group">
-            <BentoCard className="h-full transition-colors group-hover:bg-elevated/40">
-              <CardHeader icon={<Bookmark className="h-4 w-4" />} title="Saved" />
-              <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.saved ?? activity.length}</div>
-              <DeltaLabel value={stats?.savedDelta} />
-            </BentoCard>
-          </Link>
-
-          <BentoCard className="md:col-span-3">
-            <CardHeader icon={<Bot className="h-4 w-4" />} title="AI runs" />
-            <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.aiRuns ?? 0}</div>
-            <DeltaLabel value={stats?.aiRunsDelta} />
-          </BentoCard>
-
-          <BentoCard className="md:col-span-3">
-            <CardHeader icon={<Flame className="h-4 w-4" />} title="Streak" />
-            <div className="mt-3 flex items-end gap-2">
-              <div className="text-4xl font-semibold tracking-tight">{stats?.streak ?? 0}d</div>
-              <div className="text-2xl pb-1">🔥</div>
-            </div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {(stats?.streak ?? 0) > 0 ? "Keep the fire alive" : "Start your streak today"}
-            </div>
-          </BentoCard>
-
-          {/* Featured Trending Pack */}
-          <BentoCard className="md:col-span-6 relative overflow-hidden">
-            <div className="absolute -top-24 -right-16 h-56 w-56 rounded-full bg-primary/25 blur-3xl" />
-            <div className="absolute top-4 right-4 flex gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-accent" />
-              <span className="h-2 w-2 rounded-full bg-primary" />
-            </div>
-            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Trending pack</div>
-            <h3 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em] mt-2">Cinematic Reels Vol. 4</h3>
-            <p className="text-sm text-muted-foreground mt-1">240 assets · LUTs, SFX, overlays</p>
-          </BentoCard>
-
-
-          {/* Recommended */}
-          <BentoCard className="md:col-span-6">
-            <div className="flex items-center justify-between">
-              <CardHeader icon={<Sparkles className="h-4 w-4 icon-fx" />} title="Picked for you" />
-              <Link to="/assets" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-                Browse vault <ArrowUpRight className="h-3 w-3 icon-fx" />
-              </Link>
-            </div>
-            <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {recommended.map((p) => (
-                <button
-                  key={p.slug}
-                  onClick={() => openPack(p)}
-                  disabled={p.premium && !isPremium}
-                  className="group text-left relative"
-                >
-                  <div className={`relative aspect-[4/3] rounded-2xl bg-gradient-to-br ${p.grad} overflow-hidden ring-1 ring-border`}>
-                    <div className="absolute inset-0 ring-grid opacity-30" />
-                    {p.premium && (
-                      <div className="absolute top-2 right-2 glass-strong rounded-full px-2 py-0.5 text-[10px] flex items-center gap-1">
-                        {!isPremium && <Lock className="h-2.5 w-2.5 icon-fx" />} Premium
-                      </div>
-                    )}
-                    {p.premium && !isPremium && (
-                      <div className="absolute inset-0 bg-background/40 backdrop-blur-sm flex items-center justify-center">
-                        <Lock className="h-4 w-4 text-foreground/80 icon-fx" />
-                      </div>
-                    )}
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === "overview" && (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-1 md:grid-cols-6 gap-4"
+            >
+              {/* Stats */}
+              <BentoCard className="md:col-span-3">
+                <CardHeader icon={<Download className="h-4 w-4" />} title="Downloads" />
+                <div className="mt-3 flex items-end justify-between">
+                  <div className="text-4xl font-semibold tracking-tight text-gradient-brand">
+                    {isPremium ? (stats?.downloads ?? 0).toLocaleString() : `${stats?.downloads ?? 0}/3`}
                   </div>
-                  <div className="mt-2.5">
-                    <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{p.tag}</div>
-                    <div className="text-sm font-medium mt-0.5">{p.title}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </BentoCard>
-
-          {/* AI Tools */}
-          <BentoCard className="md:col-span-3">
-            <div className="flex items-center justify-between">
-              <CardHeader icon={<Wand2 className="h-4 w-4" />} title="AI Studio" />
-              <Link to="/ai" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-                Open <ArrowUpRight className="h-3 w-3 icon-fx" />
-              </Link>
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {AI_TOOLS.map((t) => {
-                const Icon = t.icon;
-                return (
-                  <Link
-                    key={t.name}
-                    to="/ai"
-                    className="relative p-3 rounded-xl glass hover:bg-elevated transition-colors text-left"
-                  >
-                    <Icon className="h-4 w-4 text-accent" />
-                    <div className="text-sm font-medium mt-2">{t.name}</div>
-                  </Link>
-                );
-              })}
-            </div>
-          </BentoCard>
-
-
-          {/* Upgrade CTA (free only) */}
-          {!isPremium && (
-            <BentoCard className="md:col-span-6 relative overflow-hidden">
-              <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-primary/30 blur-3xl" />
-              <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-accent/20 blur-3xl" />
-              <div className="relative flex items-center justify-between flex-wrap gap-4">
-                <div>
-                  <div className="text-xs uppercase tracking-[0.2em] text-accent flex items-center gap-1.5">
-                    <Sparkles className="h-3 w-3 icon-fx" /> Premium
-                  </div>
-                  <h3 className="text-2xl font-semibold tracking-[-0.02em] mt-2">Unlock the full vault & every AI tool.</h3>
-                  <p className="text-sm text-muted-foreground mt-1">Cancel anytime. $12.99/month.</p>
+                  <Sparkline data={stats?.sparkline} className="text-accent" />
                 </div>
-                <Link to="/billing" className="inline-flex items-center justify-center gap-1.5 h-11 px-5 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary hover:opacity-90 transition-opacity">
-                  Upgrade now
-                  <ArrowUpRight className="h-3.5 w-3.5 icon-fx" />
-                </Link>
-              </div>
-            </BentoCard>
+                <DeltaLabel value={stats?.downloadsDelta} />
+              </BentoCard>
+
+              <Link to="/saved" className="md:col-span-3 group">
+                <BentoCard className="h-full transition-colors group-hover:bg-elevated/40">
+                  <CardHeader icon={<Bookmark className="h-4 w-4" />} title="Saved" />
+                  <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.saved ?? activity.length}</div>
+                  <DeltaLabel value={stats?.savedDelta} />
+                </BentoCard>
+              </Link>
+
+              <BentoCard className="md:col-span-3">
+                <CardHeader icon={<Bot className="h-4 w-4" />} title="AI runs" />
+                <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.aiRuns ?? 0}</div>
+                <DeltaLabel value={stats?.aiRunsDelta} />
+              </BentoCard>
+
+              <BentoCard className="md:col-span-3">
+                <CardHeader icon={<Flame className="h-4 w-4" />} title="Streak" />
+                <div className="mt-3 flex items-end gap-2">
+                  <div className="text-4xl font-semibold tracking-tight">{stats?.streak ?? 0}d</div>
+                  <div className="text-2xl pb-1">🔥</div>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  {(stats?.streak ?? 0) > 0 ? "Keep the fire alive" : "Start your streak today"}
+                </div>
+              </BentoCard>
+
+              {/* Featured Trending Pack */}
+              <BentoCard className="md:col-span-6 relative overflow-hidden">
+                <div className="absolute -top-24 -right-16 h-56 w-56 rounded-full bg-primary/25 blur-3xl" />
+                <div className="absolute top-4 right-4 flex gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-accent" />
+                  <span className="h-2 w-2 rounded-full bg-primary" />
+                </div>
+                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Trending pack</div>
+                <h3 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em] mt-2">Cinematic Reels Vol. 4</h3>
+                <p className="text-sm text-muted-foreground mt-1">240 assets · LUTs, SFX, overlays</p>
+              </BentoCard>
+
+              {/* Recommended */}
+              <BentoCard className="md:col-span-6">
+                <div className="flex items-center justify-between">
+                  <CardHeader icon={<Sparkles className="h-4 w-4 icon-fx" />} title="Picked for you" />
+                  <button onClick={() => setActiveTab("assets")} className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+                    Browse vault <ArrowUpRight className="h-3 w-3 icon-fx" />
+                  </button>
+                </div>
+                <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
+                  {recommended.map((p) => (
+                    <button
+                      key={p.slug}
+                      onClick={() => openPack(p)}
+                      disabled={p.premium && !isPremium}
+                      className="group text-left relative"
+                    >
+                      <div className={`relative aspect-[4/3] rounded-2xl bg-gradient-to-br ${p.grad} overflow-hidden ring-1 ring-border`}>
+                        <div className="absolute inset-0 ring-grid opacity-30" />
+                        {p.premium && (
+                          <div className="absolute top-2 right-2 glass-strong rounded-full px-2 py-0.5 text-[10px] flex items-center gap-1">
+                            {!isPremium && <Lock className="h-2.5 w-2.5 icon-fx" />} Premium
+                          </div>
+                        )}
+                        {p.premium && !isPremium && (
+                          <div className="absolute inset-0 bg-background/40 backdrop-blur-sm flex items-center justify-center">
+                            <Lock className="h-4 w-4 text-foreground/80 icon-fx" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="mt-2.5">
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{p.tag}</div>
+                        <div className="text-sm font-medium mt-0.5">{p.title}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </BentoCard>
+
+              {/* Upgrade CTA (free only) */}
+              {!isPremium && (
+                <BentoCard className="md:col-span-6 relative overflow-hidden">
+                  <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-primary/30 blur-3xl" />
+                  <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-accent/20 blur-3xl" />
+                  <div className="relative flex items-center justify-between flex-wrap gap-4">
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.2em] text-accent flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3 icon-fx" /> Premium
+                      </div>
+                      <h3 className="text-2xl font-semibold tracking-[-0.02em] mt-2">Unlock the full vault & every AI tool.</h3>
+                      <p className="text-sm text-muted-foreground mt-1">Cancel anytime. $12.99/month.</p>
+                    </div>
+                    <Link to="/billing" className="inline-flex items-center justify-center gap-1.5 h-11 px-5 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary hover:opacity-90 transition-opacity">
+                      Upgrade now
+                      <ArrowUpRight className="h-3.5 w-3.5 icon-fx" />
+                    </Link>
+                  </div>
+                </BentoCard>
+              )}
+            </motion.div>
           )}
-        </div>
+
+          {activeTab === "assets" && (
+            <motion.div
+              key="assets"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-1 md:grid-cols-6 gap-4"
+            >
+              <BentoCard className="md:col-span-6">
+                <div className="flex items-center justify-between mb-4">
+                  <CardHeader icon={<Package className="h-4 w-4" />} title="All Asset Packs" />
+                  <span className="text-xs text-muted-foreground">{ALL_PACKS.length} packs available</span>
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                  {ALL_PACKS.map((p) => (
+                    <button
+                      key={p.slug}
+                      onClick={() => openPack(p)}
+                      disabled={p.premium && !isPremium}
+                      className="group text-left relative"
+                    >
+                      <div className={`relative aspect-[4/3] rounded-2xl bg-gradient-to-br ${p.grad} overflow-hidden ring-1 ring-border`}>
+                        <div className="absolute inset-0 ring-grid opacity-30" />
+                        {p.premium && (
+                          <div className="absolute top-2 right-2 glass-strong rounded-full px-2 py-0.5 text-[10px] flex items-center gap-1">
+                            {!isPremium && <Lock className="h-2.5 w-2.5 icon-fx" />} Premium
+                          </div>
+                        )}
+                        {p.premium && !isPremium && (
+                          <div className="absolute inset-0 bg-background/40 backdrop-blur-sm flex items-center justify-center">
+                            <Lock className="h-5 w-5 text-foreground/80 icon-fx" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="mt-2.5">
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{p.tag}</div>
+                        <div className="text-sm font-medium mt-0.5">{p.title}</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </BentoCard>
+            </motion.div>
+          )}
+
+          {activeTab === "ai" && (
+            <motion.div
+              key="ai"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-1 md:grid-cols-6 gap-4"
+            >
+              <BentoCard className="md:col-span-6 relative overflow-hidden">
+                <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-primary/25 blur-3xl" />
+                <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-accent/20 blur-3xl" />
+                <div className="relative">
+                  <CardHeader icon={<Wand2 className="h-4 w-4" />} title="AI Studio" />
+                  <p className="text-sm text-muted-foreground mt-2 max-w-xl">
+                    Generate hooks, captions, thumbnails, and scripts powered by AI. Premium tools unlock unlimited generations.
+                  </p>
+                </div>
+              </BentoCard>
+
+              <BentoCard className="md:col-span-3">
+                <div className="flex items-center justify-between">
+                  <CardHeader icon={<Zap className="h-4 w-4" />} title="Tools" />
+                  <Link to="/ai" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+                    Open <ArrowUpRight className="h-3 w-3 icon-fx" />
+                  </Link>
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  {AI_TOOLS.map((t) => {
+                    const Icon = t.icon;
+                    return (
+                      <Link
+                        key={t.name}
+                        to="/ai"
+                        className="relative p-3 rounded-xl glass hover:bg-elevated transition-colors text-left"
+                      >
+                        <Icon className="h-4 w-4 text-accent" />
+                        <div className="text-sm font-medium mt-2">{t.name}</div>
+                        {t.premium && (
+                          <span className="absolute top-2 right-2 text-[9px] uppercase tracking-wider text-muted-foreground">Pro</span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </BentoCard>
+
+              <BentoCard className="md:col-span-3">
+                <CardHeader icon={<Sparkles className="h-4 w-4" />} title="Usage" />
+                <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.aiRuns ?? 0}</div>
+                <div className="text-xs text-muted-foreground mt-1">AI generations this month</div>
+                <div className="mt-4 h-1.5 rounded-full bg-foreground/10 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-primary to-accent"
+                    style={{
+                      width: credits
+                        ? `${Math.max(2, Math.min(100, (credits.remaining / credits.limit) * 100))}%`
+                        : "0%",
+                    }}
+                  />
+                </div>
+                <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
+                  <span>{credits ? `${credits.remaining} credits left` : "—"}</span>
+                  <span>Daily reset midnight UTC</span>
+                </div>
+              </BentoCard>
+            </motion.div>
+          )}
+
+          {activeTab === "activity" && (
+            <motion.div
+              key="activity"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.3 }}
+              className="grid grid-cols-1 md:grid-cols-6 gap-4"
+            >
+              <BentoCard className="md:col-span-6">
+                <CardHeader icon={<Activity className="h-4 w-4" />} title="Recent Activity" />
+                <div className="mt-4 space-y-2">
+                  {activity && activity.length > 0 ? (
+                    activity.slice(0, 8).map((item: any, i: number) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-3 rounded-xl bg-elevated/40 hover:bg-elevated/60 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Download className="h-3.5 w-3.5 text-primary" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium">{item.pack_title ?? "Unknown pack"}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {item.pack_category ?? "Asset"} · {new Date(item.created_at).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {Math.round((item.progress ?? 0) * 100)}%
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground text-sm">
+                      <Activity className="h-8 w-8 mx-auto mb-3 opacity-40" />
+                      <p>No recent activity yet.</p>
+                      <p className="text-xs mt-1">Start exploring packs to see your activity here.</p>
+                    </div>
+                  )}
+                </div>
+              </BentoCard>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
       </div>
     </div>
   );
 }
 
+
+function FloatingGlassTabs({
+  activeTab,
+  onChange,
+}: {
+  activeTab: "overview" | "assets" | "ai" | "activity";
+  onChange: (tab: "overview" | "assets" | "ai" | "activity") => void;
+}) {
+  const tabs = [
+    { key: "overview" as const, label: "Overview", icon: LayoutDashboard },
+    { key: "assets" as const, label: "Assets", icon: Package },
+    { key: "ai" as const, label: "AI Studio", icon: Wand2 },
+    { key: "activity" as const, label: "Activity", icon: Activity },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.1 }}
+      className="mb-8 flex justify-center"
+    >
+      <div className="glass-strong rounded-2xl p-1.5 flex items-center gap-1">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => onChange(tab.key)}
+              aria-label={tab.label}
+              className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                isActive
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="activeTabBg"
+                  className="absolute inset-0 bg-elevated rounded-xl"
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                <Icon className="h-4 w-4" />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </motion.div>
+  );
+}
 
 function NavTab({ children, active }: { children: React.ReactNode; active?: boolean }) {
   return (
