@@ -31,7 +31,7 @@ export function WorkspaceDock() {
               to={destination.to}
               aria-current={isActive ? "page" : undefined}
               aria-label={destination.label}
-              className={`relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-[1.6rem] px-1 py-2.5 text-xs font-semibold transition-colors sm:gap-1.5 sm:py-3 sm:text-sm ${
+              className={`relative flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[1.6rem] px-1 py-1.5 text-xs font-semibold transition-colors sm:gap-1 sm:py-2 sm:text-sm ${
                 isActive ? "text-primary" : "text-foreground hover:text-primary"
               }`}
             >
