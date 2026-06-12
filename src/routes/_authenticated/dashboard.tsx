@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
@@ -19,6 +19,8 @@ import {
   Wand2,
   Zap,
   Bot,
+  Package,
+  Activity,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyContext, trackVaultView } from "@/lib/preferences.functions";
@@ -65,7 +67,7 @@ function Dashboard() {
   const { data: ctx, isLoading } = useQuery({ queryKey: ["me"], queryFn: () => fetchCtx() });
   const { data: stats } = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => fetchStats() });
   const { data: credits } = useQuery({ queryKey: ["ai-credits"], queryFn: () => fetchCredits() });
-  const activeTab: "overview" | "assets" | "ai" | "activity" = "overview";
+  const [activeTab] = useState<"overview" | "assets" | "ai" | "activity">("overview");
 
   const { isPastDue, isPremium: liveIsPremium } = useSubscription(user?.id);
 
