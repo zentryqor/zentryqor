@@ -19,6 +19,9 @@ import {
   Wand2,
   Zap,
   Bot,
+  LayoutDashboard,
+  Package,
+  Activity,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getMyContext, trackVaultView } from "@/lib/preferences.functions";
