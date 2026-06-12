@@ -68,7 +68,7 @@ function Dashboard() {
   const { data: ctx, isLoading } = useQuery({ queryKey: ["me"], queryFn: () => fetchCtx() });
   const { data: stats } = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => fetchStats() });
   const { data: credits } = useQuery({ queryKey: ["ai-credits"], queryFn: () => fetchCredits() });
-  const [activeTab, setActiveTab] = useState<"overview" | "assets" | "ai" | "activity">("overview");
+  const activeTab: "overview" | "assets" | "ai" | "activity" = "overview";
 
   const { isPastDue, isPremium: liveIsPremium } = useSubscription(user?.id);
 
@@ -274,7 +274,7 @@ function Dashboard() {
         }
       />
 
-      <main className="max-w-7xl mx-auto px-6 pt-28 pb-10">
+      <main className="max-w-7xl mx-auto px-6 pt-28 pb-32">
         {/* Greeting */}
         <div className="flex items-end justify-between flex-wrap gap-4 mb-6">
           <div>
