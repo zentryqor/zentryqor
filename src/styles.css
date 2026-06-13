@@ -47,9 +47,9 @@
   --radius: 1rem;
 
   /* Deep premium black */
-  --background: oklch(0.04 0 0);            /* #0A0A0A-ish */
-  --surface: oklch(0.08 0 0);                /* #111111 */
-  --elevated: oklch(0.12 0 0);               /* #181818 */
+  --background: #181818;
+  --surface: oklch(0.14 0 0);               /* #202020 */
+  --elevated: oklch(0.20 0 0);               /* #262626 */
   --foreground: oklch(0.98 0.005 240);       /* #F8FAFC */
 
   --card: oklch(0.10 0 0);
@@ -83,7 +83,7 @@
 }
 
 .dark {
-  --background: oklch(0.04 0 0);
+  --background: #181818;
   --foreground: oklch(0.98 0.005 240);
 }
 
