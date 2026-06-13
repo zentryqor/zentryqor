@@ -26,6 +26,7 @@ import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { WorkspaceDock } from "@/components/WorkspaceDock";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { PremiumBadge } from "@/components/PremiumLock";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({ meta: [{ title: "Settings — Zentry Qor" }] }),
@@ -257,22 +258,23 @@ function SettingsPage() {
               {/* Security */}
               <Section icon={Shield} title="Security" description="Keep your account safe.">
                 <Field label="New password">
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <input
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       placeholder="At least 8 characters"
-                      className="flex-1 h-10 rounded-xl bg-elevated/60 border border-border/60 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+                      className="h-10 min-w-0 flex-1 rounded-xl border border-border/60 bg-elevated/60 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
-                    <button
+                    <Button
+                      type="button"
                       onClick={changePassword}
                       disabled={savingPassword || newPassword.length < 8}
-                      className="h-10 px-4 rounded-xl glass text-sm font-medium inline-flex items-center gap-2 disabled:opacity-50"
+                      className="h-10 w-full rounded-xl bg-gradient-to-r from-primary to-accent px-5 text-primary-foreground shadow-sm sm:w-auto"
                     >
                       <Lock className="h-3.5 w-3.5" />
                       {savingPassword ? "Updating…" : "Update"}
-                    </button>
+                    </Button>
                   </div>
                 </Field>
               </Section>
