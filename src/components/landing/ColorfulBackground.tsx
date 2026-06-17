@@ -53,7 +53,7 @@ export function ColorfulBackground() {
       <div className="cb-blob cb-blob-5" />
 
       {/* Strong vignette to keep text legible and keep black dominant */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--background)/0.65)_50%,hsl(var(--background)/0.95)_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsl(var(--background)/0.35)_0%,hsl(var(--background)/0.75)_55%,hsl(var(--background)/0.98)_100%)]" />
     </div>
   );
 }
