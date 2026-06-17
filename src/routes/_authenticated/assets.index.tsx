@@ -21,8 +21,8 @@ import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { WorkspaceDock } from "@/components/WorkspaceDock";
-import { getMySavedIds, recordDownload, toggleSave } from "@/lib/assets.functions";
-import { downloadFromUrl } from "@/lib/download";
+import { getMySavedIds, toggleSave } from "@/lib/assets.functions";
+import { downloadAsset } from "@/lib/download";
 
 export const Route = createFileRoute("/_authenticated/assets/")({
   ssr: false,
@@ -61,7 +61,6 @@ function AssetsPage() {
   const qc = useQueryClient();
   const fetchSavedIds = useServerFn(getMySavedIds);
   const saveFn = useServerFn(toggleSave);
-  const trackDl = useServerFn(recordDownload);
 
   const [assets, setAssets] = useState<AssetRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -131,20 +130,7 @@ function AssetsPage() {
       return;
     }
     try {
-      await trackDl({ data: { asset_id: a.id } });
-    } catch (e: any) {
-      toast.error(e?.message ?? "Download failed");
-      return;
-    }
-    const { data, error } = await supabase.storage
-      .from("assets")
-      .createSignedUrl(a.storage_path, 60, { download: a.file_name });
-    if (error || !data) {
-      toast.error(error?.message ?? "Download failed");
-      return;
-    }
-    try {
-      await downloadFromUrl(data.signedUrl, a.file_name);
+      await downloadAsset(a.id, a.file_name);
     } catch (e: any) {
       toast.error(e?.message ?? "Download failed");
       return;
