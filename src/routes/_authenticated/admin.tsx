@@ -350,7 +350,7 @@ function AdminPage() {
                   <span className={`absolute top-1 h-5 w-5 rounded-full bg-background shadow-md transition-all ${premiumOnly ? "left-6" : "left-1"}`} />
                 </button>
               </div>
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 space-y-3">
                 <button
                   type="button"
                   onClick={(e) => handleUpload(e)}
@@ -360,6 +360,47 @@ function AdminPage() {
                   {uploading && <Loader2 className="h-4 w-4 animate-spin" />}
                   <Upload className="h-3.5 w-3.5" /> Upload asset
                 </button>
+                {uploadProgress && (
+                  <div className="rounded-2xl glass-strong p-4">
+                    <div className="flex items-center justify-between text-xs mb-2">
+                      <span className="uppercase tracking-wider text-muted-foreground">
+                        {uploadProgress.phase === "thumbnail"
+                          ? "Uploading thumbnail"
+                          : uploadProgress.phase === "file"
+                            ? "Uploading file"
+                            : "Finalizing"}
+                      </span>
+                      <span className="tabular-nums font-medium">
+                        {formatMB(uploadProgress.loaded)} /{" "}
+                        {formatMB(uploadProgress.total)} MB ·{" "}
+                        {uploadProgress.total
+                          ? Math.round(
+                              (uploadProgress.loaded / uploadProgress.total) *
+                                100,
+                            )
+                          : 0}
+                        %
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-elevated overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-200"
+                        style={{
+                          width: `${
+                            uploadProgress.total
+                              ? Math.min(
+                                  100,
+                                  (uploadProgress.loaded /
+                                    uploadProgress.total) *
+                                    100,
+                                )
+                              : 0
+                          }%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </form>
           </motion.section>
