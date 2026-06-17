@@ -403,7 +403,7 @@
   height: 38vmax;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.55;
+  opacity: 0.65;
   mix-blend-mode: screen;
   will-change: transform;
 }

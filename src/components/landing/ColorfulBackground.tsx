@@ -40,7 +40,7 @@ export function ColorfulBackground() {
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden cb-root"
     >
       {/* Animated gradient base — hue rotates with scroll */}
-      <div className="absolute inset-0 cb-gradient opacity-70" />
+      <div className="absolute inset-0 cb-gradient opacity-80" />
 
       {/* Floating color blobs */}
       <div className="cb-blob cb-blob-1" />
