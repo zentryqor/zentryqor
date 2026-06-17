@@ -5,7 +5,7 @@ import { Features } from "@/components/landing/Features";
 import { ScrollStory } from "@/components/landing/ScrollStory";
 import { VaultPreview } from "@/components/landing/VaultPreview";
 import { Pricing } from "@/components/landing/Pricing";
-import { Testimonials } from "@/components/landing/Testimonials";
+
 import { FAQ } from "@/components/landing/FAQ";
 import { CtaFooter } from "@/components/landing/CtaFooter";
 import { MobileStickyCTA } from "@/components/landing/MobileStickyCTA";
