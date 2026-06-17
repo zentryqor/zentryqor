@@ -384,7 +384,7 @@ function AiStudio() {
       {active && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-background/70 backdrop-blur-md"
-          onClick={() => setActiveId(null)}
+          onClick={() => { setActiveId(null); if (toolParam) navigate({ to: "/ai", search: {} }); }}
         >
           <div
             className="relative w-full sm:max-w-2xl max-h-[92vh] overflow-y-auto glass-strong border border-border/60 rounded-t-3xl sm:rounded-3xl p-6 sm:p-8"
@@ -401,7 +401,7 @@ function AiStudio() {
                 </div>
               </div>
               <button
-                onClick={() => setActiveId(null)}
+                onClick={() => { setActiveId(null); if (toolParam) navigate({ to: "/ai", search: {} }); }}
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
                 Close
