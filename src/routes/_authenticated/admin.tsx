@@ -80,8 +80,11 @@ function AdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleUpload = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleUpload = async (e?: React.FormEvent | React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (!file || !title.trim()) {
       toast.error("Title and file required");
       return;
@@ -221,7 +224,7 @@ function AdminPage() {
             <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground mb-5">
               <Upload className="h-4 w-4 text-accent" /> Upload new asset
             </div>
-            <form onSubmit={handleUpload} className="grid gap-4 md:grid-cols-2">
+            <form onSubmit={handleUpload} noValidate className="grid gap-4 md:grid-cols-2">
               <Field label="Title">
                 <input value={title} onChange={(e) => setTitle(e.target.value)} required className={inputCls} />
               </Field>
@@ -257,7 +260,8 @@ function AdminPage() {
               </div>
               <div className="md:col-span-2">
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={(e) => handleUpload(e)}
                   disabled={uploading}
                   className="h-11 px-6 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary disabled:opacity-60 flex items-center gap-2"
                 >
