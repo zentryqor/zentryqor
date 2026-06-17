@@ -154,34 +154,34 @@ export function Features() {
             </div>
           </TiltCard>
 
-          {/* Workspace — small */}
+          {/* Saved library — small */}
           <TiltCard
             maxTilt={8}
             className="md:col-span-2 group rounded-3xl glass overflow-hidden cursor-default relative"
           >
             <div className="relative h-full p-6 flex flex-col">
               <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                <LayoutGrid className="h-4 w-4 text-accent icon-fx" />
+                <Bookmark className="h-4 w-4 text-accent icon-fx" />
               </MotionIcon>
-              <h3 className="text-lg font-semibold tracking-tight md:mt-auto">Workspace</h3>
+              <h3 className="text-lg font-semibold tracking-tight md:mt-auto">Saved library</h3>
               <p className="text-xs text-muted-foreground mt-1.5">
-                Moodboards, projects, drag-and-drop. Built for flow state.
+                Bookmark anything from the vault. One click to find it again.
               </p>
             </div>
           </TiltCard>
 
-          {/* Community — small */}
+          {/* Daily credits — small */}
           <TiltCard
             maxTilt={8}
             className="md:col-span-2 group rounded-3xl glass overflow-hidden cursor-default relative"
           >
             <div className="relative h-full p-6 flex flex-col">
               <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                <Users className="h-4 w-4 text-accent icon-fx" />
+                <Zap className="h-4 w-4 text-accent icon-fx" />
               </MotionIcon>
-              <h3 className="text-lg font-semibold tracking-tight md:mt-auto">Community</h3>
+              <h3 className="text-lg font-semibold tracking-tight md:mt-auto">Fresh credits daily</h3>
               <p className="text-xs text-muted-foreground mt-1.5">
-                Real feedback. Weekly challenges. Zero hustle-bros.
+                1,000 AI credits a day on Premium. No top-ups, no surprise bills.
               </p>
             </div>
           </TiltCard>
