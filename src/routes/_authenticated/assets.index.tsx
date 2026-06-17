@@ -23,7 +23,7 @@ import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { WorkspaceDock } from "@/components/WorkspaceDock";
 import { getMySavedIds, recordDownload, toggleSave } from "@/lib/assets.functions";
 
-export const Route = createFileRoute("/_authenticated/assets")({
+export const Route = createFileRoute("/_authenticated/assets/")({
   ssr: false,
   head: () => ({ meta: [{ title: "Vault — Zentry Qor" }] }),
   component: AssetsPage,

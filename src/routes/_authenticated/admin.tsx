@@ -18,13 +18,14 @@ import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import {
   adminDeleteAsset,
   adminGetAssetSignedUrl,
+  adminInsertAssetRow,
   adminListAccounts,
   adminListAssets,
-  adminUploadAsset,
   checkIsAdmin,
   type AdminAccount,
   type AdminAssetRow,
 } from "@/lib/admin.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin — Zentry Qor" }] }),
@@ -49,6 +50,11 @@ function AdminPage() {
   const [assets, setAssets] = useState<AssetRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{
+    loaded: number;
+    total: number;
+    phase: "thumbnail" | "file" | "finalizing";
+  } | null>(null);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -80,6 +86,49 @@ function AdminPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // XHR upload to Supabase Storage REST so we can read progress events.
+  // supabase-js v2 .upload() doesn't expose upload progress.
+  const uploadToStorage = (
+    path: string,
+    blob: Blob,
+    contentType: string,
+    onProgress: (loaded: number, total: number) => void,
+  ): Promise<void> =>
+    new Promise(async (resolve, reject) => {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      if (!token) {
+        reject(new Error("Not authenticated"));
+        return;
+      }
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/assets/${path}`;
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", url);
+      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      xhr.setRequestHeader(
+        "apikey",
+        import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+      );
+      xhr.setRequestHeader("Content-Type", contentType);
+      xhr.setRequestHeader("x-upsert", "false");
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress(e.loaded, e.total);
+      };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) resolve();
+        else {
+          let msg = `Upload failed (${xhr.status})`;
+          try {
+            const parsed = JSON.parse(xhr.responseText);
+            if (parsed?.message) msg = parsed.message;
+          } catch {}
+          reject(new Error(msg));
+        }
+      };
+      xhr.onerror = () => reject(new Error("Network error"));
+      xhr.send(blob);
+    });
+
   const handleUpload = async (e?: React.FormEvent | React.MouseEvent) => {
     if (e) {
       e.preventDefault();
@@ -90,14 +139,47 @@ function AdminPage() {
       return;
     }
     setUploading(true);
+    setUploadProgress(null);
+    let storagePath: string | null = null;
+    let thumbnailPath: string | null = null;
     try {
-      const tags = tagsInput.split(",").map((t) => t.trim()).filter(Boolean);
-      const fd = new FormData();
-      fd.append("file", file);
-      if (thumbnail) fd.append("thumbnail", thumbnail);
-      fd.append(
-        "meta",
-        JSON.stringify({
+      const { data: sess } = await supabase.auth.getSession();
+      const uid = sess.session?.user?.id;
+      if (!uid) throw new Error("Not authenticated");
+      const tags = tagsInput
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      // 1) Optional thumbnail first
+      if (thumbnail) {
+        const safeThumb = thumbnail.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+        thumbnailPath = `${uid}/thumbnails/${Date.now()}-${safeThumb}`;
+        setUploadProgress({ loaded: 0, total: thumbnail.size, phase: "thumbnail" });
+        await uploadToStorage(
+          thumbnailPath,
+          thumbnail,
+          thumbnail.type || "application/octet-stream",
+          (loaded, total) =>
+            setUploadProgress({ loaded, total, phase: "thumbnail" }),
+        );
+      }
+
+      // 2) Main file
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      storagePath = `${uid}/${Date.now()}-${safeName}`;
+      setUploadProgress({ loaded: 0, total: file.size, phase: "file" });
+      await uploadToStorage(
+        storagePath,
+        file,
+        file.type || "application/octet-stream",
+        (loaded, total) => setUploadProgress({ loaded, total, phase: "file" }),
+      );
+
+      // 3) Insert metadata row
+      setUploadProgress({ loaded: file.size, total: file.size, phase: "finalizing" });
+      await adminInsertAssetRow({
+        data: {
           title: title.trim(),
           description: description.trim() || null,
           category: category.trim() || "general",
@@ -105,9 +187,11 @@ function AdminPage() {
           premium_only: premiumOnly,
           file_name: file.name,
           mime_type: file.type || null,
-        }),
-      );
-      await adminUploadAsset({ data: fd });
+          size_bytes: file.size,
+          storage_path: storagePath,
+          thumbnail_path: thumbnailPath,
+        },
+      });
 
       toast.success("Asset uploaded");
       setTitle("");
@@ -123,9 +207,17 @@ function AdminPage() {
       if (thumbEl) thumbEl.value = "";
       loadAll();
     } catch (err: any) {
+      // best-effort cleanup of any partial uploads
+      const toClean = [storagePath, thumbnailPath].filter(Boolean) as string[];
+      if (toClean.length) {
+        try {
+          await supabase.storage.from("assets").remove(toClean);
+        } catch {}
+      }
       toast.error(err.message ?? "Upload failed");
     } finally {
       setUploading(false);
+      setUploadProgress(null);
     }
   };
 
@@ -258,7 +350,7 @@ function AdminPage() {
                   <span className={`absolute top-1 h-5 w-5 rounded-full bg-background shadow-md transition-all ${premiumOnly ? "left-6" : "left-1"}`} />
                 </button>
               </div>
-              <div className="md:col-span-2">
+              <div className="md:col-span-2 space-y-3">
                 <button
                   type="button"
                   onClick={(e) => handleUpload(e)}
@@ -268,6 +360,47 @@ function AdminPage() {
                   {uploading && <Loader2 className="h-4 w-4 animate-spin" />}
                   <Upload className="h-3.5 w-3.5" /> Upload asset
                 </button>
+                {uploadProgress && (
+                  <div className="rounded-2xl glass-strong p-4">
+                    <div className="flex items-center justify-between text-xs mb-2">
+                      <span className="uppercase tracking-wider text-muted-foreground">
+                        {uploadProgress.phase === "thumbnail"
+                          ? "Uploading thumbnail"
+                          : uploadProgress.phase === "file"
+                            ? "Uploading file"
+                            : "Finalizing"}
+                      </span>
+                      <span className="tabular-nums font-medium">
+                        {formatMB(uploadProgress.loaded)} /{" "}
+                        {formatMB(uploadProgress.total)} MB ·{" "}
+                        {uploadProgress.total
+                          ? Math.round(
+                              (uploadProgress.loaded / uploadProgress.total) *
+                                100,
+                            )
+                          : 0}
+                        %
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-elevated overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-200"
+                        style={{
+                          width: `${
+                            uploadProgress.total
+                              ? Math.min(
+                                  100,
+                                  (uploadProgress.loaded /
+                                    uploadProgress.total) *
+                                    100,
+                                )
+                              : 0
+                          }%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </form>
           </motion.section>
@@ -426,6 +559,10 @@ function Field({ label, className = "", children }: { label: string; className?:
       {children}
     </div>
   );
+}
+
+function formatMB(bytes: number) {
+  return (bytes / (1024 * 1024)).toFixed(bytes >= 1024 * 1024 * 10 ? 0 : 2);
 }
 
 function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: number; accent?: boolean }) {

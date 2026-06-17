@@ -6,11 +6,7 @@ import {
   ArrowLeft,
   Bookmark,
   BookmarkCheck,
-  Calendar,
   Download,
-  FileType,
-  Hash,
-  HardDrive,
   Lock,
   Share2,
   Sparkles,
@@ -19,7 +15,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
-import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
+import { AppHeader } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getAssetDetails,
@@ -32,6 +28,15 @@ export const Route = createFileRoute("/_authenticated/assets/$id")({
   head: () => ({ meta: [{ title: "Asset — Zentry Qor" }] }),
   component: AssetDetailsPage,
 });
+
+function formatSize(bytes: number | null | undefined) {
+  if (!bytes) return "—";
+  if (bytes >= 1024 * 1024) {
+    const mb = bytes / (1024 * 1024);
+    return `${mb >= 10 ? mb.toFixed(0) : mb.toFixed(1)} MB`;
+  }
+  return `${(bytes / 1024).toFixed(1)} KB`;
+}
 
 function AssetDetailsPage() {
   const { id } = Route.useParams();
@@ -50,6 +55,7 @@ function AssetDetailsPage() {
   });
 
   const asset = data?.asset;
+  const thumbnailUrl = data?.thumbnailUrl ?? null;
   const saved = !!data?.saved;
   const locked = asset?.premium_only && !isPremium;
 
@@ -88,8 +94,10 @@ function AssetDetailsPage() {
 
   async function onShare() {
     const url = typeof window !== "undefined" ? window.location.href : "";
-    if (navigator.share) {
-      try { await navigator.share({ title: asset?.title, url }); } catch {}
+    if (typeof navigator !== "undefined" && (navigator as any).share) {
+      try {
+        await (navigator as any).share({ title: asset?.title, url });
+      } catch {}
     } else {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied");
@@ -124,140 +132,135 @@ function AssetDetailsPage() {
     <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
       <AnimatedOrbs />
       <div className="relative">
-        <AppHeader
-          nav={
-            <>
-              <AppHeaderLink to="/dashboard">Dashboard</AppHeaderLink>
-              <AppHeaderLink to="/assets" active>Vault</AppHeaderLink>
-              <AppHeaderLink to="/saved">Saved</AppHeaderLink>
-              <AppHeaderLink to="/ai">AI Studio</AppHeaderLink>
-            </>
-          }
-        />
+        <AppHeader />
 
-        <main className="max-w-5xl mx-auto px-6 pt-28 pb-16">
+        <main className="max-w-2xl mx-auto px-5 pt-24 pb-16">
+          {/* Library back link */}
           <button
             onClick={() => navigate({ to: "/assets" })}
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-6 transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Back to vault
+            <ArrowLeft className="h-4 w-4" /> Library
           </button>
 
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="grid lg:grid-cols-5 gap-8"
           >
-            {/* Preview */}
-            <div className="lg:col-span-3">
-              <div className="relative aspect-[16/10] rounded-3xl bg-gradient-to-br from-primary/40 to-accent/20 overflow-hidden ring-1 ring-border">
-                <div className="absolute inset-0 ring-grid opacity-30" />
+            {/* Big thumbnail card */}
+            <div className="relative aspect-[16/10] rounded-3xl overflow-hidden ring-1 ring-border bg-gradient-to-br from-primary/30 to-accent/20">
+              {thumbnailUrl ? (
+                <img
+                  src={thumbnailUrl}
+                  alt={asset.title}
+                  className="absolute inset-0 h-full w-full object-cover"
+                />
+              ) : (
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-[10rem] font-semibold tracking-tighter text-foreground/20 select-none">
+                  <span className="text-[8rem] font-semibold tracking-tighter text-foreground/20 select-none">
                     {asset.title.slice(0, 1).toUpperCase()}
                   </span>
                 </div>
-                {asset.premium_only && (
-                  <div className="absolute top-4 right-4 glass-strong rounded-full px-3 py-1 text-xs flex items-center gap-1.5">
-                    {locked && <Lock className="h-3 w-3" />}
-                    <Sparkles className="h-3 w-3 text-accent" /> Premium
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Meta + actions */}
-            <div className="lg:col-span-2 flex flex-col">
-              <div className="text-[11px] uppercase tracking-[0.2em] text-accent">{asset.category}</div>
-              <h1 className="text-3xl sm:text-4xl font-semibold tracking-[-0.025em] mt-2 leading-tight">
-                {asset.title}
-              </h1>
-              {asset.description && (
-                <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-                  {asset.description}
-                </p>
               )}
-
-              {asset.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-4">
-                  {asset.tags.map((t) => (
-                    <span key={t} className="text-[10px] px-2 py-1 rounded-full bg-elevated/70 text-muted-foreground flex items-center gap-1">
-                      <Hash className="h-2.5 w-2.5" /> {t}
-                    </span>
-                  ))}
+              {asset.premium_only && (
+                <div className="absolute top-3 right-3 glass-strong rounded-full px-3 py-1 text-xs flex items-center gap-1.5">
+                  {locked && <Lock className="h-3 w-3" />}
+                  <Sparkles className="h-3 w-3 text-accent" /> Premium
                 </div>
               )}
-
-              <div className="mt-6 flex gap-2">
-                <button
-                  onClick={onDownload}
-                  disabled={!!locked}
-                  className="flex-1 h-11 rounded-xl text-sm font-medium flex items-center justify-center gap-2 magnetic disabled:opacity-60 disabled:cursor-not-allowed bg-gradient-to-r from-primary to-accent text-primary-foreground glow-primary"
-                >
-                  {locked ? <><Lock className="h-4 w-4" /> Unlock with Premium</> : <><Download className="h-4 w-4" /> Download</>}
-                </button>
-                <button
-                  onClick={onSaveToggle}
-                  className={`h-11 w-11 rounded-xl flex items-center justify-center transition-colors ${
-                    saved ? "bg-accent/20 text-accent" : "glass-strong text-muted-foreground hover:text-foreground"
-                  }`}
-                  aria-label={saved ? "Unsave" : "Save"}
-                >
-                  {saved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
-                </button>
-                <button
-                  onClick={onShare}
-                  className="h-11 w-11 rounded-xl glass-strong flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                  aria-label="Share"
-                >
-                  <Share2 className="h-4 w-4" />
-                </button>
-              </div>
-
-              {locked && (
-                <Link
-                  to="/billing"
-                  className="mt-3 text-xs text-center text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  See pricing →
-                </Link>
-              )}
-
-              {/* Specs */}
-              <div className="mt-6 glass rounded-2xl divide-y divide-border/40">
-                <Spec icon={<FileType className="h-3.5 w-3.5" />} label="Type" value={asset.mime_type ?? "—"} />
-                <Spec
-                  icon={<HardDrive className="h-3.5 w-3.5" />}
-                  label="Size"
-                  value={asset.size_bytes ? `${(asset.size_bytes / 1024).toFixed(1)} KB` : "—"}
-                />
-                <Spec
-                  icon={<Calendar className="h-3.5 w-3.5" />}
-                  label="Added"
-                  value={new Date(asset.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                />
-                <Spec
-                  icon={<Download className="h-3.5 w-3.5" />}
-                  label="Your downloads"
-                  value={`${data?.downloadCount ?? 0}`}
-                />
-              </div>
             </div>
+
+            {/* Category */}
+            <div className="mt-8 flex items-center gap-2 text-sm">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+              <span className="text-accent capitalize">{asset.category}</span>
+            </div>
+
+            {/* Title */}
+            <h1 className="mt-3 text-3xl sm:text-4xl font-semibold tracking-[-0.025em] leading-tight">
+              {asset.title}
+            </h1>
+
+            {/* Description */}
+            {asset.description && (
+              <p className="mt-6 text-base text-muted-foreground leading-relaxed whitespace-pre-line">
+                {asset.description}
+              </p>
+            )}
+
+            {/* Tags */}
+            {asset.tags.length > 0 && (
+              <div className="mt-6 flex flex-wrap gap-1.5">
+                {asset.tags.map((t) => (
+                  <span
+                    key={t}
+                    className="text-[11px] px-2.5 py-1 rounded-full bg-elevated/70 text-muted-foreground"
+                  >
+                    #{t}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Big download button */}
+            <div className="mt-8 flex gap-2">
+              <button
+                onClick={onDownload}
+                disabled={!!locked}
+                className="flex-1 h-14 rounded-2xl text-base font-medium flex items-center justify-center gap-3 magnetic disabled:opacity-60 disabled:cursor-not-allowed bg-gradient-to-r from-primary to-accent text-primary-foreground glow-primary"
+              >
+                {locked ? (
+                  <>
+                    <Lock className="h-4 w-4" /> Unlock with Premium
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-5 w-5" />
+                    Download · {formatSize(asset.size_bytes)}
+                  </>
+                )}
+              </button>
+              <button
+                onClick={onSaveToggle}
+                className={`h-14 w-14 rounded-2xl flex items-center justify-center transition-colors ${
+                  saved
+                    ? "bg-accent/20 text-accent"
+                    : "glass-strong text-muted-foreground hover:text-foreground"
+                }`}
+                aria-label={saved ? "Unsave" : "Save"}
+              >
+                {saved ? (
+                  <BookmarkCheck className="h-5 w-5" />
+                ) : (
+                  <Bookmark className="h-5 w-5" />
+                )}
+              </button>
+              <button
+                onClick={onShare}
+                className="h-14 w-14 rounded-2xl glass-strong flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Share"
+              >
+                <Share2 className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Free plan footer */}
+            <p className="mt-3 text-center text-xs text-muted-foreground">
+              Free plan: 3 downloads/day · Pro: unlimited
+            </p>
+
+            {locked && (
+              <Link
+                to="/billing"
+                className="mt-4 block text-center text-sm text-accent hover:text-accent/80 transition-colors"
+              >
+                See pricing →
+              </Link>
+            )}
           </motion.div>
         </main>
       </div>
-    </div>
-  );
-}
-
-function Spec({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between px-4 py-3 text-xs">
-      <span className="flex items-center gap-2 text-muted-foreground uppercase tracking-wider">
-        <span className="text-accent">{icon}</span> {label}
-      </span>
-      <span className="font-medium tabular-nums">{value}</span>
     </div>
   );
 }

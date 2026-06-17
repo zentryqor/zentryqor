@@ -116,8 +116,17 @@ export const getAssetDetails = createServerFn({ method: "GET" })
         .order("created_at", { ascending: false }),
     ]);
     if (assetRes.error) throw assetRes.error;
+    const asset = assetRes.data as AssetRow | null;
+    let thumbnailUrl: string | null = null;
+    if (asset?.thumbnail_path) {
+      const { data: signed } = await supabase.storage
+        .from("assets")
+        .createSignedUrl(asset.thumbnail_path, 3600);
+      thumbnailUrl = signed?.signedUrl ?? null;
+    }
     return {
-      asset: assetRes.data as AssetRow | null,
+      asset,
+      thumbnailUrl,
       saved: !!savedRes.data,
       downloadCount: dlRes.data?.length ?? 0,
       lastDownloadedAt: (dlRes.data?.[0]?.created_at as string | undefined) ?? null,
