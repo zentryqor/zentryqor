@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import {
   ArrowUpRight,
   Calendar,
@@ -33,10 +34,12 @@ export const Route = createFileRoute("/_authenticated/ai")({
       {
         name: "description",
         content:
-          "Viral captions, hooks, scripts, hashtags & more — a creator AI toolkit powered by Zentry Qor.",
+          "Nine AI tools for creators — captions, hooks, scripts, thumbnails, trends, and more. Each tool runs in seconds and tells you exactly what it costs in credits.",
       },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>) =>
+    z.object({ tool: z.string().optional() }).parse(s),
   component: AiStudio,
 });
 
@@ -177,6 +180,8 @@ const TOOLS: Tool[] = [
 type AspectRatio = "16:9" | "9:16" | "4:3" | "3:4";
 
 function AiStudio() {
+  const { tool: toolParam } = Route.useSearch();
+  const navigate = useNavigate();
   const [activeId, setActiveId] = useState<ToolId | null>(null);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
@@ -187,6 +192,13 @@ function AiStudio() {
   const runImage = useServerFn(generateAiImage);
   const fetchCredits = useServerFn(getAiCredits);
   const active = TOOLS.find((t) => t.id === activeId) ?? null;
+
+  // Deep-link: open tool via ?tool=<id>
+  useEffect(() => {
+    if (toolParam && TOOLS.some((t) => t.id === toolParam)) {
+      setActiveId(toolParam as ToolId);
+    }
+  }, [toolParam]);
 
   const creditsQuery = useQuery({
     queryKey: ["ai-credits"],
@@ -372,7 +384,7 @@ function AiStudio() {
       {active && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-background/70 backdrop-blur-md"
-          onClick={() => setActiveId(null)}
+          onClick={() => { setActiveId(null); if (toolParam) navigate({ to: "/ai", search: {} }); }}
         >
           <div
             className="relative w-full sm:max-w-2xl max-h-[92vh] overflow-y-auto glass-strong border border-border/60 rounded-t-3xl sm:rounded-3xl p-6 sm:p-8"
@@ -389,7 +401,7 @@ function AiStudio() {
                 </div>
               </div>
               <button
-                onClick={() => setActiveId(null)}
+                onClick={() => { setActiveId(null); if (toolParam) navigate({ to: "/ai", search: {} }); }}
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
                 Close

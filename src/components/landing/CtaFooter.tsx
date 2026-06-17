@@ -30,7 +30,7 @@ export function CtaFooter() {
             <span className="text-aurora italic font-medium">Build like a studio.</span>
           </h2>
           <p className="mt-6 text-muted-foreground max-w-xl mx-auto">
-            Join 24,000+ creators who replaced six tools with one. Free forever. Upgrade when it starts paying for itself.
+            Replace your stack of tabs with one workspace. Free to start. Upgrade when the daily download cap starts to bite.
           </p>
           <div className="mt-8 flex items-center justify-center gap-3 flex-wrap">
             {user ? (

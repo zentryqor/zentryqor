@@ -10,12 +10,19 @@ import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import {
   ArrowUpRight,
   Bookmark,
+  Calendar,
   Download,
+  FileText,
   Flame,
+  Hash,
+  Image as ImageIcon,
   Lock,
   LogOut,
-  Play,
+  Megaphone,
+  Quote,
   Sparkles,
+  TrendingUp,
+  Video,
   Wand2,
   Zap,
   Bot,
@@ -23,39 +30,55 @@ import {
   Activity,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { getMyContext, trackVaultView } from "@/lib/preferences.functions";
+import { getMyContext } from "@/lib/preferences.functions";
 import { getDashboardStats } from "@/lib/stats.functions";
 import { getAiCredits } from "@/lib/ai.functions";
-import { getSavedAssets } from "@/lib/assets.functions";
-import { PremiumBadge, PremiumLockOverlay } from "@/components/PremiumLock";
+import { getDashboardFeed, getSavedAssets } from "@/lib/assets.functions";
+import { PremiumBadge } from "@/components/PremiumLock";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { WorkspaceDock } from "@/components/WorkspaceDock";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ChevronRight, Settings } from "lucide-react";
 
-
-
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Zentry Qor" }] }),
   component: Dashboard,
 });
 
-const ALL_PACKS = [
-  { slug: "cinematic-reels", title: "Cinematic Reels", tag: "Editing", premium: false, grad: "from-primary/40 to-accent/20" },
-  { slug: "viral-hooks-2026", title: "Viral Hooks 2026", tag: "Captions", premium: false, grad: "from-accent/40 to-primary/20" },
-  { slug: "brand-identity", title: "Brand Identity Kit", tag: "Design", premium: true, grad: "from-primary/30 to-foreground/5" },
-  { slug: "motion-overlays-pro", title: "Motion Overlays Pro", tag: "Motion", premium: true, grad: "from-accent/30 to-primary/10" },
-  { slug: "thumbnail-lab", title: "Thumbnail Lab", tag: "YouTube", premium: false, grad: "from-foreground/10 to-primary/20" },
-  { slug: "notion-creator-os", title: "Notion for Creators", tag: "Productivity", premium: true, grad: "from-primary/20 to-accent/30" },
+// Real AI tools (must match TOOLS in /ai page). Deep-links via ?tool=<id>.
+const AI_TOOLS = [
+  { id: "hook", name: "Hook Generator", icon: Zap, accent: "text-yellow-400", premium: false },
+  { id: "caption", name: "Caption Studio", icon: Quote, accent: "text-pink-400", premium: false },
+  { id: "video-idea", name: "Video Ideas", icon: Video, accent: "text-blue-400", premium: false },
+  { id: "script", name: "Script Assistant", icon: FileText, accent: "text-cyan-400", premium: true },
+  { id: "thumbnail", name: "Thumbnail Image", icon: ImageIcon, accent: "text-emerald-400", premium: true },
+  { id: "trend", name: "Trend Finder", icon: TrendingUp, accent: "text-rose-400", premium: false },
+  { id: "hashtag", name: "Hashtags", icon: Hash, accent: "text-teal-400", premium: false },
+  { id: "planner", name: "7-day Planner", icon: Calendar, accent: "text-violet-400", premium: true },
+  { id: "bio", name: "Brand Bio", icon: Megaphone, accent: "text-orange-400", premium: false },
+] as const;
+
+const GRADIENTS = [
+  "from-primary/40 to-accent/20",
+  "from-accent/40 to-primary/20",
+  "from-primary/30 to-foreground/5",
+  "from-accent/30 to-primary/10",
+  "from-foreground/10 to-primary/20",
+  "from-primary/20 to-accent/30",
 ];
 
-const AI_TOOLS = [
-  { name: "Hook Generator", icon: Wand2, premium: false },
-  { name: "Caption Studio", icon: Sparkles, premium: false },
-  { name: "Thumbnail AI", icon: Zap, premium: true },
-  { name: "Script Architect", icon: Flame, premium: true },
-];
+function relativeTime(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d}d ago`;
+  return new Date(iso).toLocaleDateString();
+}
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -64,11 +87,12 @@ function Dashboard() {
   const fetchCtx = useServerFn(getMyContext);
   const fetchStats = useServerFn(getDashboardStats);
   const fetchCredits = useServerFn(getAiCredits);
-  const track = useServerFn(trackVaultView);
+  const fetchFeed = useServerFn(getDashboardFeed);
   const { data: ctx, isLoading } = useQuery({ queryKey: ["me"], queryFn: () => fetchCtx() });
   const { data: stats } = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => fetchStats() });
   const { data: credits } = useQuery({ queryKey: ["ai-credits"], queryFn: () => fetchCredits() });
-  const [activeTab] = useState<"overview" | "assets" | "ai" | "activity">("overview");
+  const { data: feed } = useQuery({ queryKey: ["dashboard-feed"], queryFn: () => fetchFeed() });
+  const [activeTab, setActiveTab] = useState<"overview" | "browse" | "ai" | "activity">("overview");
 
   const { isPastDue, isPremium: liveIsPremium } = useSubscription(user?.id);
 
@@ -78,25 +102,20 @@ function Dashboard() {
     }
   }, [ctx, isLoading, navigate]);
 
-  // Checkout success celebration — poll briefly for the webhook to update the row
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("checkout") !== "success") return;
-
-    toast.success("🎉 Welcome to Premium", {
-      description: "Everything is unlocked. Enjoy the vault.",
+    toast.success("Welcome to Premium", {
+      description: "Unlimited downloads and 1,000 AI credits per day are live on your account.",
       duration: 6000,
     });
-
     let tries = 0;
     const poll = setInterval(() => {
       queryClient.invalidateQueries({ queryKey: ["me"] });
       tries += 1;
       if (tries >= 6) clearInterval(poll);
     }, 1500);
-
-    // Clean the URL
     window.history.replaceState({}, "", window.location.pathname);
     return () => clearInterval(poll);
   }, [queryClient]);
@@ -109,28 +128,16 @@ function Dashboard() {
     );
   }
 
-  const { profile, preferences, activity } = ctx;
+  const { profile, preferences } = ctx;
   const isPremium = ctx.isPremium || liveIsPremium;
   const firstName = profile?.display_name?.split(" ")[0] ?? "creator";
 
-  // Personalize: filter recommendations by interests/platforms
-  const interests = preferences?.interests ?? [];
-  const recommended = ALL_PACKS
-    .map((p) => ({
-      ...p,
-      score:
-        (interests.includes(p.tag) ? 2 : 0) +
-        (interests.some((i) => p.title.toLowerCase().includes(i.toLowerCase())) ? 1 : 0),
-    }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 4);
-
-  
-
-  async function openPack(p: typeof ALL_PACKS[number]) {
-    if (p.premium && !isPremium) return;
-    await track({ data: { pack_slug: p.slug, pack_title: p.title, pack_category: p.tag, progress: 0.1 } }).catch(() => {});
-  }
+  const subline = (() => {
+    const bits: string[] = [];
+    if (preferences?.niche) bits.push(preferences.niche);
+    if (preferences?.platforms?.length) bits.push(preferences.platforms.join(" · "));
+    return bits.join(" · ");
+  })();
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -164,9 +171,8 @@ function Dashboard() {
         nav={
           <>
             <AppHeaderLink to="/dashboard" active>Dashboard</AppHeaderLink>
-            <AppHeaderLink to="/assets">Assets</AppHeaderLink>
+            <AppHeaderLink to="/assets">Vault</AppHeaderLink>
             <SavedNavDropdown />
-            <AppHeaderLink to="/admin">Admin</AppHeaderLink>
             <AppHeaderLink to="/ai">AI Studio</AppHeaderLink>
           </>
         }
@@ -201,9 +207,9 @@ function Dashboard() {
                   className="block rounded-xl p-3 bg-elevated/60 hover:bg-elevated transition mb-2"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">Credits</span>
+                    <span className="text-sm font-semibold">AI credits</span>
                     <span className="text-sm text-muted-foreground flex items-center gap-1">
-                      {credits ? `${credits.remaining} left` : "—"}
+                      {credits ? `${credits.remaining} of ${credits.limit}` : "—"}
                       <ChevronRight className="h-3.5 w-3.5" />
                     </span>
                   </div>
@@ -219,7 +225,7 @@ function Dashboard() {
                   </div>
                   <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                     <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
-                    Daily credits reset at midnight UTC
+                    Resets at midnight UTC
                   </div>
                 </Link>
 
@@ -228,7 +234,7 @@ function Dashboard() {
                   className="block rounded-xl p-3 bg-elevated/60 hover:bg-elevated transition mb-2"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold">Asset downloads</span>
+                    <span className="text-sm font-semibold">Downloads</span>
                     <span className="text-sm text-muted-foreground flex items-center gap-1">
                       {stats?.downloads ?? 0} total
                       <ChevronRight className="h-3.5 w-3.5" />
@@ -236,8 +242,8 @@ function Dashboard() {
                   </div>
                   <div className="mt-1 text-[11px] text-muted-foreground">
                     {isPremium
-                      ? "Unlimited downloads"
-                      : `${stats?.downloadsToday ?? 0}/3 downloads today`}
+                      ? "Unlimited downloads on Premium"
+                      : `${stats?.downloadsToday ?? 0} of 3 used today`}
                   </div>
                 </Link>
 
@@ -284,10 +290,8 @@ function Dashboard() {
             <h1 className="text-3xl sm:text-4xl font-semibold tracking-[-0.03em]">
               Welcome back, <span className="text-gradient-brand">{firstName}</span>.
             </h1>
-            {preferences?.niche && (
-              <p className="text-sm text-muted-foreground mt-2">
-                Built for Gaming creators · {preferences.platforms?.join(" · ") || "all platforms"}
-              </p>
+            {subline && (
+              <p className="text-sm text-muted-foreground mt-2">{subline}</p>
             )}
           </div>
           {isPremium ? (
@@ -297,6 +301,21 @@ function Dashboard() {
               <Sparkles className="h-3.5 w-3.5 icon-fx" /> Upgrade to Premium
             </Link>
           )}
+        </div>
+
+        {/* Tabs */}
+        <div className="mb-6 inline-flex gap-1 p-1 rounded-full glass-strong">
+          {(["overview", "browse", "ai", "activity"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setActiveTab(t)}
+              className={`px-4 h-8 text-xs rounded-full capitalize transition-colors ${
+                activeTab === t ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
         </div>
 
         {/* Tab Content */}
@@ -315,89 +334,141 @@ function Dashboard() {
                 <CardHeader icon={<Download className="h-4 w-4" />} title="Downloads" />
                 <div className="mt-3 flex items-end justify-between">
                   <div className="text-4xl font-semibold tracking-tight text-gradient-brand">
-                    {isPremium ? (stats?.downloads ?? 0).toLocaleString() : `${stats?.downloads ?? 0}/3`}
+                    {isPremium ? (stats?.downloads ?? 0).toLocaleString() : `${stats?.downloadsToday ?? 0}/3`}
                   </div>
                   <Sparkline data={stats?.sparkline} className="text-accent" />
                 </div>
                 <DeltaLabel value={stats?.downloadsDelta} />
+                {!isPremium && (
+                  <div className="text-[11px] text-muted-foreground mt-1">
+                    Free plan · 3 downloads per day
+                  </div>
+                )}
               </BentoCard>
 
               <Link to="/saved" className="md:col-span-3 group">
                 <BentoCard className="h-full transition-colors group-hover:bg-elevated/40">
                   <CardHeader icon={<Bookmark className="h-4 w-4" />} title="Saved" />
-                  <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.saved ?? activity.length}</div>
+                  <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.saved ?? 0}</div>
                   <DeltaLabel value={stats?.savedDelta} />
                 </BentoCard>
               </Link>
 
-              <BentoCard className="md:col-span-3">
-                <CardHeader icon={<Bot className="h-4 w-4" />} title="AI runs" />
-                <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.aiRuns ?? 0}</div>
-                <DeltaLabel value={stats?.aiRunsDelta} />
-              </BentoCard>
+              <Link to="/ai" className="md:col-span-3 group">
+                <BentoCard className="h-full transition-colors group-hover:bg-elevated/40">
+                  <CardHeader icon={<Bot className="h-4 w-4" />} title="AI runs (14d)" />
+                  <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.aiRuns ?? 0}</div>
+                  <DeltaLabel value={stats?.aiRunsDelta} />
+                </BentoCard>
+              </Link>
 
               <BentoCard className="md:col-span-3">
-                <CardHeader icon={<Flame className="h-4 w-4" />} title="Streak" />
+                <CardHeader icon={<Flame className="h-4 w-4" />} title="Active streak" />
                 <div className="mt-3 flex items-end gap-2">
                   <div className="text-4xl font-semibold tracking-tight">{stats?.streak ?? 0}d</div>
                   <div className="text-2xl pb-1">🔥</div>
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  {(stats?.streak ?? 0) > 0 ? "Keep the fire alive" : "Start your streak today"}
+                  {(stats?.streak ?? 0) > 0
+                    ? "Download, save, or generate to extend your streak"
+                    : "Take any action today to start a streak"}
                 </div>
               </BentoCard>
 
-              {/* Featured Trending Pack */}
-              <BentoCard className="md:col-span-6 relative overflow-hidden">
-                <div className="absolute -top-24 -right-16 h-56 w-56 rounded-full bg-primary/25 blur-3xl" />
-                <div className="absolute top-4 right-4 flex gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-accent" />
-                  <span className="h-2 w-2 rounded-full bg-primary" />
-                </div>
-                <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Trending pack</div>
-                <h3 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em] mt-2">Cinematic Reels Vol. 4</h3>
-                <p className="text-sm text-muted-foreground mt-1">240 assets · LUTs, SFX, overlays</p>
-              </BentoCard>
+              {/* Trending — real top asset */}
+              {feed?.trending && (
+                <Link
+                  to="/assets/$id"
+                  params={{ id: feed.trending.id }}
+                  className="md:col-span-6 group"
+                >
+                  <BentoCard className="relative overflow-hidden hover:bg-elevated/40 transition-colors">
+                    <div className="absolute -top-24 -right-16 h-56 w-56 rounded-full bg-primary/25 blur-3xl" />
+                    <div className="flex items-center justify-between flex-wrap gap-4 relative">
+                      <div>
+                        <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2 flex items-center gap-2">
+                          <TrendingUp className="h-3 w-3 text-accent" /> Most downloaded right now
+                        </div>
+                        <h3 className="text-2xl sm:text-3xl font-semibold tracking-[-0.02em]">{feed.trending.title}</h3>
+                        <p className="text-sm text-muted-foreground mt-1 capitalize">
+                          {feed.trending.category}
+                          {typeof feed.trending.download_count === "number" && feed.trending.download_count > 0
+                            ? ` · ${feed.trending.download_count} downloads`
+                            : ""}
+                        </p>
+                      </div>
+                      <div className="h-20 w-32 rounded-xl bg-gradient-to-br from-primary/30 to-accent/20 ring-1 ring-border overflow-hidden shrink-0">
+                        {feed.trending.thumbnail_url && (
+                          <img src={feed.trending.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                        )}
+                      </div>
+                    </div>
+                  </BentoCard>
+                </Link>
+              )}
 
-              {/* Recommended */}
+              {/* Recommended — real assets ranked by user prefs */}
               <BentoCard className="md:col-span-6">
                 <div className="flex items-center justify-between">
-                  <CardHeader icon={<Sparkles className="h-4 w-4 icon-fx" />} title="Picked for you" />
+                  <CardHeader icon={<Sparkles className="h-4 w-4 icon-fx" />} title={interestsLabel(preferences?.interests)} />
                   <Link to="/assets" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-                    Browse vault <ArrowUpRight className="h-3 w-3 icon-fx" />
+                    Browse all {feed?.total_assets ? `(${feed.total_assets})` : ""} <ArrowUpRight className="h-3 w-3 icon-fx" />
                   </Link>
                 </div>
-                <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
-                  {recommended.map((p) => (
-                    <button
-                      key={p.slug}
-                      onClick={() => openPack(p)}
-                      disabled={p.premium && !isPremium}
-                      className="group text-left relative"
-                    >
-                      <div className={`relative aspect-[4/3] rounded-2xl bg-gradient-to-br ${p.grad} overflow-hidden ring-1 ring-border`}>
-                        <div className="absolute inset-0 ring-grid opacity-30" />
-                        {p.premium && (
-                          <div className="absolute top-2 right-2 glass-strong rounded-full px-2 py-0.5 text-[10px] flex items-center gap-1">
-                            {!isPremium && <Lock className="h-2.5 w-2.5 icon-fx" />} Premium
+                {!feed ? (
+                  <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="aspect-[4/3] rounded-2xl bg-elevated/40 animate-pulse" />
+                    ))}
+                  </div>
+                ) : feed.recommended.length === 0 ? (
+                  <div className="mt-6 text-center py-10 text-sm text-muted-foreground">
+                    <Package className="h-8 w-8 mx-auto mb-3 opacity-40" />
+                    No assets in the vault yet.{" "}
+                    <Link to="/admin" className="text-accent underline">Add your first one</Link>.
+                  </div>
+                ) : (
+                  <div className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    {feed.recommended.map((p, i) => {
+                      const locked = p.premium_only && !isPremium;
+                      const grad = GRADIENTS[i % GRADIENTS.length];
+                      return (
+                        <Link
+                          key={p.id}
+                          to="/assets/$id"
+                          params={{ id: p.id }}
+                          className="group text-left relative"
+                        >
+                          <div className={`relative aspect-[4/3] rounded-2xl bg-gradient-to-br ${grad} overflow-hidden ring-1 ring-border`}>
+                            {p.thumbnail_url ? (
+                              <img src={p.thumbnail_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                            ) : (
+                              <div className="absolute inset-0 flex items-center justify-center text-4xl font-semibold text-foreground/30">
+                                {p.title.slice(0, 1).toUpperCase()}
+                              </div>
+                            )}
+                            {p.premium_only && (
+                              <div className="absolute top-2 right-2 glass-strong rounded-full px-2 py-0.5 text-[10px] flex items-center gap-1">
+                                {locked && <Lock className="h-2.5 w-2.5 icon-fx" />} Premium
+                              </div>
+                            )}
+                            {locked && (
+                              <div className="absolute inset-0 bg-background/40 backdrop-blur-sm flex items-center justify-center">
+                                <Lock className="h-4 w-4 text-foreground/80 icon-fx" />
+                              </div>
+                            )}
                           </div>
-                        )}
-                        {p.premium && !isPremium && (
-                          <div className="absolute inset-0 bg-background/40 backdrop-blur-sm flex items-center justify-center">
-                            <Lock className="h-4 w-4 text-foreground/80 icon-fx" />
+                          <div className="mt-2.5">
+                            <div className="text-[10px] uppercase tracking-wider text-muted-foreground capitalize">{p.category}</div>
+                            <div className="text-sm font-medium mt-0.5 line-clamp-1">{p.title}</div>
                           </div>
-                        )}
-                      </div>
-                      <div className="mt-2.5">
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{p.tag}</div>
-                        <div className="text-sm font-medium mt-0.5">{p.title}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </BentoCard>
 
-              {/* Upgrade CTA (free only) */}
               {!isPremium && (
                 <BentoCard className="md:col-span-6 relative overflow-hidden">
                   <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-primary/30 blur-3xl" />
@@ -407,8 +478,12 @@ function Dashboard() {
                       <div className="text-xs uppercase tracking-[0.2em] text-accent flex items-center gap-1.5">
                         <Sparkles className="h-3 w-3 icon-fx" /> Premium
                       </div>
-                      <h3 className="text-2xl font-semibold tracking-[-0.02em] mt-2">Unlock the full vault & every AI tool.</h3>
-                      <p className="text-sm text-muted-foreground mt-1">Cancel anytime. $12.99/month.</p>
+                      <h3 className="text-2xl font-semibold tracking-[-0.02em] mt-2">
+                        Unlimited downloads + 1,000 AI credits per day.
+                      </h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        $12.99/month. Cancel from Billing in one click.
+                      </p>
                     </div>
                     <Link to="/billing" className="inline-flex items-center justify-center gap-1.5 h-11 px-5 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary hover:opacity-90 transition-opacity">
                       Upgrade now
@@ -420,9 +495,9 @@ function Dashboard() {
             </motion.div>
           )}
 
-          {activeTab === "assets" && (
+          {activeTab === "browse" && (
             <motion.div
-              key="assets"
+              key="browse"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
@@ -430,38 +505,33 @@ function Dashboard() {
               className="grid grid-cols-1 md:grid-cols-6 gap-4"
             >
               <BentoCard className="md:col-span-6">
-                <div className="flex items-center justify-between mb-4">
-                  <CardHeader icon={<Package className="h-4 w-4" />} title="All Asset Packs" />
-                  <span className="text-xs text-muted-foreground">{ALL_PACKS.length} packs available</span>
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <CardHeader icon={<Package className="h-4 w-4" />} title="Browse by category" />
+                  <Link to="/assets" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
+                    Open full vault <ArrowUpRight className="h-3 w-3 icon-fx" />
+                  </Link>
                 </div>
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                  {ALL_PACKS.map((p) => (
-                    <button
-                      key={p.slug}
-                      onClick={() => openPack(p)}
-                      disabled={p.premium && !isPremium}
-                      className="group text-left relative"
-                    >
-                      <div className={`relative aspect-[4/3] rounded-2xl bg-gradient-to-br ${p.grad} overflow-hidden ring-1 ring-border`}>
+                {!feed || feed.categories.length === 0 ? (
+                  <div className="text-sm text-muted-foreground py-6 text-center">
+                    No categories yet — assets will appear here once added to the vault.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {feed.categories.map((c, i) => (
+                      <Link
+                        key={c}
+                        to="/assets"
+                        className={`group relative aspect-[4/3] rounded-2xl bg-gradient-to-br ${GRADIENTS[i % GRADIENTS.length]} overflow-hidden ring-1 ring-border p-4 flex flex-col justify-end`}
+                      >
                         <div className="absolute inset-0 ring-grid opacity-30" />
-                        {p.premium && (
-                          <div className="absolute top-2 right-2 glass-strong rounded-full px-2 py-0.5 text-[10px] flex items-center gap-1">
-                            {!isPremium && <Lock className="h-2.5 w-2.5 icon-fx" />} Premium
-                          </div>
-                        )}
-                        {p.premium && !isPremium && (
-                          <div className="absolute inset-0 bg-background/40 backdrop-blur-sm flex items-center justify-center">
-                            <Lock className="h-5 w-5 text-foreground/80 icon-fx" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="mt-2.5">
-                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{p.tag}</div>
-                        <div className="text-sm font-medium mt-0.5">{p.title}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                        <div className="relative">
+                          <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Category</div>
+                          <div className="text-base font-semibold capitalize mt-1">{c}</div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </BentoCard>
             </motion.div>
           )}
@@ -475,37 +545,26 @@ function Dashboard() {
               transition={{ duration: 0.3 }}
               className="grid grid-cols-1 md:grid-cols-6 gap-4"
             >
-              <BentoCard className="md:col-span-6 relative overflow-hidden">
-                <div className="absolute -top-20 -right-20 h-60 w-60 rounded-full bg-primary/25 blur-3xl" />
-                <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-accent/20 blur-3xl" />
-                <div className="relative">
-                  <CardHeader icon={<Wand2 className="h-4 w-4" />} title="AI Studio" />
-                  <p className="text-sm text-muted-foreground mt-2 max-w-xl">
-                    Generate hooks, captions, thumbnails, and scripts powered by AI. Premium tools unlock unlimited generations.
-                  </p>
-                </div>
-              </BentoCard>
-
-              <BentoCard className="md:col-span-3">
-                <div className="flex items-center justify-between">
-                  <CardHeader icon={<Zap className="h-4 w-4" />} title="Tools" />
-                  <Link to="/ai" className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1">
-                    Open <ArrowUpRight className="h-3 w-3 icon-fx" />
-                  </Link>
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-2">
+              <BentoCard className="md:col-span-4">
+                <CardHeader icon={<Wand2 className="h-4 w-4" />} title="AI Studio" />
+                <p className="text-sm text-muted-foreground mt-2 max-w-xl">
+                  Tap a tool to jump straight into it. Each generation deducts credits — text tools cost {credits?.costs.text ?? 10}, thumbnails cost {credits?.costs.image ?? 30}.
+                </p>
+                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {AI_TOOLS.map((t) => {
                     const Icon = t.icon;
+                    const locked = t.premium && !isPremium;
                     return (
                       <Link
-                        key={t.name}
+                        key={t.id}
                         to="/ai"
+                        search={{ tool: t.id }}
                         className="relative p-3 rounded-xl glass hover:bg-elevated transition-colors text-left"
                       >
-                        <Icon className="h-4 w-4 text-accent" />
-                        <div className="text-sm font-medium mt-2">{t.name}</div>
-                        {t.premium && (
-                          <span className="absolute top-2 right-2 text-[9px] uppercase tracking-wider text-muted-foreground">Pro</span>
+                        <Icon className={`h-4 w-4 ${t.accent}`} />
+                        <div className="text-sm font-medium mt-2 line-clamp-1">{t.name}</div>
+                        {locked && (
+                          <Lock className="absolute top-2 right-2 h-3 w-3 text-muted-foreground" />
                         )}
                       </Link>
                     );
@@ -513,10 +572,14 @@ function Dashboard() {
                 </div>
               </BentoCard>
 
-              <BentoCard className="md:col-span-3">
-                <CardHeader icon={<Sparkles className="h-4 w-4" />} title="Usage" />
-                <div className="mt-3 text-4xl font-semibold tracking-tight">{stats?.aiRuns ?? 0}</div>
-                <div className="text-xs text-muted-foreground mt-1">AI generations this month</div>
+              <BentoCard className="md:col-span-2">
+                <CardHeader icon={<Sparkles className="h-4 w-4" />} title="Credits today" />
+                <div className="mt-3 text-4xl font-semibold tracking-tight">
+                  {credits ? credits.remaining : "—"}
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  of {credits?.limit ?? "—"} {isPremium ? "(Premium)" : "(Free)"}
+                </div>
                 <div className="mt-4 h-1.5 rounded-full bg-foreground/10 overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-primary to-accent"
@@ -527,10 +590,7 @@ function Dashboard() {
                     }}
                   />
                 </div>
-                <div className="mt-2 flex items-center justify-between text-[11px] text-muted-foreground">
-                  <span>{credits ? `${credits.remaining} credits left` : "—"}</span>
-                  <span>Daily reset midnight UTC</span>
-                </div>
+                <div className="mt-2 text-[11px] text-muted-foreground">Resets at midnight UTC</div>
               </BentoCard>
             </motion.div>
           )}
@@ -545,38 +605,55 @@ function Dashboard() {
               className="grid grid-cols-1 md:grid-cols-6 gap-4"
             >
               <BentoCard className="md:col-span-6">
-                <CardHeader icon={<Activity className="h-4 w-4" />} title="Recent Activity" />
-                <div className="mt-4 space-y-2">
-                  {activity && activity.length > 0 ? (
-                    activity.slice(0, 8).map((item: any, i: number) => (
-                      <div
+                <CardHeader icon={<Activity className="h-4 w-4" />} title="Recent activity" />
+                {!feed ? (
+                  <div className="mt-4 space-y-2">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div key={i} className="h-14 rounded-xl bg-elevated/40 animate-pulse" />
+                    ))}
+                  </div>
+                ) : feed.recent_activity.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground text-sm">
+                    <Activity className="h-8 w-8 mx-auto mb-3 opacity-40" />
+                    <p>Nothing yet.</p>
+                    <p className="text-xs mt-1">
+                      Downloads and saves from the{" "}
+                      <Link to="/assets" className="text-accent underline">vault</Link> will appear here.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-4 space-y-2">
+                    {feed.recent_activity.map((item, i) => (
+                      <Link
                         key={i}
+                        to="/assets/$id"
+                        params={{ id: item.asset_id }}
                         className="flex items-center justify-between p-3 rounded-xl bg-elevated/40 hover:bg-elevated/60 transition-colors"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Download className="h-3.5 w-3.5 text-primary" />
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
+                            item.kind === "download" ? "bg-primary/10" : "bg-accent/10"
+                          }`}>
+                            {item.kind === "download" ? (
+                              <Download className="h-3.5 w-3.5 text-primary" />
+                            ) : (
+                              <Bookmark className="h-3.5 w-3.5 text-accent" />
+                            )}
                           </div>
-                          <div>
-                            <div className="text-sm font-medium">{item.pack_title ?? "Unknown pack"}</div>
-                            <div className="text-xs text-muted-foreground">
-                              {item.pack_category ?? "Asset"} · {new Date(item.created_at).toLocaleDateString()}
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">{item.asset_title}</div>
+                            <div className="text-xs text-muted-foreground capitalize">
+                              {item.kind === "download" ? "Downloaded" : "Saved"} · {item.asset_category}
                             </div>
                           </div>
                         </div>
-                        <span className="text-xs text-muted-foreground">
-                          {Math.round((item.progress ?? 0) * 100)}%
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {relativeTime(item.created_at)}
                         </span>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-12 text-muted-foreground text-sm">
-                      <Activity className="h-8 w-8 mx-auto mb-3 opacity-40" />
-                      <p>No recent activity yet.</p>
-                      <p className="text-xs mt-1">Start exploring packs to see your activity here.</p>
-                    </div>
-                  )}
-                </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </BentoCard>
             </motion.div>
           )}
@@ -588,6 +665,10 @@ function Dashboard() {
   );
 }
 
+function interestsLabel(interests?: string[]) {
+  if (!interests || interests.length === 0) return "Picked for you";
+  return `Picked for you · ${interests.slice(0, 2).join(", ")}`;
+}
 
 function BentoCard({ className = "", children }: { className?: string; children: React.ReactNode }) {
   return <div className={`glass rounded-3xl p-6 ${className}`}>{children}</div>;
@@ -602,7 +683,7 @@ function CardHeader({ icon, title }: { icon: React.ReactNode; title: string }) {
 }
 
 function Sparkline({ className = "", data }: { className?: string; data?: number[] }) {
-  const values = data && data.length > 0 ? data : [2, 4, 3, 5, 4, 6, 7];
+  const values = data && data.length > 0 ? data : [0, 0, 0, 0, 0, 0, 0];
   const max = Math.max(...values, 1);
   const w = 80;
   const h = 28;
@@ -624,7 +705,7 @@ function DeltaLabel({ value }: { value?: number }) {
   return (
     <div className={`text-xs mt-1 ${positive ? "text-emerald-400" : "text-muted-foreground"}`}>
       {positive ? "+" : ""}
-      {value}% this week
+      {value}% vs last week
     </div>
   );
 }
@@ -659,7 +740,7 @@ function SavedNavDropdown() {
           <div className="px-2 py-6 text-center text-xs text-muted-foreground">Loading…</div>
         ) : preview.length === 0 ? (
           <div className="px-2 py-6 text-center text-xs text-muted-foreground">
-            No saved assets yet.
+            Nothing saved yet — tap the bookmark on any asset.
           </div>
         ) : (
           <div className="flex flex-col gap-1">
@@ -698,4 +779,3 @@ function SavedNavDropdown() {
     </Popover>
   );
 }
-

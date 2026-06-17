@@ -5,23 +5,23 @@ import { motion, AnimatePresence } from "framer-motion";
 const faqs = [
   {
     q: "What's actually in Zentry Qor?",
-    a: "A vault of 3,200+ premium asset packs, nine AI tools tuned for short-form, a workspace for projects and moodboards, analytics, and a community of working creators. One subscription, one tab.",
+    a: "A growing vault of premium asset packs — overlays, LUTs, hook libraries, templates — plus nine AI tools tuned for short-form: captions, hooks, scripts, thumbnails, hashtags, trends, planner, brand bio, and video ideas.",
   },
   {
     q: "What does the free tier get me?",
-    a: "30 downloads a month, watermarked previews, and 3 AI runs a day. Enough to see if the system fits your workflow.",
+    a: "3 asset downloads per day, 3 AI text runs per day, and access to every free asset in the vault. Enough to see if the workflow fits.",
+  },
+  {
+    q: "What's on Premium?",
+    a: "$12.99/month or $129/year. Unlimited downloads from the full vault and 1,000 AI credits per day (text tools cost 10 credits, thumbnail images cost 30).",
   },
   {
     q: "Can I cancel anytime?",
-    a: "Yes — one click in Billing. You keep Premium until the end of the period. No retention emails, no dark patterns.",
+    a: "Yes — one click in Billing. You keep Premium until the end of the current period. No retention emails, no dark patterns.",
   },
   {
     q: "Is my work safe?",
-    a: "Encrypted in transit and at rest. We do not train models on your private projects. Ever.",
-  },
-  {
-    q: "Teams?",
-    a: "Team workspaces are in private beta. Join the waitlist from your profile after signup.",
+    a: "Your downloads, saves, and AI inputs stay on your account. We do not sell your data or train models on what you type into the tools.",
   },
 ];
 

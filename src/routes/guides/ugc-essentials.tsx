@@ -177,7 +177,7 @@ function UgcEssentialsPage() {
             Skip the tab graveyard.
           </h2>
           <p className="text-sm text-muted-foreground max-w-xl mx-auto mb-6">
-            Zentry Qor gives you a hook generator, a vault of 3,200+ asset packs, and a workspace
+            Zentry Qor gives you a hook generator, a curated vault of premium asset packs, and a workspace
             tuned for daily UGC output — all under one subscription.
           </p>
           <Link
