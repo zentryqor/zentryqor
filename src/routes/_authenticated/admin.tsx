@@ -561,6 +561,10 @@ function Field({ label, className = "", children }: { label: string; className?:
   );
 }
 
+function formatMB(bytes: number) {
+  return (bytes / (1024 * 1024)).toFixed(bytes >= 1024 * 1024 * 10 ? 0 : 2);
+}
+
 function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: number; accent?: boolean }) {
   return (
     <div className="glass rounded-2xl p-5">
