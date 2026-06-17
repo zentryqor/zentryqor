@@ -18,13 +18,14 @@ import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import {
   adminDeleteAsset,
   adminGetAssetSignedUrl,
+  adminInsertAssetRow,
   adminListAccounts,
   adminListAssets,
-  adminUploadAsset,
   checkIsAdmin,
   type AdminAccount,
   type AdminAssetRow,
 } from "@/lib/admin.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin — Zentry Qor" }] }),
