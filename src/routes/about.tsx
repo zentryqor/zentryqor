@@ -16,15 +16,15 @@ export const Route = createFileRoute("/about")({
 
 function AboutPage() {
   const pillars = [
-    { icon: Compass, title: "Mission", body: "Replace the tab graveyard. Give creators one calm workspace where assets, AI, and analytics live together." },
-    { icon: Sparkles, title: "Product", body: "3,200+ premium asset packs, nine AI tools tuned for short-form, and a workspace built for daily output — under one subscription." },
-    { icon: Heart, title: "Principles", body: "Craft over hype. Speed over surface area. Respect for your time, your money, and your work." },
+    { icon: Compass, title: "What it is", body: "A premium asset vault plus nine AI tools for short-form content — captions, hooks, scripts, thumbnails, hashtags, trends, planner, brand bio, and video ideas." },
+    { icon: Sparkles, title: "How it works", body: "Browse or search the vault, save anything to your library, download what you need, and run AI tools that each tell you their credit cost up front." },
+    { icon: Heart, title: "What we won't do", body: "No upsells inside features. No watermarks on Premium. No training models on your inputs. No surprise overage charges — credits reset daily." },
   ];
   return (
     <PageShell
       eyebrow="About"
       title={<>Built for people <span className="text-aurora italic font-medium">who ship.</span></>}
-      description="Zentry Qor started as a private toolkit between three creators tired of juggling nine apps to publish one reel. Today, 24,000+ creators use it as their daily home."
+      description="Zentry Qor is a small product with a clear job: replace the half-dozen tabs you open to publish one piece of short-form content."
     >
       <div className="grid sm:grid-cols-3 gap-4 mb-12">
         {pillars.map((p) => (
@@ -36,10 +36,10 @@ function AboutPage() {
         ))}
       </div>
       <div className="glass rounded-2xl p-8 space-y-4 text-[15px] text-muted-foreground leading-relaxed">
-        <h2 className="text-xl font-semibold text-foreground tracking-tight">Our story</h2>
-        <p>We built the first version in a Notion doc and a Dropbox folder. It was ugly. It worked. Friends asked for access. Then their friends. Then strangers.</p>
-        <p>Two years later, Zentry Qor is a full creator OS — but the rule hasn't changed: every feature has to earn its place. If it doesn't help you publish faster, it doesn't ship.</p>
-        <p>We're a small, profitable team. No outside investors. No growth-at-all-costs playbook. Just a product we'd pay for ourselves.</p>
+        <h2 className="text-xl font-semibold text-foreground tracking-tight">Why we built it</h2>
+        <p>Publishing a single short-form video shouldn't require a stock site, a hook database, an AI caption tool, a thumbnail generator, and a planner — each with their own login and bill.</p>
+        <p>Zentry Qor folds them into one workspace. Free tier is generous enough to try the loop end-to-end. Premium is one price, with all features unlocked and credits that reset every day.</p>
+        <p>If a feature doesn't help you ship faster, it doesn't make it in.</p>
       </div>
     </PageShell>
   );

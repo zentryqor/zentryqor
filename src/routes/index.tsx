@@ -92,7 +92,6 @@ function Index() {
         <GlassDivider className="max-w-6xl mx-auto" />
         <Pricing />
         <GlassDivider className="max-w-6xl mx-auto" />
-        <Testimonials />
         <FAQ />
         <CtaFooter />
         <div className="md:hidden h-20" aria-hidden />
