@@ -260,7 +260,8 @@ function AdminPage() {
               </div>
               <div className="md:col-span-2">
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={(e) => handleUpload(e)}
                   disabled={uploading}
                   className="h-11 px-6 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary disabled:opacity-60 flex items-center gap-2"
                 >
