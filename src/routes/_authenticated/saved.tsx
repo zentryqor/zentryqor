@@ -9,6 +9,7 @@ import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
+import { downloadFromUrl } from "@/lib/download";
 import { getSavedAssets, recordDownload, toggleSave } from "@/lib/assets.functions";
 
 export const Route = createFileRoute("/_authenticated/saved")({
@@ -65,7 +66,12 @@ function SavedPage() {
       toast.error(error?.message ?? "Download failed");
       return;
     }
-    window.open(data.signedUrl, "_blank");
+    try {
+      await downloadFromUrl(data.signedUrl, a.file_name);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Download failed");
+      return;
+    }
     qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
   }
 

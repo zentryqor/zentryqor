@@ -17,6 +17,7 @@ import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
+import { downloadFromUrl } from "@/lib/download";
 import {
   getAssetDetails,
   recordDownload,
@@ -78,7 +79,12 @@ function AssetDetailsPage() {
       toast.error(error?.message ?? "Download failed");
       return;
     }
-    window.open(signed.signedUrl, "_blank");
+    try {
+      await downloadFromUrl(signed.signedUrl, asset.file_name);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Download failed");
+      return;
+    }
     qc.invalidateQueries({ queryKey: ["asset-details", id] });
     qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
   }

@@ -22,6 +22,7 @@ import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { WorkspaceDock } from "@/components/WorkspaceDock";
 import { getMySavedIds, recordDownload, toggleSave } from "@/lib/assets.functions";
+import { downloadFromUrl } from "@/lib/download";
 
 export const Route = createFileRoute("/_authenticated/assets/")({
   ssr: false,
@@ -142,7 +143,12 @@ function AssetsPage() {
       toast.error(error?.message ?? "Download failed");
       return;
     }
-    window.open(data.signedUrl, "_blank");
+    try {
+      await downloadFromUrl(data.signedUrl, a.file_name);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Download failed");
+      return;
+    }
     qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
   };
 
