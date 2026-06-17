@@ -85,7 +85,7 @@ function AssetDetailsPage() {
 
   async function onSaveToggle() {
     if (!asset) return;
-    const res = await saveFn({ data: { asset.id } as any });
+    const res = await saveFn({ data: { asset_id: asset.id } });
     toast.success(res.saved ? "Saved to your library" : "Removed from saved");
     qc.invalidateQueries({ queryKey: ["asset-details", id] });
     qc.invalidateQueries({ queryKey: ["saved-assets"] });
