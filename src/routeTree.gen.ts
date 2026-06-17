@@ -33,6 +33,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAssetsIndexRouteImport } from './routes/_authenticated/assets.index'
 import { Route as AuthenticatedAssetsIdRouteImport } from './routes/_authenticated/assets.$id'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicAssetsDownloadIdRouteImport } from './routes/api/public/assets/download.$id'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -155,6 +156,12 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAssetsDownloadIdRoute =
+  ApiPublicAssetsDownloadIdRouteImport.update({
+    id: '/api/public/assets/download/$id',
+    path: '/api/public/assets/download/$id',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -180,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/assets/': typeof AuthenticatedAssetsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -205,6 +213,7 @@ export interface FileRoutesByTo {
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/assets': typeof AuthenticatedAssetsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -232,6 +241,7 @@ export interface FileRoutesById {
   '/_authenticated/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/assets/$id'
     | '/assets/'
     | '/api/public/payments/webhook'
+    | '/api/public/assets/download/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/assets/$id'
     | '/assets'
     | '/api/public/payments/webhook'
+    | '/api/public/assets/download/$id'
   id:
     | '__root__'
     | '/'
@@ -310,6 +322,7 @@ export interface FileRouteTypes {
     | '/_authenticated/assets/$id'
     | '/_authenticated/assets/'
     | '/api/public/payments/webhook'
+    | '/api/public/assets/download/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -328,6 +341,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   GuidesUgcEssentialsRoute: typeof GuidesUgcEssentialsRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPublicAssetsDownloadIdRoute: typeof ApiPublicAssetsDownloadIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -500,6 +514,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/assets/download/$id': {
+      id: '/api/public/assets/download/$id'
+      path: '/api/public/assets/download/$id'
+      fullPath: '/api/public/assets/download/$id'
+      preLoaderRoute: typeof ApiPublicAssetsDownloadIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -546,6 +567,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   GuidesUgcEssentialsRoute: GuidesUgcEssentialsRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPublicAssetsDownloadIdRoute: ApiPublicAssetsDownloadIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

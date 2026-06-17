@@ -16,11 +16,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader } from "@/components/AppHeader";
-import { supabase } from "@/integrations/supabase/client";
-import { downloadFromUrl } from "@/lib/download";
+import { downloadAsset } from "@/lib/download";
 import {
   getAssetDetails,
-  recordDownload,
   toggleSave,
 } from "@/lib/assets.functions";
 
@@ -48,7 +46,6 @@ function AssetDetailsPage() {
 
   const fetchDetails = useServerFn(getAssetDetails);
   const saveFn = useServerFn(toggleSave);
-  const trackDl = useServerFn(recordDownload);
 
   const { data, isLoading } = useQuery({
     queryKey: ["asset-details", id],
@@ -67,20 +64,7 @@ function AssetDetailsPage() {
       return;
     }
     try {
-      await trackDl({ data: { asset_id: asset.id } });
-    } catch (e: any) {
-      toast.error(e?.message ?? "Download failed");
-      return;
-    }
-    const { data: signed, error } = await supabase.storage
-      .from("assets")
-      .createSignedUrl(asset.storage_path, 60, { download: asset.file_name });
-    if (error || !signed) {
-      toast.error(error?.message ?? "Download failed");
-      return;
-    }
-    try {
-      await downloadFromUrl(signed.signedUrl, asset.file_name);
+      await downloadAsset(asset.id, asset.file_name);
     } catch (e: any) {
       toast.error(e?.message ?? "Download failed");
       return;
