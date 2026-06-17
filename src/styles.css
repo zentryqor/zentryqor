@@ -404,11 +404,11 @@
 
 .cb-blob {
   position: absolute;
-  width: 30vmax;
-  height: 30vmax;
+  width: 26vmax;
+  height: 26vmax;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.22;
+  opacity: 0.12;
   mix-blend-mode: screen;
   will-change: transform;
 }
