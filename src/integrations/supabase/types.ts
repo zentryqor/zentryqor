@@ -111,6 +111,7 @@ export type Database = {
           size_bytes: number | null
           storage_path: string
           tags: string[]
+          thumbnail_path: string | null
           title: string
           updated_at: string
           uploaded_by: string
@@ -126,6 +127,7 @@ export type Database = {
           size_bytes?: number | null
           storage_path: string
           tags?: string[]
+          thumbnail_path?: string | null
           title: string
           updated_at?: string
           uploaded_by: string
@@ -141,6 +143,7 @@ export type Database = {
           size_bytes?: number | null
           storage_path?: string
           tags?: string[]
+          thumbnail_path?: string | null
           title?: string
           updated_at?: string
           uploaded_by?: string
