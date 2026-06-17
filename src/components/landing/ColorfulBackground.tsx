@@ -39,8 +39,11 @@ export function ColorfulBackground() {
       aria-hidden
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden cb-root"
     >
+      {/* Deep black base */}
+      <div className="absolute inset-0 bg-[hsl(var(--background))]" />
+
       {/* Animated gradient base — hue rotates with scroll */}
-      <div className="absolute inset-0 cb-gradient opacity-90" />
+      <div className="absolute inset-0 cb-gradient" />
 
       {/* Floating color blobs */}
       <div className="cb-blob cb-blob-1" />
@@ -49,8 +52,8 @@ export function ColorfulBackground() {
       <div className="cb-blob cb-blob-4" />
       <div className="cb-blob cb-blob-5" />
 
-      {/* Subtle vignette to keep text legible */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--background)/0.4)_70%,hsl(var(--background)/0.85)_100%)]" />
+      {/* Strong vignette to keep text legible and keep black dominant */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,hsl(var(--background)/0.65)_50%,hsl(var(--background)/0.95)_100%)]" />
     </div>
   );
 }
