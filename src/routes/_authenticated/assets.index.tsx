@@ -143,7 +143,12 @@ function AssetsPage() {
       toast.error(error?.message ?? "Download failed");
       return;
     }
-    window.open(data.signedUrl, "_blank");
+    try {
+      await downloadFromUrl(data.signedUrl, a.file_name);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Download failed");
+      return;
+    }
     qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
   };
 
