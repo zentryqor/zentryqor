@@ -12,7 +12,7 @@ const stages = [
   {
     icon: Layers,
     title: "Asset",
-    sub: "Pull from a vault of 3,200+ packs. No more scouring Pinterest.",
+    sub: "Pull from a curated vault of premium packs. No more scouring Pinterest.",
     accent: "from-primary/40 to-primary/0",
   },
   {
