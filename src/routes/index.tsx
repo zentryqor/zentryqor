@@ -86,7 +86,7 @@ function Index() {
     <div className="relative min-h-screen text-foreground overflow-x-hidden">
       <ColorfulBackground />
       <Nav />
-      <main>
+      <main className="relative z-10">
         <Hero />
         <GlassDivider className="max-w-6xl mx-auto" />
         <Features />

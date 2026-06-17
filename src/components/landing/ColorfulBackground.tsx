@@ -37,7 +37,7 @@ export function ColorfulBackground() {
     <div
       ref={ref}
       aria-hidden
-      className="pointer-events-none fixed inset-0 -z-10 overflow-hidden cb-root"
+      className="pointer-events-none fixed inset-0 z-0 overflow-hidden cb-root"
     >
       {/* Animated gradient base — hue rotates with scroll */}
       <div className="absolute inset-0 cb-gradient opacity-70" />
