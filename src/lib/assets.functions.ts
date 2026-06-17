@@ -13,6 +13,7 @@ export type AssetRow = {
   tags: string[];
   file_name: string;
   storage_path: string;
+  thumbnail_path: string | null;
   mime_type: string | null;
   size_bytes: number | null;
   premium_only: boolean;
