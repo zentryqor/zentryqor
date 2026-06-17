@@ -1,4 +1,4 @@
-import { Sparkles, LayoutGrid, Wand2, LineChart, Library, Users, ArrowUpRight } from "lucide-react";
+import { Sparkles, Wand2, LineChart, Library, Bookmark, Zap, ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { TiltCard } from "@/components/motion/TiltCard";
 import { Reveal } from "@/components/motion/Reveal";
