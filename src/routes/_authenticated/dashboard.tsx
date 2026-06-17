@@ -165,7 +165,7 @@ function Dashboard() {
           <>
             <AppHeaderLink to="/dashboard" active>Dashboard</AppHeaderLink>
             <AppHeaderLink to="/assets">Assets</AppHeaderLink>
-            <AppHeaderLink to="/saved">Saved</AppHeaderLink>
+            <SavedNavDropdown />
             <AppHeaderLink to="/admin">Admin</AppHeaderLink>
             <AppHeaderLink to="/ai">AI Studio</AppHeaderLink>
           </>
