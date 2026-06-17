@@ -224,7 +224,7 @@ function AdminPage() {
             <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground mb-5">
               <Upload className="h-4 w-4 text-accent" /> Upload new asset
             </div>
-            <form onSubmit={handleUpload} className="grid gap-4 md:grid-cols-2">
+            <form onSubmit={handleUpload} noValidate className="grid gap-4 md:grid-cols-2">
               <Field label="Title">
                 <input value={title} onChange={(e) => setTitle(e.target.value)} required className={inputCls} />
               </Field>
