@@ -41,7 +41,7 @@ export function Hero() {
   return (
     <section
       ref={ref}
-      className="relative pt-28 sm:pt-36 pb-24 px-4 overflow-hidden"
+      className="relative pt-40 sm:pt-52 pb-24 px-4 overflow-hidden"
     >
       {/* Background atmosphere */}
       <div className="absolute inset-0 ring-grid opacity-50 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
