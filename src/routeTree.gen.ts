@@ -28,9 +28,9 @@ import { Route as AuthenticatedSavedRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
-import { Route as AuthenticatedAssetsRouteImport } from './routes/_authenticated/assets'
 import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAssetsIndexRouteImport } from './routes/_authenticated/assets.index'
 import { Route as AuthenticatedAssetsIdRouteImport } from './routes/_authenticated/assets.$id'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 
@@ -128,11 +128,6 @@ const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAssetsRoute = AuthenticatedAssetsRouteImport.update({
-  id: '/assets',
-  path: '/assets',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedAiRoute = AuthenticatedAiRouteImport.update({
   id: '/ai',
   path: '/ai',
@@ -143,10 +138,16 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAssetsIndexRoute =
+  AuthenticatedAssetsIndexRouteImport.update({
+    id: '/assets/',
+    path: '/assets/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAssetsIdRoute = AuthenticatedAssetsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedAssetsRoute,
+  id: '/assets/$id',
+  path: '/assets/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
@@ -170,7 +171,6 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai': typeof AuthenticatedAiRoute
-  '/assets': typeof AuthenticatedAssetsRouteWithChildren
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -178,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
+  '/assets/': typeof AuthenticatedAssetsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -195,7 +196,6 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai': typeof AuthenticatedAiRoute
-  '/assets': typeof AuthenticatedAssetsRouteWithChildren
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -203,6 +203,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
+  '/assets': typeof AuthenticatedAssetsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRoutesById {
@@ -222,7 +223,6 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/ai': typeof AuthenticatedAiRoute
-  '/_authenticated/assets': typeof AuthenticatedAssetsRouteWithChildren
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
@@ -230,6 +230,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/_authenticated/assets/$id': typeof AuthenticatedAssetsIdRoute
+  '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
 }
 export interface FileRouteTypes {
@@ -249,7 +250,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/ai'
-    | '/assets'
     | '/billing'
     | '/dashboard'
     | '/onboarding'
@@ -257,6 +257,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/guides/ugc-essentials'
     | '/assets/$id'
+    | '/assets/'
     | '/api/public/payments/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -274,7 +275,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/ai'
-    | '/assets'
     | '/billing'
     | '/dashboard'
     | '/onboarding'
@@ -282,6 +282,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/guides/ugc-essentials'
     | '/assets/$id'
+    | '/assets'
     | '/api/public/payments/webhook'
   id:
     | '__root__'
@@ -300,7 +301,6 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/admin'
     | '/_authenticated/ai'
-    | '/_authenticated/assets'
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
     | '/_authenticated/onboarding'
@@ -308,6 +308,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/guides/ugc-essentials'
     | '/_authenticated/assets/$id'
+    | '/_authenticated/assets/'
     | '/api/public/payments/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -464,13 +465,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBillingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/assets': {
-      id: '/_authenticated/assets'
-      path: '/assets'
-      fullPath: '/assets'
-      preLoaderRoute: typeof AuthenticatedAssetsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/ai': {
       id: '/_authenticated/ai'
       path: '/ai'
@@ -485,12 +479,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/assets/': {
+      id: '/_authenticated/assets/'
+      path: '/assets'
+      fullPath: '/assets/'
+      preLoaderRoute: typeof AuthenticatedAssetsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/assets/$id': {
       id: '/_authenticated/assets/$id'
-      path: '/$id'
+      path: '/assets/$id'
       fullPath: '/assets/$id'
       preLoaderRoute: typeof AuthenticatedAssetsIdRouteImport
-      parentRoute: typeof AuthenticatedAssetsRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
@@ -502,37 +503,28 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedAssetsRouteChildren {
-  AuthenticatedAssetsIdRoute: typeof AuthenticatedAssetsIdRoute
-}
-
-const AuthenticatedAssetsRouteChildren: AuthenticatedAssetsRouteChildren = {
-  AuthenticatedAssetsIdRoute: AuthenticatedAssetsIdRoute,
-}
-
-const AuthenticatedAssetsRouteWithChildren =
-  AuthenticatedAssetsRoute._addFileChildren(AuthenticatedAssetsRouteChildren)
-
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAiRoute: typeof AuthenticatedAiRoute
-  AuthenticatedAssetsRoute: typeof AuthenticatedAssetsRouteWithChildren
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedSavedRoute: typeof AuthenticatedSavedRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedAssetsIdRoute: typeof AuthenticatedAssetsIdRoute
+  AuthenticatedAssetsIndexRoute: typeof AuthenticatedAssetsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAiRoute: AuthenticatedAiRoute,
-  AuthenticatedAssetsRoute: AuthenticatedAssetsRouteWithChildren,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedSavedRoute: AuthenticatedSavedRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedAssetsIdRoute: AuthenticatedAssetsIdRoute,
+  AuthenticatedAssetsIndexRoute: AuthenticatedAssetsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
