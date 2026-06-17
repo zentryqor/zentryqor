@@ -366,6 +366,19 @@
 
 
 /* ===== Colorful animated background ===== */
+.cb-root {
+  --cb-hue: 0deg;
+  --cb-pos: 0%;
+}
+.cb-root .cb-gradient {
+  filter: hue-rotate(var(--cb-hue)) blur(60px);
+  transition: filter 0.25s linear;
+}
+.cb-root .cb-blob {
+  filter: hue-rotate(var(--cb-hue)) blur(80px);
+  transition: filter 0.25s linear;
+}
+
 .cb-gradient {
   background: linear-gradient(125deg,
     #2563eb 0%,
@@ -375,8 +388,8 @@
     #10b981 80%,
     #2563eb 100%);
   background-size: 400% 400%;
+  background-position: var(--cb-pos) 50%;
   animation: cb-shift 22s ease-in-out infinite;
-  filter: blur(60px);
 }
 
 @keyframes cb-shift {
