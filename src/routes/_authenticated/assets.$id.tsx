@@ -106,8 +106,32 @@ function AssetDetailsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground text-sm">
-        Loading asset…
+      <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
+        <AnimatedOrbs />
+        <div className="relative">
+          <AppHeader />
+          <main className="max-w-2xl mx-auto px-5 pt-24 pb-16">
+            <div className="h-4 w-24 bg-elevated/60 rounded animate-pulse mb-6" />
+            <div className="aspect-[16/10] rounded-3xl bg-elevated/60 ring-1 ring-border animate-pulse" />
+            <div className="mt-8 h-3 w-24 bg-elevated/60 rounded animate-pulse" />
+            <div className="mt-4 h-9 w-3/4 bg-elevated/60 rounded animate-pulse" />
+            <div className="mt-6 space-y-2">
+              <div className="h-3 w-full bg-elevated/40 rounded animate-pulse" />
+              <div className="h-3 w-5/6 bg-elevated/40 rounded animate-pulse" />
+              <div className="h-3 w-2/3 bg-elevated/40 rounded animate-pulse" />
+            </div>
+            <div className="mt-6 flex gap-1.5">
+              <div className="h-6 w-14 bg-elevated/50 rounded-full animate-pulse" />
+              <div className="h-6 w-16 bg-elevated/50 rounded-full animate-pulse" />
+              <div className="h-6 w-12 bg-elevated/50 rounded-full animate-pulse" />
+            </div>
+            <div className="mt-8 flex gap-2">
+              <div className="flex-1 h-14 rounded-2xl bg-elevated/60 animate-pulse" />
+              <div className="h-14 w-14 rounded-2xl bg-elevated/60 animate-pulse" />
+              <div className="h-14 w-14 rounded-2xl bg-elevated/60 animate-pulse" />
+            </div>
+          </main>
+        </div>
       </div>
     );
   }
