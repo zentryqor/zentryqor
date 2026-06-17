@@ -34,10 +34,12 @@ export const Route = createFileRoute("/_authenticated/ai")({
       {
         name: "description",
         content:
-          "Viral captions, hooks, scripts, hashtags & more — a creator AI toolkit powered by Zentry Qor.",
+          "Nine AI tools for creators — captions, hooks, scripts, thumbnails, trends, and more. Each tool runs in seconds and tells you exactly what it costs in credits.",
       },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>) =>
+    z.object({ tool: z.string().optional() }).parse(s),
   component: AiStudio,
 });
 
