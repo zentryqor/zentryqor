@@ -180,6 +180,8 @@ const TOOLS: Tool[] = [
 type AspectRatio = "16:9" | "9:16" | "4:3" | "3:4";
 
 function AiStudio() {
+  const { tool: toolParam } = Route.useSearch();
+  const navigate = useNavigate();
   const [activeId, setActiveId] = useState<ToolId | null>(null);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
@@ -190,6 +192,13 @@ function AiStudio() {
   const runImage = useServerFn(generateAiImage);
   const fetchCredits = useServerFn(getAiCredits);
   const active = TOOLS.find((t) => t.id === activeId) ?? null;
+
+  // Deep-link: open tool via ?tool=<id>
+  useEffect(() => {
+    if (toolParam && TOOLS.some((t) => t.id === toolParam)) {
+      setActiveId(toolParam as ToolId);
+    }
+  }, [toolParam]);
 
   const creditsQuery = useQuery({
     queryKey: ["ai-credits"],
