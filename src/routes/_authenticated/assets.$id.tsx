@@ -17,6 +17,7 @@ import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader } from "@/components/AppHeader";
 import { supabase } from "@/integrations/supabase/client";
+import { downloadFromUrl } from "@/lib/download";
 import {
   getAssetDetails,
   recordDownload,
