@@ -56,6 +56,7 @@ function AdminPage() {
   const [tagsInput, setTagsInput] = useState("");
   const [premiumOnly, setPremiumOnly] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [thumbnail, setThumbnail] = useState<File | null>(null);
 
   const loadAll = async () => {
     setLoading(true);
@@ -90,6 +91,7 @@ function AdminPage() {
       const tags = tagsInput.split(",").map((t) => t.trim()).filter(Boolean);
       const fd = new FormData();
       fd.append("file", file);
+      if (thumbnail) fd.append("thumbnail", thumbnail);
       fd.append(
         "meta",
         JSON.stringify({
@@ -111,8 +113,11 @@ function AdminPage() {
       setTagsInput("");
       setPremiumOnly(false);
       setFile(null);
+      setThumbnail(null);
       const el = document.getElementById("file-input") as HTMLInputElement | null;
       if (el) el.value = "";
+      const thumbEl = document.getElementById("thumb-input") as HTMLInputElement | null;
+      if (thumbEl) thumbEl.value = "";
       loadAll();
     } catch (err: any) {
       toast.error(err.message ?? "Upload failed");
@@ -231,6 +236,10 @@ function AdminPage() {
               </Field>
               <Field label="File">
                 <input id="file-input" type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} required
+                  className="w-full h-11 px-3 rounded-xl bg-background/40 border border-border/60 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-elevated file:text-foreground file:text-xs" />
+              </Field>
+              <Field label="Thumbnail (optional, image)">
+                <input id="thumb-input" type="file" accept="image/*" onChange={(e) => setThumbnail(e.target.files?.[0] ?? null)}
                   className="w-full h-11 px-3 rounded-xl bg-background/40 border border-border/60 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-elevated file:text-foreground file:text-xs" />
               </Field>
               <div className="flex items-center justify-between md:col-span-2 p-4 rounded-2xl glass-strong">
@@ -352,7 +361,18 @@ function AdminPage() {
                 <tbody>
                   {assets.map((a) => (
                     <tr key={a.id} className="border-t border-border/40 hover:bg-elevated/40 transition-colors">
-                      <td className="py-3 font-medium">{a.title}</td>
+                      <td className="py-3 font-medium">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-14 rounded-md overflow-hidden bg-elevated/60 ring-1 ring-border/60 flex items-center justify-center shrink-0">
+                            {a.thumbnail_url ? (
+                              <img src={a.thumbnail_url} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <span className="text-xs text-muted-foreground">{a.title.slice(0, 1).toUpperCase()}</span>
+                            )}
+                          </div>
+                          <span>{a.title}</span>
+                        </div>
+                      </td>
                       <td className="py-3 text-muted-foreground">{a.category}</td>
                       <td className="py-3">
                         <div className="flex flex-wrap gap-1">

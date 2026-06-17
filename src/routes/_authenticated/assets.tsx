@@ -37,6 +37,8 @@ type AssetRow = {
   tags: string[];
   file_name: string;
   storage_path: string;
+  thumbnail_path: string | null;
+  thumbnail_url?: string | null;
   mime_type: string | null;
   size_bytes: number | null;
   premium_only: boolean;
@@ -80,7 +82,21 @@ function AssetsPage() {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) toast.error(error.message);
-      setAssets((data ?? []) as AssetRow[]);
+      const rows = (data ?? []) as AssetRow[];
+      const thumbPaths = rows.map((r) => r.thumbnail_path).filter(Boolean) as string[];
+      if (thumbPaths.length) {
+        const { data: signed } = await supabase.storage
+          .from("assets")
+          .createSignedUrls(thumbPaths, 3600);
+        const urlMap = new Map<string, string>();
+        (signed ?? []).forEach((s: any) => {
+          if (s.path && s.signedUrl) urlMap.set(s.path, s.signedUrl);
+        });
+        rows.forEach((r) => {
+          r.thumbnail_url = r.thumbnail_path ? urlMap.get(r.thumbnail_path) ?? null : null;
+        });
+      }
+      setAssets(rows);
       setLoading(false);
     })();
   }, []);
@@ -308,12 +324,23 @@ function AssetsPage() {
                         params={{ id: a.id }}
                         className={`relative aspect-[16/10] rounded-2xl bg-gradient-to-br ${grad} overflow-hidden ring-1 ring-border mb-4 block`}
                       >
-                        <div className="absolute inset-0 ring-grid opacity-30" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-5xl font-semibold tracking-tighter text-foreground/30 select-none">
-                            {a.title.slice(0, 1).toUpperCase()}
-                          </span>
-                        </div>
+                        {a.thumbnail_url ? (
+                          <img
+                            src={a.thumbnail_url}
+                            alt={a.title}
+                            loading="lazy"
+                            className="absolute inset-0 h-full w-full object-cover"
+                          />
+                        ) : (
+                          <>
+                            <div className="absolute inset-0 ring-grid opacity-30" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-5xl font-semibold tracking-tighter text-foreground/30 select-none">
+                                {a.title.slice(0, 1).toUpperCase()}
+                              </span>
+                            </div>
+                          </>
+                        )}
                         <button
                           onClick={(e) => toggleSaved(e, a)}
                           className={`absolute top-2 left-2 h-8 w-8 rounded-full glass-strong flex items-center justify-center transition-colors ${
