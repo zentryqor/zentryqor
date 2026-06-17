@@ -19,6 +19,8 @@ export type AdminAssetRow = {
   tags: string[];
   file_name: string;
   storage_path: string;
+  thumbnail_path: string | null;
+  thumbnail_url: string | null;
   mime_type: string | null;
   size_bytes: number | null;
   premium_only: boolean;
@@ -81,7 +83,21 @@ export const adminListAssets = createServerFn({ method: "GET" })
       .select("*")
       .order("created_at", { ascending: false });
     if (error) throw error;
-    return (data ?? []) as AdminAssetRow[];
+    const rows = (data ?? []) as any[];
+    const thumbPaths = rows.map((r) => r.thumbnail_path).filter(Boolean) as string[];
+    const urlMap = new Map<string, string>();
+    if (thumbPaths.length) {
+      const { data: signed } = await supabaseAdmin.storage
+        .from("assets")
+        .createSignedUrls(thumbPaths, 3600);
+      (signed ?? []).forEach((s: any) => {
+        if (s.path && s.signedUrl) urlMap.set(s.path, s.signedUrl);
+      });
+    }
+    return rows.map((r) => ({
+      ...r,
+      thumbnail_url: r.thumbnail_path ? urlMap.get(r.thumbnail_path) ?? null : null,
+    })) as AdminAssetRow[];
   });
 
 const uploadMetaSchema = z.object({
@@ -103,11 +119,14 @@ export const adminUploadAsset = createServerFn({ method: "POST" })
     const metaRaw = data.get("meta");
     if (typeof metaRaw !== "string") throw new Error("Missing meta");
     const meta = uploadMetaSchema.parse(JSON.parse(metaRaw));
-    return { file, meta };
+    const thumbnailRaw = data.get("thumbnail");
+    const thumbnail =
+      thumbnailRaw instanceof File && thumbnailRaw.size > 0 ? thumbnailRaw : null;
+    return { file, meta, thumbnail };
   })
   .handler(async ({ data, context }) => {
     const supabaseAdmin = await assertAdmin(context.userId);
-    const { file, meta } = data;
+    const { file, meta, thumbnail } = data;
     const safeName = meta.file_name.replace(/[^a-zA-Z0-9._-]/g, "_");
     const path = `${context.userId}/${Date.now()}-${safeName}`;
     const arrayBuffer = await file.arrayBuffer();
@@ -119,12 +138,29 @@ export const adminUploadAsset = createServerFn({ method: "POST" })
       });
     if (upErr) throw upErr;
 
+    let thumbnailPath: string | null = null;
+    if (thumbnail) {
+      const safeThumb = thumbnail.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      thumbnailPath = `${context.userId}/thumbnails/${Date.now()}-${safeThumb}`;
+      const thumbBuf = await thumbnail.arrayBuffer();
+      const { error: thumbErr } = await supabaseAdmin.storage
+        .from("assets")
+        .upload(thumbnailPath, new Uint8Array(thumbBuf), {
+          contentType: thumbnail.type || "image/*",
+        });
+      if (thumbErr) {
+        await supabaseAdmin.storage.from("assets").remove([path]);
+        throw thumbErr;
+      }
+    }
+
     const { error: insErr } = await supabaseAdmin.from("assets").insert({
       title: meta.title.trim(),
       description: meta.description?.trim() || null,
       category: meta.category.trim() || "general",
       tags: meta.tags,
       storage_path: path,
+      thumbnail_path: thumbnailPath,
       file_name: meta.file_name,
       mime_type: meta.mime_type ?? null,
       size_bytes: file.size,
@@ -132,7 +168,9 @@ export const adminUploadAsset = createServerFn({ method: "POST" })
       uploaded_by: context.userId,
     });
     if (insErr) {
-      await supabaseAdmin.storage.from("assets").remove([path]);
+      await supabaseAdmin.storage
+        .from("assets")
+        .remove(thumbnailPath ? [path, thumbnailPath] : [path]);
       throw insErr;
     }
     return { ok: true };
@@ -145,12 +183,13 @@ export const adminDeleteAsset = createServerFn({ method: "POST" })
     const supabaseAdmin = await assertAdmin(context.userId);
     const { data: row, error: rowErr } = await supabaseAdmin
       .from("assets")
-      .select("storage_path")
+      .select("storage_path, thumbnail_path")
       .eq("id", data.id)
       .maybeSingle();
     if (rowErr) throw rowErr;
     if (!row) throw new Error("Asset not found");
-    await supabaseAdmin.storage.from("assets").remove([row.storage_path]);
+    const toRemove = [row.storage_path, row.thumbnail_path].filter(Boolean) as string[];
+    if (toRemove.length) await supabaseAdmin.storage.from("assets").remove(toRemove);
     const { error } = await supabaseAdmin.from("assets").delete().eq("id", data.id);
     if (error) throw error;
     return { ok: true };
