@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { TiltCard } from "@/components/motion/TiltCard";
 import { Reveal } from "@/components/motion/Reveal";
 import { Typewriter } from "@/components/motion/Typewriter";
-import { CountUp } from "@/components/motion/CountUp";
+
 import { MotionIcon } from "@/components/motion/MotionIcon";
 
 
@@ -73,9 +73,7 @@ export function Features() {
               </div>
 
               <div className="md:mt-4 flex items-center gap-4 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                <span>
-                  <CountUp to={3200} suffix="+" className="text-foreground font-semibold not-italic normal-case tracking-normal text-base" /> assets
-                </span>
+                <span>Premium asset packs</span>
                 <span className="h-1 w-1 rounded-full bg-border" />
                 <span>Updated weekly</span>
               </div>
