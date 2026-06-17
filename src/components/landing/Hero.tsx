@@ -59,7 +59,7 @@ export function Hero() {
           className="hidden sm:flex items-center justify-end mb-10"
         >
           <div className="flex items-center gap-2 text-[11px] text-muted-foreground uppercase tracking-[0.18em]">
-            <Zap className="h-3 w-3 text-accent icon-fx" /> 24,000+ creators
+            <Zap className="h-3 w-3 text-accent icon-fx" /> Built for short-form creators
           </div>
         </motion.div>
 
@@ -90,10 +90,11 @@ export function Hero() {
               transition={{ duration: 0.7, delay: 0.3 }}
               className="text-[15px] sm:text-base text-muted-foreground leading-relaxed max-w-md"
             >
-              Zentry Qor is the creator OS — a vault of premium assets, AI tools that
-              actually move the needle, and a workspace built for serious output.
+              A premium asset vault and nine AI tools for captions, hooks,
+              scripts, and thumbnails — in one tab, one subscription, one
+              workflow.
               <span className="block mt-3 text-foreground/80 font-medium">
-                One workspace. One subscription. Zero context-switching.
+                Download. Generate. Post. Repeat.
               </span>
             </motion.p>
 
