@@ -50,6 +50,11 @@ function AdminPage() {
   const [assets, setAssets] = useState<AssetRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{
+    loaded: number;
+    total: number;
+    phase: "thumbnail" | "file" | "finalizing";
+  } | null>(null);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
