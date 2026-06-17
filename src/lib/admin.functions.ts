@@ -213,3 +213,48 @@ export const adminGetAssetSignedUrl = createServerFn({ method: "POST" })
     if (error || !signed) throw error ?? new Error("Could not sign URL");
     return { url: signed.signedUrl };
   });
+
+// Insert an asset row whose files were already uploaded to storage
+// directly from the client (used to enable real upload-progress tracking).
+const insertRowSchema = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).optional().nullable(),
+  category: z.string().min(1).max(64),
+  tags: z.array(z.string().min(1).max(64)).max(20),
+  premium_only: z.boolean(),
+  file_name: z.string().min(1).max(255),
+  mime_type: z.string().max(255).optional().nullable(),
+  size_bytes: z.number().int().nonnegative(),
+  storage_path: z.string().min(1).max(1024),
+  thumbnail_path: z.string().min(1).max(1024).optional().nullable(),
+});
+
+export const adminInsertAssetRow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => insertRowSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabaseAdmin = await assertAdmin(context.userId);
+    const { error } = await supabaseAdmin.from("assets").insert({
+      title: data.title.trim(),
+      description: data.description?.trim() || null,
+      category: data.category.trim() || "general",
+      tags: data.tags,
+      storage_path: data.storage_path,
+      thumbnail_path: data.thumbnail_path ?? null,
+      file_name: data.file_name,
+      mime_type: data.mime_type ?? null,
+      size_bytes: data.size_bytes,
+      premium_only: data.premium_only,
+      uploaded_by: context.userId,
+    });
+    if (error) {
+      // rollback uploaded files on insert failure
+      const toRemove = [data.storage_path, data.thumbnail_path].filter(
+        Boolean,
+      ) as string[];
+      if (toRemove.length)
+        await supabaseAdmin.storage.from("assets").remove(toRemove);
+      throw error;
+    }
+    return { ok: true };
+  });
