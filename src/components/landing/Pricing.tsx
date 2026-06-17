@@ -4,19 +4,19 @@ import { Link } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "framer-motion";
 
 const free = [
-  "30 downloads / month",
-  "Watermarked previews",
-  "3 AI tool runs / day",
-  "Limited vault — free packs only",
+  "3 asset downloads per day",
+  "3 AI text runs per day",
+  "Access to every free asset in the vault",
+  "Saved library, dashboard, and stats",
 ];
 
 const premium = [
-  "Unlimited downloads — no caps, ever",
-  "Full vault — 3,200+ premium packs",
-  "1,000 AI credits / day",
-  "Early access to weekly drops",
-  "Priority support — under 12h",
-  "Zero watermarks",
+  "Unlimited asset downloads — no daily cap",
+  "Full vault — every premium pack unlocked",
+  "1,000 AI credits per day (resets at midnight UTC)",
+  "Thumbnail image generation (30 credits each)",
+  "Priority email support",
+  "Cancel anytime in Billing",
 ];
 
 export function Pricing() {
