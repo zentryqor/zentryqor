@@ -5,6 +5,33 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 const assetIdSchema = z.object({ asset_id: z.string().uuid() });
 const idSchema = z.object({ id: z.string().uuid() });
 
+export type FeedAsset = {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  tags: string[];
+  premium_only: boolean;
+  thumbnail_url: string | null;
+  download_count?: number;
+};
+
+export type ActivityItem = {
+  kind: "download" | "save";
+  asset_id: string;
+  asset_title: string;
+  asset_category: string;
+  created_at: string;
+};
+
+export type DashboardFeed = {
+  recommended: FeedAsset[];
+  trending: FeedAsset | null;
+  recent_activity: ActivityItem[];
+  total_assets: number;
+  categories: string[];
+};
+
 export type AssetRow = {
   id: string;
   title: string;
