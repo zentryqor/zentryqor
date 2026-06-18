@@ -9,24 +9,13 @@ export async function downloadAsset(assetId: string, fallbackFilename: string) {
     headers: { Authorization: `Bearer ${token}` },
   });
 
-  if (!res.ok) {
-    const message = await res.text();
-    throw new Error(message || "Download failed");
+  const payload = await res.json().catch(() => ({}) as { url?: string; filename?: string; error?: string });
+
+  if (!res.ok || !payload?.url) {
+    throw new Error(payload?.error || "Download failed");
   }
 
-  const blob = await res.blob();
-  const filename = getFilename(res.headers.get("content-disposition")) || fallbackFilename;
-  const blobUrl = URL.createObjectURL(blob);
-  triggerAnchor(blobUrl, filename);
-  setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
-}
-
-function getFilename(contentDisposition: string | null) {
-  if (!contentDisposition) return null;
-  const encoded = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1];
-  if (encoded) return decodeURIComponent(encoded);
-  const plain = contentDisposition.match(/filename="?([^";]+)"?/i)?.[1];
-  return plain ? plain.trim() : null;
+  triggerAnchor(payload.url, payload.filename || fallbackFilename);
 }
 
 function triggerAnchor(href: string, filename: string) {
