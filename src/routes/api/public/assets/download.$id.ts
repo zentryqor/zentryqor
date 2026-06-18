@@ -15,35 +15,30 @@ function createUserClient(token: string) {
   );
 }
 
-function contentDisposition(filename: string) {
-  const safe = filename.replace(/["\\\r\n]/g, "_");
-  return `attachment; filename="${safe}"; filename*=UTF-8''${encodeURIComponent(filename)}`;
-}
-
 export const Route = createFileRoute("/api/public/assets/download/$id")({
   server: {
     handlers: {
       GET: async ({ request, params }) => {
         const auth = request.headers.get("authorization");
         const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
-        if (!token) return new Response("Please sign in again to download this asset.", { status: 401 });
+        if (!token) return jsonError(401, "Please sign in again to download this asset.");
 
         const supabase = createUserClient(token);
         const { data: claims, error: claimsError } = await supabase.auth.getClaims(token);
         const userId = claims?.claims?.sub;
-        if (claimsError || !userId) return new Response("Please sign in again to download this asset.", { status: 401 });
+        if (claimsError || !userId) return jsonError(401, "Please sign in again to download this asset.");
 
         const { data: asset, error: assetError } = await supabase
           .from("assets")
-          .select("id, file_name, storage_path, mime_type, premium_only")
+          .select("id, file_name, storage_path, premium_only")
           .eq("id", params.id)
           .maybeSingle();
 
-        if (assetError) return new Response(assetError.message, { status: 400 });
-        if (!asset) return new Response("Asset not found or locked.", { status: 404 });
+        if (assetError) return jsonError(400, assetError.message);
+        if (!asset) return jsonError(404, "Asset not found or locked.");
 
         const { data: premium } = await supabase.rpc("is_premium", { _user_id: userId });
-        if (asset.premium_only && !premium) return new Response("Premium membership required", { status: 403 });
+        if (asset.premium_only && !premium) return jsonError(403, "Premium membership required");
 
         if (!premium) {
           const startOfDay = new Date();
@@ -53,33 +48,34 @@ export const Route = createFileRoute("/api/public/assets/download/$id")({
             .select("id", { count: "exact", head: true })
             .eq("user_id", userId)
             .gte("created_at", startOfDay.toISOString());
-          if (countError) return new Response(countError.message, { status: 400 });
+          if (countError) return jsonError(400, countError.message);
           if ((count ?? 0) >= FREE_DAILY_DOWNLOAD_LIMIT) {
-            return new Response(
+            return jsonError(
+              429,
               `Daily download limit reached (${FREE_DAILY_DOWNLOAD_LIMIT}/day on Free). Upgrade to Premium for unlimited downloads.`,
-              { status: 429 },
             );
           }
         }
 
-        const { data: file, error: fileError } = await supabase.storage
+        const { data: signed, error: signError } = await supabase.storage
           .from("assets")
-          .download(asset.storage_path);
-        if (fileError || !file) return new Response(fileError?.message ?? "Download failed", { status: 404 });
+          .createSignedUrl(asset.storage_path, 60, { download: asset.file_name });
+        if (signError || !signed?.signedUrl) return jsonError(404, signError?.message ?? "Download failed");
 
         const { error: insertError } = await supabase
           .from("asset_downloads")
           .insert({ user_id: userId, asset_id: asset.id });
-        if (insertError) return new Response(insertError.message, { status: 400 });
+        if (insertError) return jsonError(400, insertError.message);
 
-        return new Response(file, {
-          headers: {
-            "Content-Type": asset.mime_type || file.type || "application/octet-stream",
-            "Content-Disposition": contentDisposition(asset.file_name),
-            "Cache-Control": "no-store",
-          },
-        });
+        return Response.json({ url: signed.signedUrl, filename: asset.file_name });
       },
     },
   },
 });
+
+function jsonError(status: number, message: string) {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
