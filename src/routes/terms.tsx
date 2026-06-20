@@ -67,7 +67,7 @@ function TermsPage() {
           <p>We may update these Terms. Material changes will be notified by email or in-app at least 14 days before they take effect.</p>
         </Section>
         <Section title="12. Contact">
-          <p>Questions? Email <a className="text-accent" href="mailto:legal@zentryqor.com">legal@zentryqor.com</a>.</p>
+          <p>Questions? Email <a className="text-accent" href="mailto:zentryqor@gmail.com">zentryqor@gmail.com</a>.</p>
         </Section>
       </div>
     </PageShell>

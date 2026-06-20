@@ -74,7 +74,7 @@ function PrivacyPage() {
           <p>We use essential cookies for authentication and a limited set of analytics cookies. You can manage preferences from the cookie banner.</p>
         </Section>
         <Section title="10. Contact">
-          <p>Privacy questions? Email <a className="text-accent" href="mailto:privacy@zentryqor.com">privacy@zentryqor.com</a>.</p>
+          <p>Privacy questions? Email <a className="text-accent" href="mailto:zentryqor@gmail.com">zentryqor@gmail.com</a>.</p>
         </Section>
       </div>
     </PageShell>

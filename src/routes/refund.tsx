@@ -43,7 +43,7 @@ function RefundPage() {
           </p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Visit <a className="text-accent underline" href="https://paddle.net" target="_blank" rel="noreferrer">paddle.net</a> and look up your order using the email address you used at checkout, or</li>
-            <li>Email us at <a className="text-accent" href="mailto:support@zentryqor.com">support@zentryqor.com</a> and we'll help arrange the refund with Paddle.</li>
+            <li>Email us at <a className="text-accent" href="mailto:zentryqor@gmail.com">zentryqor@gmail.com</a> and we'll help arrange the refund with Paddle.</li>
           </ul>
           <p>Approved refunds are returned to your original payment method, typically within 5–10 business days depending on your bank.</p>
         </Section>
@@ -59,7 +59,7 @@ function RefundPage() {
         </Section>
         <Section title="Contact">
           <p>
-            Questions about a refund? Email <a className="text-accent" href="mailto:support@zentryqor.com">support@zentryqor.com</a>.
+            Questions about a refund? Email <a className="text-accent" href="mailto:zentryqor@gmail.com">zentryqor@gmail.com</a>.
           </p>
         </Section>
       </div>
