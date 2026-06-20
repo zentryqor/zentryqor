@@ -16,7 +16,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader } from "@/components/AppHeader";
-import { downloadAsset } from "@/lib/download";
+import { downloadAsset, DownloadError } from "@/lib/download";
 import {
   getAssetDetails,
   toggleSave,

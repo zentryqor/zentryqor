@@ -22,7 +22,7 @@ import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { WorkspaceDock } from "@/components/WorkspaceDock";
 import { getMySavedIds, toggleSave } from "@/lib/assets.functions";
-import { downloadAsset } from "@/lib/download";
+import { downloadAsset, DownloadError } from "@/lib/download";
 
 export const Route = createFileRoute("/_authenticated/assets/")({
   ssr: false,
