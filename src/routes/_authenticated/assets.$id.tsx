@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -16,7 +17,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader } from "@/components/AppHeader";
-import { downloadAsset, DownloadError } from "@/lib/download";
+import { DownloadLimitModal } from "@/components/DownloadLimitModal";
+import { downloadAsset, DownloadError, type DownloadLimitDetails } from "@/lib/download";
 import {
   getAssetDetails,
   toggleSave,
@@ -43,6 +45,7 @@ function AssetDetailsPage() {
   const qc = useQueryClient();
   const { user } = useAuth();
   const { isPremium } = useSubscription(user?.id);
+  const [limitDetails, setLimitDetails] = useState<DownloadLimitDetails | null>(null);
 
   const fetchDetails = useServerFn(getAssetDetails);
   const saveFn = useServerFn(toggleSave);
@@ -68,14 +71,7 @@ function AssetDetailsPage() {
     } catch (e) {
       const err = e as DownloadError;
       if (err.status === 429) {
-        toast.error("Daily download limit reached", {
-          description: "You've used all 3 free downloads today. Upgrade to Premium for unlimited downloads.",
-          duration: 8000,
-          action: {
-            label: "Upgrade Now",
-            onClick: () => navigate({ to: "/billing" }),
-          },
-        });
+        setLimitDetails(err.limitDetails ?? null);
         return;
       }
       toast.error(err.message ?? "Download failed");
@@ -286,6 +282,11 @@ function AssetDetailsPage() {
             )}
           </motion.div>
         </main>
+        <DownloadLimitModal
+          details={limitDetails}
+          open={!!limitDetails}
+          onOpenChange={(open) => !open && setLimitDetails(null)}
+        />
       </div>
     </div>
   );
