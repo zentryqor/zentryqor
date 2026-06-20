@@ -53,32 +53,14 @@ export const recordDownload = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => assetIdSchema.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-
-    // Check premium status via security-definer RPC
-    const { data: premium } = await supabase.rpc("is_premium", { _user_id: userId });
-
-    if (!premium) {
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-      const { count, error: countErr } = await supabase
-        .from("asset_downloads")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", userId)
-        .gte("created_at", startOfDay.toISOString());
-      if (countErr) throw countErr;
-      if ((count ?? 0) >= FREE_DAILY_DOWNLOAD_LIMIT) {
-        throw new Error(
-          `Daily download limit reached (${FREE_DAILY_DOWNLOAD_LIMIT}/day on Free). Upgrade to Premium for unlimited downloads.`,
-        );
-      }
-    }
-
-    const { error } = await supabase
-      .from("asset_downloads")
-      .insert({ user_id: userId, asset_id: data.asset_id });
+    const { data: claimRows, error } = await context.supabase.rpc("claim_asset_download", {
+      _asset_id: data.asset_id,
+      _daily_limit: FREE_DAILY_DOWNLOAD_LIMIT,
+    });
     if (error) throw error;
-    return { ok: true };
+    const claim = claimRows?.[0];
+    if (!claim?.allowed) throw new Error(claim?.message ?? "Daily download limit reached");
+    return { ok: true, claim };
   });
 
 export const toggleSave = createServerFn({ method: "POST" })
