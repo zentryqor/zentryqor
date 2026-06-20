@@ -53,8 +53,20 @@ function SavedPage() {
     }
     try {
       await downloadAsset(a.id, a.file_name);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Download failed");
+    } catch (e) {
+      const err = e as DownloadError;
+      if (err.status === 429) {
+        toast.error("Daily download limit reached", {
+          description: "You've used all 3 free downloads today. Upgrade to Premium for unlimited downloads.",
+          duration: 8000,
+          action: {
+            label: "Upgrade Now",
+            onClick: () => window.location.href = "/billing",
+          },
+        });
+        return;
+      }
+      toast.error(err.message ?? "Download failed");
       return;
     }
     qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
