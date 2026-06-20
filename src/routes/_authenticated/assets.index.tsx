@@ -22,7 +22,8 @@ import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { WorkspaceDock } from "@/components/WorkspaceDock";
 import { getMySavedIds, toggleSave } from "@/lib/assets.functions";
-import { downloadAsset, DownloadError } from "@/lib/download";
+import { DownloadLimitModal } from "@/components/DownloadLimitModal";
+import { downloadAsset, DownloadError, type DownloadLimitDetails } from "@/lib/download";
 
 export const Route = createFileRoute("/_authenticated/assets/")({
   ssr: false,
@@ -68,6 +69,7 @@ function AssetsPage() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string>("all");
   const [tier, setTier] = useState<string>("all");
+  const [limitDetails, setLimitDetails] = useState<DownloadLimitDetails | null>(null);
 
   const { data: savedIds = [] } = useQuery({
     queryKey: ["my-saved-ids"],
@@ -134,14 +136,7 @@ function AssetsPage() {
     } catch (e) {
       const err = e as DownloadError;
       if (err.status === 429) {
-        toast.error("Daily download limit reached", {
-          description: "You've used all 3 free downloads today. Upgrade to Premium for unlimited downloads.",
-          duration: 8000,
-          action: {
-            label: "Upgrade Now",
-            onClick: () => window.location.href = "/billing",
-          },
-        });
+        setLimitDetails(err.limitDetails ?? null);
         return;
       }
       toast.error(err.message ?? "Download failed");
@@ -460,6 +455,11 @@ function AssetsPage() {
             </motion.div>
           )}
         </main>
+        <DownloadLimitModal
+          details={limitDetails}
+          open={!!limitDetails}
+          onOpenChange={(open) => !open && setLimitDetails(null)}
+        />
       </div>
     </div>
   );

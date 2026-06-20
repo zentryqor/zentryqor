@@ -40,41 +40,41 @@ export const Route = createFileRoute("/api/public/assets/download/$id")({
         const { data: premium } = await supabase.rpc("is_premium", { _user_id: userId });
         if (asset.premium_only && !premium) return jsonError(403, "Premium membership required");
 
-        if (!premium) {
-          const startOfDay = new Date();
-          startOfDay.setHours(0, 0, 0, 0);
-          const { count, error: countError } = await supabase
-            .from("asset_downloads")
-            .select("id", { count: "exact", head: true })
-            .eq("user_id", userId)
-            .gte("created_at", startOfDay.toISOString());
-          if (countError) return jsonError(400, countError.message);
-          if ((count ?? 0) >= FREE_DAILY_DOWNLOAD_LIMIT) {
-            return jsonError(
-              429,
-              `Daily download limit reached (${FREE_DAILY_DOWNLOAD_LIMIT}/day on Free). Upgrade to Premium for unlimited downloads.`,
-            );
-          }
-        }
-
         const { data: signed, error: signError } = await supabase.storage
           .from("assets")
           .createSignedUrl(asset.storage_path, 60, { download: asset.file_name });
         if (signError || !signed?.signedUrl) return jsonError(404, signError?.message ?? "Download failed");
 
-        const { error: insertError } = await supabase
-          .from("asset_downloads")
-          .insert({ user_id: userId, asset_id: asset.id });
-        if (insertError) return jsonError(400, insertError.message);
+        const { data: claimRows, error: claimError } = await supabase.rpc("claim_asset_download", {
+          _asset_id: asset.id,
+          _daily_limit: FREE_DAILY_DOWNLOAD_LIMIT,
+        });
+        if (claimError) return jsonError(400, claimError.message);
+        const claim = claimRows?.[0];
+        if (!claim?.allowed) {
+          return jsonError(claim?.message === "Premium membership required." ? 403 : 429, claim?.message ?? "Daily download limit reached", {
+            downloadsUsed: claim?.downloads_used ?? FREE_DAILY_DOWNLOAD_LIMIT,
+            downloadsRemaining: claim?.downloads_remaining ?? 0,
+            dailyLimit: claim?.daily_limit ?? FREE_DAILY_DOWNLOAD_LIMIT,
+            resetAt: claim?.reset_at ?? null,
+          });
+        }
 
-        return Response.json({ url: signed.signedUrl, filename: asset.file_name });
+        return Response.json({
+          url: signed.signedUrl,
+          filename: asset.file_name,
+          downloadsUsed: claim.downloads_used,
+          downloadsRemaining: claim.downloads_remaining,
+          dailyLimit: claim.daily_limit,
+          resetAt: claim.reset_at,
+        });
       },
     },
   },
 });
 
-function jsonError(status: number, message: string) {
-  return new Response(JSON.stringify({ error: message }), {
+function jsonError(status: number, message: string, details?: Record<string, unknown>) {
+  return new Response(JSON.stringify({ error: message, ...details }), {
     status,
     headers: { "Content-Type": "application/json" },
   });

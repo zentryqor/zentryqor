@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bookmark, BookmarkX, Download, Layers, Lock, Sparkles } from "lucide-react";
 import { toast } from "sonner";
@@ -8,7 +9,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
-import { downloadAsset, DownloadError } from "@/lib/download";
+import { DownloadLimitModal } from "@/components/DownloadLimitModal";
+import { downloadAsset, DownloadError, type DownloadLimitDetails } from "@/lib/download";
 import { getSavedAssets, toggleSave } from "@/lib/assets.functions";
 
 export const Route = createFileRoute("/_authenticated/saved")({
@@ -32,6 +34,7 @@ function SavedPage() {
   const qc = useQueryClient();
   const fetchSaved = useServerFn(getSavedAssets);
   const unsaveFn = useServerFn(toggleSave);
+  const [limitDetails, setLimitDetails] = useState<DownloadLimitDetails | null>(null);
 
   const { data: saved = [], isLoading } = useQuery({
     queryKey: ["saved-assets"],
@@ -56,14 +59,7 @@ function SavedPage() {
     } catch (e) {
       const err = e as DownloadError;
       if (err.status === 429) {
-        toast.error("Daily download limit reached", {
-          description: "You've used all 3 free downloads today. Upgrade to Premium for unlimited downloads.",
-          duration: 8000,
-          action: {
-            label: "Upgrade Now",
-            onClick: () => window.location.href = "/billing",
-          },
-        });
+        setLimitDetails(err.limitDetails ?? null);
         return;
       }
       toast.error(err.message ?? "Download failed");
@@ -200,6 +196,11 @@ function SavedPage() {
             </motion.div>
           )}
         </main>
+        <DownloadLimitModal
+          details={limitDetails}
+          open={!!limitDetails}
+          onOpenChange={(open) => !open && setLimitDetails(null)}
+        />
       </div>
     </div>
   );
