@@ -347,6 +347,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_asset_download: {
+        Args: { _asset_id: string; _daily_limit?: number }
+        Returns: {
+          allowed: boolean
+          daily_limit: number
+          downloads_remaining: number
+          downloads_used: number
+          message: string
+          reset_at: string
+        }[]
+      }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
