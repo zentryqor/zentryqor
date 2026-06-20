@@ -16,7 +16,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader } from "@/components/AppHeader";
-import { downloadAsset } from "@/lib/download";
+import { downloadAsset, DownloadError } from "@/lib/download";
 import {
   getAssetDetails,
   toggleSave,
@@ -65,8 +65,20 @@ function AssetDetailsPage() {
     }
     try {
       await downloadAsset(asset.id, asset.file_name);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Download failed");
+    } catch (e) {
+      const err = e as DownloadError;
+      if (err.status === 429) {
+        toast.error("Daily download limit reached", {
+          description: "You've used all 3 free downloads today. Upgrade to Premium for unlimited downloads.",
+          duration: 8000,
+          action: {
+            label: "Upgrade Now",
+            onClick: () => navigate({ to: "/billing" }),
+          },
+        });
+        return;
+      }
+      toast.error(err.message ?? "Download failed");
       return;
     }
     qc.invalidateQueries({ queryKey: ["asset-details", id] });
