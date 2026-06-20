@@ -40,6 +40,11 @@ export const Route = createFileRoute("/api/public/assets/download/$id")({
         const { data: premium } = await supabase.rpc("is_premium", { _user_id: userId });
         if (asset.premium_only && !premium) return jsonError(403, "Premium membership required");
 
+        const { data: signed, error: signError } = await supabase.storage
+          .from("assets")
+          .createSignedUrl(asset.storage_path, 60, { download: asset.file_name });
+        if (signError || !signed?.signedUrl) return jsonError(404, signError?.message ?? "Download failed");
+
         const { data: claimRows, error: claimError } = await supabase.rpc("claim_asset_download", {
           _asset_id: asset.id,
           _daily_limit: FREE_DAILY_DOWNLOAD_LIMIT,
@@ -54,11 +59,6 @@ export const Route = createFileRoute("/api/public/assets/download/$id")({
             resetAt: claim?.reset_at ?? null,
           });
         }
-
-        const { data: signed, error: signError } = await supabase.storage
-          .from("assets")
-          .createSignedUrl(asset.storage_path, 60, { download: asset.file_name });
-        if (signError || !signed?.signedUrl) return jsonError(404, signError?.message ?? "Download failed");
 
         return Response.json({
           url: signed.signedUrl,
