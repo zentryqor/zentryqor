@@ -182,14 +182,17 @@ function AssetsPage() {
             </>
           }
           right={
-            !isPremium && (
-              <Link
-                to="/billing"
-                className="hidden sm:inline-flex h-8 sm:h-9 px-3 rounded-full glass items-center gap-1.5 text-xs font-medium"
-              >
-                <Sparkles className="h-3 w-3 text-accent icon-fx" /> Upgrade
-              </Link>
-            )
+            <div className="flex items-center gap-2">
+              {!isPremium && (
+                <Link
+                  to="/billing"
+                  className="hidden sm:inline-flex h-8 sm:h-9 px-3 rounded-full glass items-center gap-1.5 text-xs font-medium"
+                >
+                  <Sparkles className="h-3 w-3 text-accent icon-fx" /> Upgrade
+                </Link>
+              )}
+              <ProfileMenu />
+            </div>
           }
         />
         <WorkspaceDock />

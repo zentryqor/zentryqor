@@ -147,11 +147,7 @@ function SettingsPage() {
               <AppHeaderLink to="/ai">AI Studio</AppHeaderLink>
             </>
           }
-          right={
-            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-xs font-semibold text-primary-foreground">
-              {firstName[0]?.toUpperCase()}
-            </div>
-          }
+          right={<ProfileMenu />}
         />
         <WorkspaceDock />
 
