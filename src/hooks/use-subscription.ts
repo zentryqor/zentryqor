@@ -45,8 +45,8 @@ export function useSubscription(userId: string | null | undefined) {
 
     fetchSub();
 
-    const channel = supabase
-      .channel(`sub-${userId}`)
+    const channel = supabase.channel(`sub-${userId}-${Math.random().toString(36).slice(2)}`);
+    channel
       .on(
         "postgres_changes",
         {
