@@ -33,6 +33,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAssetsIndexRouteImport } from './routes/_authenticated/assets.index'
 import { Route as AuthenticatedAssetsIdRouteImport } from './routes/_authenticated/assets.$id'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicAuthSigninRouteImport } from './routes/api/public/auth/signin'
 import { Route as ApiPublicAssetsDownloadIdRouteImport } from './routes/api/public/assets/download.$id'
 
 const TermsRoute = TermsRouteImport.update({
@@ -156,6 +157,11 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAuthSigninRoute = ApiPublicAuthSigninRouteImport.update({
+  id: '/api/public/auth/signin',
+  path: '/api/public/auth/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAssetsDownloadIdRoute =
   ApiPublicAssetsDownloadIdRouteImport.update({
     id: '/api/public/assets/download/$id',
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/assets/': typeof AuthenticatedAssetsIndexRoute
+  '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
 }
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/assets': typeof AuthenticatedAssetsIndexRoute
+  '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
 }
@@ -240,6 +248,7 @@ export interface FileRoutesById {
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/_authenticated/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
+  '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
 }
@@ -268,6 +277,7 @@ export interface FileRouteTypes {
     | '/guides/ugc-essentials'
     | '/assets/$id'
     | '/assets/'
+    | '/api/public/auth/signin'
     | '/api/public/payments/webhook'
     | '/api/public/assets/download/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -294,6 +304,7 @@ export interface FileRouteTypes {
     | '/guides/ugc-essentials'
     | '/assets/$id'
     | '/assets'
+    | '/api/public/auth/signin'
     | '/api/public/payments/webhook'
     | '/api/public/assets/download/$id'
   id:
@@ -321,6 +332,7 @@ export interface FileRouteTypes {
     | '/guides/ugc-essentials'
     | '/_authenticated/assets/$id'
     | '/_authenticated/assets/'
+    | '/api/public/auth/signin'
     | '/api/public/payments/webhook'
     | '/api/public/assets/download/$id'
   fileRoutesById: FileRoutesById
@@ -340,6 +352,7 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   GuidesUgcEssentialsRoute: typeof GuidesUgcEssentialsRoute
+  ApiPublicAuthSigninRoute: typeof ApiPublicAuthSigninRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicAssetsDownloadIdRoute: typeof ApiPublicAssetsDownloadIdRoute
 }
@@ -514,6 +527,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/auth/signin': {
+      id: '/api/public/auth/signin'
+      path: '/api/public/auth/signin'
+      fullPath: '/api/public/auth/signin'
+      preLoaderRoute: typeof ApiPublicAuthSigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/assets/download/$id': {
       id: '/api/public/assets/download/$id'
       path: '/api/public/assets/download/$id'
@@ -566,6 +586,7 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   GuidesUgcEssentialsRoute: GuidesUgcEssentialsRoute,
+  ApiPublicAuthSigninRoute: ApiPublicAuthSigninRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicAssetsDownloadIdRoute: ApiPublicAssetsDownloadIdRoute,
 }

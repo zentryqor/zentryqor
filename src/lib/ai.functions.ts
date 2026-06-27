@@ -113,6 +113,8 @@ export const generateAiText = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    const { enforceRateLimit } = await import("@/lib/security.server");
+    await enforceRateLimit(`ai-text:${context.userId}`, 20, 60, "Too many AI text requests");
     const usage = await spendCredits(context.userId, TEXT_COST);
     try {
       const messages = [
@@ -144,6 +146,8 @@ export const generateAiImage = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    const { enforceRateLimit } = await import("@/lib/security.server");
+    await enforceRateLimit(`ai-image:${context.userId}`, 10, 60, "Too many AI image requests");
     const usage = await spendCredits(context.userId, IMAGE_COST);
 
     const apiKey = process.env.LOVABLE_API_KEY;

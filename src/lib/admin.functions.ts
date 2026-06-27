@@ -233,12 +233,24 @@ export const adminInsertAssetRow = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => insertRowSchema.parse(d))
   .handler(async ({ data, context }) => {
+    const { enforceRateLimit } = await import("@/lib/security.server");
+    const { sanitizeUserText } = await import("@/lib/security.server");
+    await enforceRateLimit(`admin-upload:${context.userId}`, 30, 60, "Too many uploads");
     const supabaseAdmin = await assertAdmin(context.userId);
+    const safeTitle = sanitizeUserText(data.title, 200);
+    const safeDescription = data.description
+      ? sanitizeUserText(data.description, 2000)
+      : null;
+    const safeCategory = sanitizeUserText(data.category, 64) || "general";
+    const safeTags = data.tags
+      .map((t) => sanitizeUserText(t, 64))
+      .filter(Boolean);
+    if (!safeTitle) throw new Error("Title is required");
     const { error } = await supabaseAdmin.from("assets").insert({
-      title: data.title.trim(),
-      description: data.description?.trim() || null,
-      category: data.category.trim() || "general",
-      tags: data.tags,
+      title: safeTitle,
+      description: safeDescription,
+      category: safeCategory,
+      tags: safeTags,
       storage_path: data.storage_path,
       thumbnail_path: data.thumbnail_path ?? null,
       file_name: data.file_name,
