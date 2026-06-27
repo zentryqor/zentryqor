@@ -150,6 +150,24 @@ export type Database = {
         }
         Relationships: []
       }
+      auth_failures: {
+        Row: {
+          created_at: string
+          email_lower: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email_lower: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email_lower?: string
+          id?: string
+        }
+        Relationships: []
+      }
       creator_preferences: {
         Row: {
           created_at: string
@@ -213,6 +231,24 @@ export type Database = {
           id?: string
           onboarding_completed?: boolean
           updated_at?: string
+        }
+        Relationships: []
+      }
+      rate_limit_buckets: {
+        Row: {
+          bucket_key: string
+          count: number
+          window_start: string
+        }
+        Insert: {
+          bucket_key: string
+          count?: number
+          window_start: string
+        }
+        Update: {
+          bucket_key?: string
+          count?: number
+          window_start?: string
         }
         Relationships: []
       }
@@ -347,6 +383,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_signin_lockout: {
+        Args: { _email: string }
+        Returns: {
+          attempts: number
+          locked: boolean
+          unlock_at: string
+        }[]
+      }
       claim_asset_download: {
         Args: { _asset_id: string; _daily_limit?: number }
         Returns: {
@@ -355,6 +399,15 @@ export type Database = {
           downloads_remaining: number
           downloads_used: number
           message: string
+          reset_at: string
+        }[]
+      }
+      clear_signin_failures: { Args: { _email: string }; Returns: undefined }
+      consume_rate_limit: {
+        Args: { _key: string; _max: number; _window_seconds: number }
+        Returns: {
+          allowed: boolean
+          remaining: number
           reset_at: string
         }[]
       }
@@ -370,6 +423,7 @@ export type Database = {
         Returns: boolean
       }
       is_premium: { Args: { _user_id: string }; Returns: boolean }
+      record_signin_failure: { Args: { _email: string }; Returns: undefined }
     }
     Enums: {
       app_role: "free" | "premium" | "admin"
