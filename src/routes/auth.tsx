@@ -29,6 +29,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const navigate = useNavigate();
   const router = useRouter();
   const { redirect: redirectTo } = Route.useSearch();
@@ -42,6 +43,7 @@ function AuthPage() {
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
+    setFormError(null);
     setLoading(true);
     try {
       if (mode === "signup") {
@@ -56,13 +58,32 @@ function AuthPage() {
         if (error) throw error;
         toast.success("Account created. Check your email to verify.");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
+        const res = await fetch("/api/public/auth/signin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const msg =
+            payload?.error ||
+            (res.status === 401
+              ? "Incorrect email or password."
+              : "Sign-in failed. Please try again.");
+          throw new Error(msg);
+        }
+        const { error: setErr } = await supabase.auth.setSession({
+          access_token: payload.access_token,
+          refresh_token: payload.refresh_token,
+        });
+        if (setErr) throw setErr;
         await router.invalidate();
         navigate({ to: dest });
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Something went wrong");
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setFormError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -114,6 +135,15 @@ function AuthPage() {
             <div className="h-px flex-1 bg-border" /> or email <div className="h-px flex-1 bg-border" />
           </div>
 
+          {formError && (
+            <div
+              role="alert"
+              className="mb-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+            >
+              {formError}
+            </div>
+          )}
+
           <form onSubmit={handleEmail} className="space-y-3">
             {mode === "signup" && (
               <input
@@ -156,7 +186,10 @@ function AuthPage() {
           </form>
 
           <button
-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+            onClick={() => {
+              setFormError(null);
+              setMode(mode === "signin" ? "signup" : "signin");
+            }}
             className="mt-6 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             {mode === "signin" ? "New here? Create an account" : "Already a member? Sign in"}

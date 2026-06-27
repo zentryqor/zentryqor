@@ -28,6 +28,16 @@ export const Route = createFileRoute("/api/public/assets/download/$id")({
         const userId = claims?.claims?.sub;
         if (claimsError || !userId) return jsonError(401, "Please sign in again to download this asset.");
 
+        const { enforceRateLimit, clientIpFromRequest, RateLimitError } = await import("@/lib/security.server");
+        try {
+          await enforceRateLimit(`download:user:${userId}`, 30, 60, "Too many download requests");
+          await enforceRateLimit(`download:ip:${clientIpFromRequest(request)}`, 60, 60, "Too many download requests from this network");
+        } catch (e) {
+          if (e instanceof RateLimitError) return jsonError(429, e.message, { resetAt: e.resetAt });
+          throw e;
+        }
+
+
         const { data: asset, error: assetError } = await supabase
           .from("assets")
           .select("id, file_name, storage_path, premium_only")
