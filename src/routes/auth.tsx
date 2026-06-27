@@ -135,6 +135,15 @@ function AuthPage() {
             <div className="h-px flex-1 bg-border" /> or email <div className="h-px flex-1 bg-border" />
           </div>
 
+          {formError && (
+            <div
+              role="alert"
+              className="mb-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+            >
+              {formError}
+            </div>
+          )}
+
           <form onSubmit={handleEmail} className="space-y-3">
             {mode === "signup" && (
               <input
@@ -177,7 +186,10 @@ function AuthPage() {
           </form>
 
           <button
-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+            onClick={() => {
+              setFormError(null);
+              setMode(mode === "signin" ? "signup" : "signin");
+            }}
             className="mt-6 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             {mode === "signin" ? "New here? Create an account" : "Already a member? Sign in"}
