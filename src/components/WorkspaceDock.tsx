@@ -45,6 +45,6 @@ export function WorkspaceDock() {
           );
         })}
       </div>
-    </motion.nav>
+    </nav>
   );
 }
