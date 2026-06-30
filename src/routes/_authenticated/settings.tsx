@@ -24,7 +24,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { getMyContext } from "@/lib/preferences.functions";
 import { updateProfile } from "@/lib/settings.functions";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
-import { WorkspaceDock } from "@/components/WorkspaceDock";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { PremiumBadge } from "@/components/PremiumLock";
 import { Button } from "@/components/ui/button";
@@ -150,7 +149,7 @@ function SettingsPage() {
           }
           right={<ProfileMenu />}
         />
-        <WorkspaceDock />
+        
 
         <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-16">
           <Link
@@ -297,7 +296,7 @@ function SettingsPage() {
               </Section>
 
               {/* Danger / session */}
-              <Section icon={Trash2} title="Account" description="Sign out of this device or contact support to delete your account.">
+              <Section icon={Trash2} title="Account" description="Sign out of this device.">
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={signOut}
@@ -305,12 +304,6 @@ function SettingsPage() {
                   >
                     <LogOut className="h-3.5 w-3.5" /> Sign out
                   </button>
-                  <a
-                    href="mailto:zentryqor@gmail.com?subject=Delete%20my%20account"
-                    className="h-10 px-4 rounded-xl border border-destructive/40 text-destructive text-sm font-medium inline-flex items-center gap-2 hover:bg-destructive/10"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" /> Request account deletion
-                  </a>
                 </div>
               </Section>
             </div>

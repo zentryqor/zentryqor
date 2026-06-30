@@ -21,7 +21,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
-import { WorkspaceDock } from "@/components/WorkspaceDock";
 import { getMySavedIds, toggleSave } from "@/lib/assets.functions";
 import { DownloadLimitModal } from "@/components/DownloadLimitModal";
 import { downloadAsset, DownloadError, type DownloadLimitDetails } from "@/lib/download";
@@ -196,7 +195,7 @@ function AssetsPage() {
             </div>
           }
         />
-        <WorkspaceDock />
+        
 
         <main className="max-w-7xl mx-auto px-6 pt-28 pb-12">
           {/* Hero */}

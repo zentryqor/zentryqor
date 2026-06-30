@@ -37,7 +37,6 @@ import { getDashboardFeed, getSavedAssets } from "@/lib/assets.functions";
 import { PremiumBadge } from "@/components/PremiumLock";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
-import { WorkspaceDock } from "@/components/WorkspaceDock";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ChevronRight, Settings } from "lucide-react";
 import { ProfileMenu } from "@/components/ProfileMenu";
@@ -134,10 +133,10 @@ function Dashboard() {
   const firstName = profile?.display_name?.split(" ")[0] ?? "creator";
 
   const subline = (() => {
-    const bits: string[] = [];
-    if (preferences?.niche) bits.push(preferences.niche);
-    if (preferences?.platforms?.length) bits.push(preferences.platforms.join(" · "));
-    return bits.join(" · ");
+    if (preferences?.platforms?.length) {
+      return `For ${preferences.platforms.join(" · ")}`;
+    }
+    return "";
   })();
 
   async function signOut() {
@@ -568,7 +567,7 @@ function Dashboard() {
           )}
         </AnimatePresence>
       </main>
-      <WorkspaceDock />
+      
       </div>
     </div>
   );
