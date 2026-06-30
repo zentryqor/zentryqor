@@ -133,10 +133,10 @@ function Dashboard() {
   const firstName = profile?.display_name?.split(" ")[0] ?? "creator";
 
   const subline = (() => {
-    const bits: string[] = [];
-    if (preferences?.niche) bits.push(preferences.niche);
-    if (preferences?.platforms?.length) bits.push(preferences.platforms.join(" · "));
-    return bits.join(" · ");
+    if (preferences?.platforms?.length) {
+      return `For ${preferences.platforms.join(" · ")}`;
+    }
+    return "";
   })();
 
   async function signOut() {
