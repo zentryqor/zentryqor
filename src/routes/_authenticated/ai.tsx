@@ -23,7 +23,6 @@ import {
 import ReactMarkdown from "react-markdown";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
-import { WorkspaceDock } from "@/components/WorkspaceDock";
 import { generateAiText, generateAiImage, getAiCredits } from "@/lib/ai.functions";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -338,7 +337,7 @@ function AiStudio() {
             ) : null
           }
         />
-        <WorkspaceDock />
+        
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-28 pb-10 sm:pb-14">
           {/* Hero */}
