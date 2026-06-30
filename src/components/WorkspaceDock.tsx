@@ -13,10 +13,7 @@ export function WorkspaceDock() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
 
   return (
-    <motion.nav
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+    <nav
       aria-label="Workspace navigation"
       className="fixed inset-x-4 bottom-4 z-50 mx-auto w-auto max-w-2xl sm:inset-x-6 sm:bottom-6"
     >
