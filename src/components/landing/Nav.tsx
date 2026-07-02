@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
+import { Home, Map, Tag, BookOpen, Info, Mail } from "lucide-react";
 import logoAsset from "@/assets/zentry-logo.png.asset.json";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export function Nav() {
   const { user, loading } = useAuth();
