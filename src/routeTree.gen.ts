@@ -16,6 +16,7 @@ import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as RefundRouteImport } from './routes/refund'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as HelpRouteImport } from './routes/help'
+import { Route as DocsRouteImport } from './routes/docs'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -69,6 +70,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const HelpRoute = HelpRouteImport.update({
   id: '/help',
   path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -175,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/changelog': typeof ChangelogRoute
   '/contact': typeof ContactRoute
+  '/docs': typeof DocsRoute
   '/help': typeof HelpRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
@@ -202,6 +209,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/changelog': typeof ChangelogRoute
   '/contact': typeof ContactRoute
+  '/docs': typeof DocsRoute
   '/help': typeof HelpRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
@@ -231,6 +239,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/changelog': typeof ChangelogRoute
   '/contact': typeof ContactRoute
+  '/docs': typeof DocsRoute
   '/help': typeof HelpRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
@@ -260,6 +269,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/changelog'
     | '/contact'
+    | '/docs'
     | '/help'
     | '/privacy'
     | '/refund'
@@ -287,6 +297,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/changelog'
     | '/contact'
+    | '/docs'
     | '/help'
     | '/privacy'
     | '/refund'
@@ -315,6 +326,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/changelog'
     | '/contact'
+    | '/docs'
     | '/help'
     | '/privacy'
     | '/refund'
@@ -344,6 +356,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ChangelogRoute: typeof ChangelogRoute
   ContactRoute: typeof ContactRoute
+  DocsRoute: typeof DocsRoute
   HelpRoute: typeof HelpRoute
   PrivacyRoute: typeof PrivacyRoute
   RefundRoute: typeof RefundRoute
@@ -406,6 +419,13 @@ declare module '@tanstack/react-router' {
       path: '/help'
       fullPath: '/help'
       preLoaderRoute: typeof HelpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -578,6 +598,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ChangelogRoute: ChangelogRoute,
   ContactRoute: ContactRoute,
+  DocsRoute: DocsRoute,
   HelpRoute: HelpRoute,
   PrivacyRoute: PrivacyRoute,
   RefundRoute: RefundRoute,

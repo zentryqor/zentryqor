@@ -41,24 +41,7 @@ export function Nav() {
 
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {loading ? null : user ? (
-            <>
-              <button
-                onClick={() => supabase.auth.signOut()}
-                className="inline-flex whitespace-nowrap text-[11px] sm:text-xs text-muted-foreground hover:text-foreground h-7 sm:h-8 px-2 sm:px-3 rounded-lg transition-colors items-center"
-                type="button"
-              >
-                Sign out
-              </button>
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-                <Link
-                  to="/dashboard"
-                  aria-label="Go to dashboard"
-                  className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[10px] font-semibold text-primary-foreground"
-                >
-                  {(displayName?.[0] ?? "U").toUpperCase()}
-                </Link>
-              </motion.div>
-            </>
+            <ProfilePopover initial={(displayName?.[0] ?? "U").toUpperCase()} email={user.email ?? ""} />
           ) : (
             <>
               <Link to="/auth" className="inline-flex whitespace-nowrap text-[11px] sm:text-xs text-muted-foreground hover:text-foreground h-7 sm:h-8 px-2 sm:px-3 rounded-lg transition-colors items-center">
