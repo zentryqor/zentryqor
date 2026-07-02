@@ -46,40 +46,41 @@
 :root {
   --radius: 1rem;
 
-  /* Deep premium black */
-  --background: oklch(0.04 0 0);            /* #0A0A0A-ish */
-  --surface: oklch(0.08 0 0);                /* #111111 */
-  --elevated: oklch(0.12 0 0);               /* #181818 */
-  --foreground: oklch(0.98 0.005 240);       /* #F8FAFC */
+  /* Warm near-black base — premium, not pure #000 */
+  --background: oklch(0.08 0.008 60);
+  --surface: oklch(0.12 0.008 60);
+  --elevated: oklch(0.16 0.008 60);
+  --foreground: oklch(0.97 0.008 80);
 
-  --card: oklch(0.10 0 0);
-  --card-foreground: oklch(0.98 0.005 240);
-  --popover: oklch(0.10 0 0);
-  --popover-foreground: oklch(0.98 0.005 240);
+  --card: oklch(0.13 0.008 60);
+  --card-foreground: oklch(0.97 0.008 80);
+  --popover: oklch(0.13 0.008 60);
+  --popover-foreground: oklch(0.97 0.008 80);
 
-  /* Primary blue #2563EB */
-  --primary: oklch(0.56 0.22 264);
+  /* Primary: saturated cobalt */
+  --primary: oklch(0.62 0.22 255);
   --primary-foreground: oklch(0.98 0.005 240);
-  /* Green glow */
-  --primary-glow: oklch(0.70 0.17 162);
+  /* Glow: warm amber, complementary to cobalt */
+  --primary-glow: oklch(0.80 0.16 70);
 
-  --secondary: oklch(0.14 0 0);
-  --secondary-foreground: oklch(0.98 0.005 240);
+  --secondary: oklch(0.18 0.008 60);
+  --secondary-foreground: oklch(0.97 0.008 80);
 
-  --muted: oklch(0.14 0 0);
-  --muted-foreground: oklch(0.70 0.01 260);  /* #A1A1AA */
+  --muted: oklch(0.18 0.008 60);
+  --muted-foreground: oklch(0.72 0.015 70);
 
-  --accent: oklch(0.63 0.26 25);            /* red accent */
-  --accent-foreground: oklch(0.98 0.005 240);
+  /* Accent: warm amber */
+  --accent: oklch(0.80 0.16 70);
+  --accent-foreground: oklch(0.15 0.01 60);
 
   --destructive: oklch(0.62 0.22 25);
   --destructive-foreground: oklch(0.98 0.005 240);
 
-  --success: oklch(0.70 0.17 162);           /* #10B981 */
+  --success: oklch(0.72 0.17 155);
 
-  --border: oklch(1 0 0 / 0.08);
-  --input: oklch(1 0 0 / 0.10);
-  --ring: oklch(0.56 0.22 264);
+  --border: oklch(1 0 0 / 0.09);
+  --input: oklch(1 0 0 / 0.11);
+  --ring: oklch(0.62 0.22 255);
 }
 
 .dark {
@@ -204,7 +205,7 @@
   }
   .text-aurora {
     display: inline-block;
-    background-image: linear-gradient(120deg, var(--primary-glow) 0%, var(--primary) 20%, oklch(0.63 0.26 25) 40%, oklch(0.70 0.17 140) 60%, var(--primary) 80%, var(--primary-glow) 100%);
+    background-image: linear-gradient(120deg, var(--primary-glow) 0%, var(--primary) 25%, oklch(0.72 0.17 155) 50%, var(--primary) 75%, var(--primary-glow) 100%);
     background-size: 300% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -372,21 +373,21 @@
 
 .cb-gradient {
   background: linear-gradient(125deg,
-    oklch(0.04 0 0) 0%,
-    oklch(0.04 0 0) 25%,
+    oklch(0.08 0.008 60) 0%,
+    oklch(0.08 0.008 60) 25%,
     #2563eb 35%,
-    oklch(0.04 0 0) 45%,
-    #9333ea 52%,
-    oklch(0.04 0 0) 60%,
-    #ec4899 68%,
-    oklch(0.04 0 0) 78%,
-    #10b981 85%,
-    oklch(0.04 0 0) 100%);
+    oklch(0.08 0.008 60) 45%,
+    #f59e0b 52%,
+    oklch(0.08 0.008 60) 60%,
+    #10b981 68%,
+    oklch(0.08 0.008 60) 78%,
+    #2563eb 85%,
+    oklch(0.08 0.008 60) 100%);
   background-size: 400% 400%;
   background-position: 0% 50%;
   filter: blur(60px);
   animation: cb-shift 22s ease-in-out infinite;
-  opacity: 0.22;
+  opacity: 0.20;
   will-change: background-position;
 }
 
@@ -405,11 +406,11 @@
   mix-blend-mode: screen;
   will-change: transform;
 }
-.cb-blob-1 { background: #3b82f6; top: -10%;  left: -10%; animation: cb-float-a 18s ease-in-out infinite; }
-.cb-blob-2 { background: #ec4899; top: 20%;   right: -15%; animation: cb-float-b 24s ease-in-out infinite; }
+.cb-blob-1 { background: #2563eb; top: -10%;  left: -10%; animation: cb-float-a 18s ease-in-out infinite; }
+.cb-blob-2 { background: #f59e0b; top: 20%;   right: -15%; animation: cb-float-b 24s ease-in-out infinite; }
 .cb-blob-3 { background: #10b981; bottom: -15%; left: 10%; animation: cb-float-c 26s ease-in-out infinite; }
-.cb-blob-4 { background: #a855f7; bottom: 10%; right: 5%; animation: cb-float-a 30s ease-in-out infinite reverse; }
-.cb-blob-5 { background: #f59e0b; top: 40%;   left: 35%; animation: cb-float-b 28s ease-in-out infinite reverse; }
+.cb-blob-4 { background: #3b82f6; bottom: 10%; right: 5%; animation: cb-float-a 30s ease-in-out infinite reverse; }
+.cb-blob-5 { background: #fbbf24; top: 40%;   left: 35%; animation: cb-float-b 28s ease-in-out infinite reverse; }
 
 @keyframes cb-float-a {
   0%,100% { transform: translate3d(0,0,0) scale(1); }
