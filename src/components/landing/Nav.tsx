@@ -59,3 +59,78 @@ export function Nav() {
     </motion.header>
   );
 }
+
+function ProfilePopover({ initial, email }: { initial: string; email: string }) {
+  const items = [
+    { to: "/", label: "Home", icon: Home },
+    { to: "/roadmap", label: "Roadmap", icon: Map },
+    { to: "/#pricing", label: "Pricing", icon: Tag, hash: true },
+    { to: "/docs", label: "Docs", icon: BookOpen },
+    { to: "/about", label: "About", icon: Info },
+    { to: "/contact", label: "Contact", icon: Mail },
+  ] as const;
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          transition={{ type: "spring", stiffness: 400, damping: 20 }}
+          aria-label="Open menu"
+          className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[10px] font-semibold text-primary-foreground ring-0 hover:ring-2 hover:ring-primary/40 transition"
+        >
+          {initial}
+        </motion.button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        sideOffset={12}
+        className="w-[240px] p-2 rounded-2xl glass-strong bg-background/40 shadow-2xl shadow-black/40 border-white/10"
+      >
+        <div className="px-3 pt-2 pb-3 border-b border-white/10 mb-2">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">Signed in</div>
+          <div className="text-sm font-medium truncate mt-0.5">{email}</div>
+        </div>
+        <div className="flex flex-col">
+          {items.map((it) =>
+            "hash" in it ? (
+              <a
+                key={it.label}
+                href={it.to}
+                className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition"
+              >
+                <it.icon className="h-4 w-4" />
+                {it.label}
+              </a>
+            ) : (
+              <Link
+                key={it.label}
+                to={it.to}
+                className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition"
+              >
+                <it.icon className="h-4 w-4" />
+                {it.label}
+              </Link>
+            )
+          )}
+        </div>
+        <div className="border-t border-white/10 mt-2 pt-2">
+          <Link
+            to="/dashboard"
+            className="flex items-center justify-center rounded-xl px-3 py-2 text-sm font-semibold bg-gradient-to-r from-primary/20 to-accent/20 hover:from-primary/30 hover:to-accent/30 transition"
+          >
+            Go to dashboard
+          </Link>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="w-full mt-1 rounded-xl px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition"
+          >
+            Sign out
+          </button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
