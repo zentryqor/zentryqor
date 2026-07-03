@@ -22,7 +22,6 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-
 function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -104,101 +103,182 @@ function AuthPage() {
     navigate({ to: dest });
   }
 
+  const isSignin = mode === "signin";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background text-foreground px-4 relative overflow-hidden">
-      <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-primary/20 blur-3xl" />
-      <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-accent/20 blur-3xl" />
+    <div className="min-h-[100dvh] w-full flex items-center justify-center bg-background text-foreground px-5 py-10 relative overflow-hidden">
+      {/* Ambient glows */}
+      <div className="fixed -top-24 -right-24 w-80 h-80 rounded-full bg-accent/15 blur-[110px] pointer-events-none" />
+      <div className="fixed -bottom-24 -left-24 w-96 h-96 rounded-full bg-primary/20 blur-[130px] pointer-events-none" />
+      {/* Scanner lines */}
+      <div className="fixed inset-0 pointer-events-none opacity-20">
+        <div className="absolute w-full h-px bg-gradient-to-r from-transparent via-foreground/25 to-transparent top-1/4 animate-pulse" />
+        <div className="absolute w-px h-full bg-gradient-to-b from-transparent via-foreground/10 to-transparent left-1/4" />
+      </div>
 
-      <div className="relative w-full max-w-md">
-        <Link to="/" className="block text-center mb-8 text-xs uppercase tracking-[0.3em] text-muted-foreground hover:text-foreground transition-colors">
-          ← Zentry Qor
-        </Link>
-
-        <div className="glass-strong rounded-3xl p-8">
-          <h1 className="text-3xl font-semibold tracking-[-0.03em] text-gradient">
-            {mode === "signin" ? "Welcome back." : "Create your account."}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-2">
-            {mode === "signin" ? "Sign in to your creator vault." : "Start your premium creator OS."}
-          </p>
-
-          <button
-            onClick={handleGoogle}
-            disabled={loading}
-            className="mt-7 w-full h-11 rounded-xl bg-foreground text-background text-sm font-medium magnetic flex items-center justify-center gap-2 disabled:opacity-50"
+      <div className="relative w-full max-w-[380px] z-10">
+        {/* Brand */}
+        <div className="mb-8 text-center">
+          <Link
+            to="/"
+            className="inline-block mb-4 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors"
+            aria-label="Back to home"
           >
-            <GoogleIcon /> Continue with Google
-          </button>
-
-          <div className="my-5 flex items-center gap-3 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-            <div className="h-px flex-1 bg-border" /> or email <div className="h-px flex-1 bg-border" />
-          </div>
-
-          {formError && (
-            <div
-              role="alert"
-              className="mb-3 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-            >
-              {formError}
+            <div className="w-8 h-8 bg-foreground rounded-sm rotate-45 flex items-center justify-center">
+              <div className="w-4 h-4 bg-background rotate-45" />
             </div>
-          )}
-
-          <form onSubmit={handleEmail} className="space-y-3">
-            {mode === "signup" && (
-              <input
-                type="text"
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                maxLength={60}
-                className="w-full h-11 px-4 rounded-xl glass border border-border focus:border-foreground/30 focus:outline-none text-sm"
-              />
-            )}
-            <input
-              type="email"
-              placeholder="you@studio.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              maxLength={255}
-              className="w-full h-11 px-4 rounded-xl glass border border-border focus:border-foreground/30 focus:outline-none text-sm"
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              maxLength={72}
-              className="w-full h-11 px-4 rounded-xl glass border border-border focus:border-foreground/30 focus:outline-none text-sm"
-            />
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-11 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground text-sm font-medium magnetic glow-primary disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              {mode === "signin" ? "Sign in" : "Create account"}
-            </button>
-          </form>
-
-          <button
-            onClick={() => {
-              setFormError(null);
-              setMode(mode === "signin" ? "signup" : "signin");
-            }}
-            className="mt-6 w-full text-center text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {mode === "signin" ? "New here? Create an account" : "Already a member? Sign in"}
-          </button>
-
-          <p className="mt-6 text-[10px] text-center text-muted-foreground/60 uppercase tracking-wider">
-            Apple sign-in coming soon
+          </Link>
+          <h1 className="text-3xl font-bold tracking-tighter uppercase text-gradient">
+            Zentry Qor
+          </h1>
+          <p className="text-[11px] tracking-[0.22em] text-muted-foreground uppercase font-medium mt-1">
+            Creator Workspace Access
           </p>
         </div>
+
+        {/* Card */}
+        <div className="glass-strong rounded-3xl p-1 shadow-2xl overflow-hidden">
+          {/* Tab switcher */}
+          <div className="flex bg-background/50 rounded-[22px] p-1">
+            <button
+              type="button"
+              onClick={() => {
+                setFormError(null);
+                setMode("signin");
+              }}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
+                isSignin
+                  ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
+                  : "text-muted-foreground hover:text-foreground/70"
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFormError(null);
+                setMode("signup");
+              }}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
+                !isSignin
+                  ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
+                  : "text-muted-foreground hover:text-foreground/70"
+              }`}
+            >
+              Join
+            </button>
+          </div>
+
+          <div className="px-5 pb-7 pt-5">
+            {formError && (
+              <div
+                role="alert"
+                className="mb-4 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+              >
+                {formError}
+              </div>
+            )}
+
+            <form onSubmit={handleEmail} className="space-y-4">
+              {!isSignin && (
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
+                    Creator name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Your name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    maxLength={60}
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
+                  Identification
+                </label>
+                <input
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  maxLength={255}
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center ml-1">
+                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+                    Security
+                  </label>
+                  {isSignin && (
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                      6+ chars
+                    </span>
+                  )}
+                </div>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  maxLength={72}
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="relative w-full mt-2 bg-foreground text-background py-4 rounded-2xl font-bold text-sm uppercase tracking-wider disabled:opacity-60 disabled:cursor-not-allowed hover:bg-foreground/90 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                {isSignin ? "Authorize Space" : "Create Account"}
+              </button>
+            </form>
+
+            {/* Divider */}
+            <div className="relative my-7">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10" />
+              </div>
+              <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
+                <span className="px-3 bg-elevated text-muted-foreground/60 font-bold">
+                  Rapid Access
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogle}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-3 bg-white/[0.04] border border-white/10 rounded-2xl py-3.5 hover:bg-white/[0.08] transition-colors disabled:opacity-50 text-sm font-medium text-foreground"
+            >
+              <GoogleIcon />
+              Continue with Google
+            </button>
+          </div>
+        </div>
+
+        <p className="mt-7 text-center text-[10px] text-muted-foreground/50 uppercase tracking-[0.28em] font-medium">
+          Need assistance?{" "}
+          <Link
+            to="/contact"
+            className="text-muted-foreground hover:text-foreground transition-colors underline decoration-white/10 underline-offset-4"
+          >
+            Contact HQ
+          </Link>
+        </p>
       </div>
     </div>
   );
