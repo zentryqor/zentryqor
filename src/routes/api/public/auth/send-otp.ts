@@ -138,6 +138,16 @@ function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 
+function extractResendMessage(body: string): string | null {
+  try {
+    const parsed = JSON.parse(body);
+    if (parsed && typeof parsed.message === "string") return parsed.message;
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
 function jsonError(status: number, message: string, details?: Record<string, unknown>) {
   return new Response(JSON.stringify({ error: message, ...details }), {
     status,
