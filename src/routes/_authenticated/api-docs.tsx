@@ -145,15 +145,15 @@ function ApiDocsPage() {
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Console */}
-          <section className="glass-strong rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-4">
+          <section className="glass-strong rounded-2xl p-4 sm:p-5 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <h2 className="font-medium">Try it out</h2>
-              <div className="flex items-center gap-1 rounded-lg glass p-1">
+              <div className="flex items-center gap-1 rounded-lg glass p-1 overflow-x-auto -mx-1 px-1 sm:mx-0 sm:px-1">
                 {(Object.keys(ENDPOINT_META) as EndpointKey[]).map((k) => (
                   <button
                     key={k}
                     onClick={() => switchEndpoint(k)}
-                    className={`px-2.5 py-1 rounded-md text-xs font-mono transition ${
+                    className={`shrink-0 px-2.5 py-1 rounded-md text-xs font-mono transition ${
                       endpoint === k ? "bg-white text-black" : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -163,10 +163,10 @@ function ApiDocsPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mb-3 text-xs">
-              <span className="rounded-md bg-white/10 px-2 py-0.5 font-mono">{meta.method}</span>
-              <code className="font-mono text-muted-foreground">{BASE_URL}{meta.path}</code>
-              <span className="ml-auto text-muted-foreground">{meta.cost}</span>
+            <div className="flex flex-wrap items-center gap-2 mb-3 text-xs min-w-0">
+              <span className="rounded-md bg-white/10 px-2 py-0.5 font-mono shrink-0">{meta.method}</span>
+              <code className="font-mono text-muted-foreground break-all min-w-0">{BASE_URL}{meta.path}</code>
+              <span className="sm:ml-auto text-muted-foreground shrink-0">{meta.cost}</span>
             </div>
             <p className="text-xs text-muted-foreground mb-3">{meta.blurb}</p>
 
