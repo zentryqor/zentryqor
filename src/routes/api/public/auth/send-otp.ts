@@ -68,7 +68,12 @@ export const Route = createFileRoute("/api/public/auth/send-otp")({
         const sent = await sendOtpEmail(email, code, name);
         if (!sent.ok) {
           console.error("Resend send failed", sent.status, sent.body);
-          return jsonError(502, "Could not send verification email. Try again.");
+          const providerMsg = extractResendMessage(sent.body);
+          return jsonError(
+            400,
+            providerMsg ||
+              "Could not send verification email. Verify a sending domain at resend.com/domains and set RESEND_FROM.",
+          );
         }
 
         return Response.json({ ok: true, expiresAt });
@@ -131,6 +136,16 @@ function renderOtpEmail(code: string, name: string) {
 
 function escapeHtml(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+}
+
+function extractResendMessage(body: string): string | null {
+  try {
+    const parsed = JSON.parse(body);
+    if (parsed && typeof parsed.message === "string") return parsed.message;
+  } catch {
+    // ignore
+  }
+  return null;
 }
 
 function jsonError(status: number, message: string, details?: Record<string, unknown>) {
