@@ -95,24 +95,24 @@ function ApiDocsPage() {
       <AnimatedOrbs />
       <AppHeader right={<ProfileMenu />} />
 
-      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-28 pb-24">
+      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-24">
         <Link to="/api-keys" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft className="w-4 h-4" /> Back to API keys
         </Link>
 
-        <div className="flex items-start gap-4 mb-8">
-          <div className="w-12 h-12 rounded-2xl glass-strong flex items-center justify-center shrink-0">
-            <BookOpen className="w-6 h-6" />
+        <div className="flex items-start gap-3 sm:gap-4 mb-8">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl glass-strong flex items-center justify-center shrink-0">
+            <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">API docs</h1>
-            <p className="text-muted-foreground mt-1 max-w-xl">
+            <p className="text-muted-foreground mt-1 text-sm">
               Base URL:{" "}
               <a
                 href={BASE_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="font-mono text-xs underline hover:text-foreground"
+                className="font-mono text-xs underline hover:text-foreground break-all"
               >
                 {BASE_URL}
               </a>
@@ -143,17 +143,17 @@ function ApiDocsPage() {
           </p>
         </section>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid lg:grid-cols-2 gap-6 min-w-0">
           {/* Console */}
-          <section className="glass-strong rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-4">
+          <section className="glass-strong rounded-2xl p-4 sm:p-5 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <h2 className="font-medium">Try it out</h2>
-              <div className="flex items-center gap-1 rounded-lg glass p-1">
+              <div className="flex items-center gap-1 rounded-lg glass p-1 overflow-x-auto -mx-1 px-1 sm:mx-0 sm:px-1">
                 {(Object.keys(ENDPOINT_META) as EndpointKey[]).map((k) => (
                   <button
                     key={k}
                     onClick={() => switchEndpoint(k)}
-                    className={`px-2.5 py-1 rounded-md text-xs font-mono transition ${
+                    className={`shrink-0 px-2.5 py-1 rounded-md text-xs font-mono transition ${
                       endpoint === k ? "bg-white text-black" : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -163,10 +163,10 @@ function ApiDocsPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 mb-3 text-xs">
-              <span className="rounded-md bg-white/10 px-2 py-0.5 font-mono">{meta.method}</span>
-              <code className="font-mono text-muted-foreground">{BASE_URL}{meta.path}</code>
-              <span className="ml-auto text-muted-foreground">{meta.cost}</span>
+            <div className="flex flex-wrap items-center gap-2 mb-3 text-xs min-w-0">
+              <span className="rounded-md bg-white/10 px-2 py-0.5 font-mono shrink-0">{meta.method}</span>
+              <code className="font-mono text-muted-foreground break-all min-w-0">{BASE_URL}{meta.path}</code>
+              <span className="sm:ml-auto text-muted-foreground shrink-0">{meta.cost}</span>
             </div>
             <p className="text-xs text-muted-foreground mb-3">{meta.blurb}</p>
 
@@ -213,10 +213,10 @@ function ApiDocsPage() {
           </section>
 
           {/* Code examples */}
-          <section className="glass-strong rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-4">
+          <section className="glass-strong rounded-2xl p-4 sm:p-5 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <h2 className="font-medium">Code example</h2>
-              <div className="flex items-center gap-1 rounded-lg glass p-1">
+              <div className="flex items-center gap-1 rounded-lg glass p-1 self-start">
                 {(["curl", "node", "python"] as const).map((l) => (
                   <button
                     key={l}
@@ -232,7 +232,7 @@ function ApiDocsPage() {
             </div>
 
             <div className="relative">
-              <pre className="rounded-xl bg-black/60 border border-white/10 p-4 text-xs overflow-auto max-h-[28rem] font-mono leading-relaxed">
+              <pre className="rounded-xl bg-black/60 border border-white/10 p-4 pr-14 text-xs overflow-auto max-h-[28rem] font-mono leading-relaxed whitespace-pre-wrap break-all">
                 {code}
               </pre>
               <button
