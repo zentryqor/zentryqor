@@ -40,28 +40,60 @@ async function getCreditsState(userId: string) {
     .eq("user_id", userId)
     .eq("day", day)
     .maybeSingle();
+  const { data: profile } = await (supabaseAdmin as any)
+    .from("profiles")
+    .select("bonus_credits")
+    .eq("id", userId)
+    .maybeSingle();
   const used = data?.used ?? 0;
-  return { isPremium, limit, used, remaining: Math.max(0, limit - used), day, rowId: data?.id ?? null };
+  const bonus: number = profile?.bonus_credits ?? 0;
+  const dailyRemaining = Math.max(0, limit - used);
+  return {
+    isPremium,
+    limit,
+    used,
+    bonus,
+    remaining: dailyRemaining + bonus,
+    day,
+    rowId: data?.id ?? null,
+  };
 }
 
 async function spendCredits(userId: string, cost: number) {
   const state = await getCreditsState(userId);
-  if (state.used + cost > state.limit) {
+  if (state.remaining < cost) {
     throw new Error(
-      `Not enough credits. You need ${cost} credits but only have ${state.remaining} left today (${state.limit}/day on the ${state.isPremium ? "Premium" : "Free"} plan).`,
+      `Not enough credits. You need ${cost} credits but only have ${state.remaining} left (${state.isPremium ? "Premium" : "Free"} plan${state.bonus > 0 ? ` + ${state.bonus} bonus` : ""}).`,
     );
   }
-  if (state.rowId) {
-    await supabaseAdmin
-      .from("ai_credit_usage")
-      .update({ used: state.used + cost, updated_at: new Date().toISOString() })
-      .eq("id", state.rowId);
-  } else {
-    await supabaseAdmin
-      .from("ai_credit_usage")
-      .insert({ user_id: userId, day: state.day, used: cost });
+  // Deduct from daily first, then bonus
+  const dailyRoom = Math.max(0, state.limit - state.used);
+  const fromDaily = Math.min(dailyRoom, cost);
+  const fromBonus = cost - fromDaily;
+
+  if (fromDaily > 0) {
+    if (state.rowId) {
+      await supabaseAdmin
+        .from("ai_credit_usage")
+        .update({ used: state.used + fromDaily, updated_at: new Date().toISOString() })
+        .eq("id", state.rowId);
+    } else {
+      await supabaseAdmin
+        .from("ai_credit_usage")
+        .insert({ user_id: userId, day: state.day, used: fromDaily });
+    }
   }
-  return { isPremium: state.isPremium, limit: state.limit, used: state.used + cost };
+  if (fromBonus > 0) {
+    await supabaseAdmin.rpc("consume_bonus_credits" as any, { _user_id: userId, _amount: fromBonus });
+  }
+
+  // Fire-and-forget: try to award referral bonus after first generation
+  supabaseAdmin.rpc("award_referral_bonus" as any, { _referee: userId }).then(
+    () => {},
+    () => {},
+  );
+
+  return { isPremium: state.isPremium, limit: state.limit, used: state.used + fromDaily };
 }
 
 async function callOpenRouter(model: string, messages: Array<{ role: string; content: any }>, modalities?: string[]) {
