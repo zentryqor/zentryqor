@@ -34,7 +34,9 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedAssetsIndexRouteImport } from './routes/_authenticated/assets.index'
 import { Route as AuthenticatedAssetsIdRouteImport } from './routes/_authenticated/assets.$id'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicAuthVerifyOtpRouteImport } from './routes/api/public/auth/verify-otp'
 import { Route as ApiPublicAuthSigninRouteImport } from './routes/api/public/auth/signin'
+import { Route as ApiPublicAuthSendOtpRouteImport } from './routes/api/public/auth/send-otp'
 import { Route as ApiPublicAssetsDownloadIdRouteImport } from './routes/api/public/assets/download.$id'
 
 const TermsRoute = TermsRouteImport.update({
@@ -163,9 +165,19 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAuthVerifyOtpRoute = ApiPublicAuthVerifyOtpRouteImport.update({
+  id: '/api/public/auth/verify-otp',
+  path: '/api/public/auth/verify-otp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAuthSigninRoute = ApiPublicAuthSigninRouteImport.update({
   id: '/api/public/auth/signin',
   path: '/api/public/auth/signin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAuthSendOtpRoute = ApiPublicAuthSendOtpRouteImport.update({
+  id: '/api/public/auth/send-otp',
+  path: '/api/public/auth/send-otp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicAssetsDownloadIdRoute =
@@ -199,7 +211,9 @@ export interface FileRoutesByFullPath {
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/assets/': typeof AuthenticatedAssetsIndexRoute
+  '/api/public/auth/send-otp': typeof ApiPublicAuthSendOtpRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
+  '/api/public/auth/verify-otp': typeof ApiPublicAuthVerifyOtpRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
 }
@@ -227,7 +241,9 @@ export interface FileRoutesByTo {
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/assets': typeof AuthenticatedAssetsIndexRoute
+  '/api/public/auth/send-otp': typeof ApiPublicAuthSendOtpRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
+  '/api/public/auth/verify-otp': typeof ApiPublicAuthVerifyOtpRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
 }
@@ -257,7 +273,9 @@ export interface FileRoutesById {
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/_authenticated/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
+  '/api/public/auth/send-otp': typeof ApiPublicAuthSendOtpRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
+  '/api/public/auth/verify-otp': typeof ApiPublicAuthVerifyOtpRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
 }
@@ -287,7 +305,9 @@ export interface FileRouteTypes {
     | '/guides/ugc-essentials'
     | '/assets/$id'
     | '/assets/'
+    | '/api/public/auth/send-otp'
     | '/api/public/auth/signin'
+    | '/api/public/auth/verify-otp'
     | '/api/public/payments/webhook'
     | '/api/public/assets/download/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -315,7 +335,9 @@ export interface FileRouteTypes {
     | '/guides/ugc-essentials'
     | '/assets/$id'
     | '/assets'
+    | '/api/public/auth/send-otp'
     | '/api/public/auth/signin'
+    | '/api/public/auth/verify-otp'
     | '/api/public/payments/webhook'
     | '/api/public/assets/download/$id'
   id:
@@ -344,7 +366,9 @@ export interface FileRouteTypes {
     | '/guides/ugc-essentials'
     | '/_authenticated/assets/$id'
     | '/_authenticated/assets/'
+    | '/api/public/auth/send-otp'
     | '/api/public/auth/signin'
+    | '/api/public/auth/verify-otp'
     | '/api/public/payments/webhook'
     | '/api/public/assets/download/$id'
   fileRoutesById: FileRoutesById
@@ -365,7 +389,9 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   TermsRoute: typeof TermsRoute
   GuidesUgcEssentialsRoute: typeof GuidesUgcEssentialsRoute
+  ApiPublicAuthSendOtpRoute: typeof ApiPublicAuthSendOtpRoute
   ApiPublicAuthSigninRoute: typeof ApiPublicAuthSigninRoute
+  ApiPublicAuthVerifyOtpRoute: typeof ApiPublicAuthVerifyOtpRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicAssetsDownloadIdRoute: typeof ApiPublicAssetsDownloadIdRoute
 }
@@ -547,11 +573,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/auth/verify-otp': {
+      id: '/api/public/auth/verify-otp'
+      path: '/api/public/auth/verify-otp'
+      fullPath: '/api/public/auth/verify-otp'
+      preLoaderRoute: typeof ApiPublicAuthVerifyOtpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/auth/signin': {
       id: '/api/public/auth/signin'
       path: '/api/public/auth/signin'
       fullPath: '/api/public/auth/signin'
       preLoaderRoute: typeof ApiPublicAuthSigninRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/auth/send-otp': {
+      id: '/api/public/auth/send-otp'
+      path: '/api/public/auth/send-otp'
+      fullPath: '/api/public/auth/send-otp'
+      preLoaderRoute: typeof ApiPublicAuthSendOtpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/assets/download/$id': {
@@ -607,20 +647,12 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   TermsRoute: TermsRoute,
   GuidesUgcEssentialsRoute: GuidesUgcEssentialsRoute,
+  ApiPublicAuthSendOtpRoute: ApiPublicAuthSendOtpRoute,
   ApiPublicAuthSigninRoute: ApiPublicAuthSigninRoute,
+  ApiPublicAuthVerifyOtpRoute: ApiPublicAuthVerifyOtpRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicAssetsDownloadIdRoute: ApiPublicAssetsDownloadIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

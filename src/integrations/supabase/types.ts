@@ -204,6 +204,33 @@ export type Database = {
         }
         Relationships: []
       }
+      pending_signups: {
+        Row: {
+          attempts: number
+          code_hash: string
+          created_at: string
+          display_name: string | null
+          email: string
+          expires_at: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          created_at?: string
+          display_name?: string | null
+          email: string
+          expires_at: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          expires_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

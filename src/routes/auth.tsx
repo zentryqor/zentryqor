@@ -59,15 +59,15 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}${dest}`,
-            data: { full_name: name },
-          },
+        const res = await fetch("/api/public/auth/send-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, name }),
         });
-        if (error) throw error;
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(payload?.error || "Could not send verification code.");
+        }
         toast.success("We sent a 6-digit code to your email.");
         setOtpStage(true);
         setResendCooldown(45);
@@ -112,12 +112,18 @@ function AuthPage() {
     }
     setLoading(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: otp,
-        type: "signup",
+      const res = await fetch("/api/public/auth/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code: otp, password, name }),
       });
-      if (error) throw error;
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(payload?.error || "Invalid or expired code");
+      const { error: setErr } = await supabase.auth.setSession({
+        access_token: payload.access_token,
+        refresh_token: payload.refresh_token,
+      });
+      if (setErr) throw setErr;
       toast.success("Email verified. Welcome!");
       await router.invalidate();
       navigate({ to: dest });
@@ -135,12 +141,13 @@ function AuthPage() {
     setFormError(null);
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resend({
-        type: "signup",
-        email,
-        options: { emailRedirectTo: `${window.location.origin}${dest}` },
+      const res = await fetch("/api/public/auth/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name }),
       });
-      if (error) throw error;
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(payload?.error || "Could not resend code");
       toast.success("New code sent.");
       setResendCooldown(45);
     } catch (err) {
