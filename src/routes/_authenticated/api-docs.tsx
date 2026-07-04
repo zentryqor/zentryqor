@@ -143,7 +143,7 @@ function ApiDocsPage() {
           </p>
         </section>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid lg:grid-cols-2 gap-6 min-w-0">
           {/* Console */}
           <section className="glass-strong rounded-2xl p-4 sm:p-5 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
