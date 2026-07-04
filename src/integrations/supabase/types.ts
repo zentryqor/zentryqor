@@ -284,9 +284,52 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery_items: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          is_public: boolean
+          kind: string
+          likes_count: number
+          output_text: string | null
+          prompt: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_public?: boolean
+          kind: string
+          likes_count?: number
+          output_text?: string | null
+          prompt: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_public?: boolean
+          kind?: string
+          likes_count?: number
+          output_text?: string | null
+          prompt?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
+          bonus_credits: number
           created_at: string
           display_name: string | null
           email: string | null
@@ -296,6 +339,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          bonus_credits?: number
           created_at?: string
           display_name?: string | null
           email?: string | null
@@ -305,6 +349,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          bonus_credits?: number
           created_at?: string
           display_name?: string | null
           email?: string | null
@@ -329,6 +374,54 @@ export type Database = {
           bucket_key?: string
           count?: number
           window_start?: string
+        }
+        Relationships: []
+      }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          awarded_at: string | null
+          created_at: string
+          credits_referee: number
+          credits_referrer: number
+          id: string
+          referee_id: string
+          referrer_id: string
+        }
+        Insert: {
+          awarded_at?: string | null
+          created_at?: string
+          credits_referee?: number
+          credits_referrer?: number
+          id?: string
+          referee_id: string
+          referrer_id: string
+        }
+        Update: {
+          awarded_at?: string | null
+          created_at?: string
+          credits_referee?: number
+          credits_referrer?: number
+          id?: string
+          referee_id?: string
+          referrer_id?: string
         }
         Relationships: []
       }
@@ -404,6 +497,54 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      templates: {
+        Row: {
+          category: string
+          cover_image_url: string | null
+          created_at: string
+          description: string
+          id: string
+          kind: string
+          prompt: string
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          cover_image_url?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          kind: string
+          prompt: string
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          kind?: string
+          prompt?: string
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -490,6 +631,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_referral_bonus: { Args: { _referee: string }; Returns: boolean }
       check_signin_lockout: {
         Args: { _email: string }
         Returns: {
@@ -510,6 +652,10 @@ export type Database = {
         }[]
       }
       clear_signin_failures: { Args: { _email: string }; Returns: undefined }
+      consume_bonus_credits: {
+        Args: { _amount: number; _user_id: string }
+        Returns: number
+      }
       consume_rate_limit: {
         Args: { _key: string; _max: number; _window_seconds: number }
         Returns: {
@@ -518,6 +664,7 @@ export type Database = {
           reset_at: string
         }[]
       }
+      ensure_referral_code: { Args: { _user_id: string }; Returns: string }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
@@ -530,6 +677,10 @@ export type Database = {
         Returns: boolean
       }
       is_premium: { Args: { _user_id: string }; Returns: boolean }
+      record_referral: {
+        Args: { _code: string; _referee: string }
+        Returns: boolean
+      }
       record_signin_failure: { Args: { _email: string }; Returns: undefined }
     }
     Enums: {
