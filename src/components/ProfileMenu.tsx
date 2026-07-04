@@ -110,11 +110,18 @@ export function ProfileMenu() {
         )}
 
         <Link
+          to="/library"
+          className="w-full rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition flex items-center gap-2"
+        >
+          <FolderHeart className="h-3.5 w-3.5" /> My library
+        </Link>
+        <Link
           to="/api-keys"
           className="w-full rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition flex items-center gap-2"
         >
           <Key className="h-3.5 w-3.5" /> API keys
         </Link>
+
         <Link
           to="/refer"
           className="w-full rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition flex items-center gap-2"
