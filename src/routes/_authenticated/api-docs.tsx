@@ -232,7 +232,7 @@ function ApiDocsPage() {
             </div>
 
             <div className="relative">
-              <pre className="rounded-xl bg-black/60 border border-white/10 p-4 text-xs overflow-auto max-h-[28rem] font-mono leading-relaxed">
+              <pre className="rounded-xl bg-black/60 border border-white/10 p-4 pr-14 text-xs overflow-auto max-h-[28rem] font-mono leading-relaxed whitespace-pre-wrap break-all">
                 {code}
               </pre>
               <button
