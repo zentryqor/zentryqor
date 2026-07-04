@@ -130,7 +130,7 @@ function AuthPage() {
           </p>
         </div>
 
-        <div className="relative w-full max-w-[380px] z-10 space-y-5">
+        <div className="space-y-5">
           <div className="flex gap-2">
             <button
               type="button"
