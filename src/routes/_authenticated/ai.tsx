@@ -290,7 +290,10 @@ function AiStudio() {
     setOutput("");
     setImageOutput(null);
     setAspectRatio("16:9");
+    setLastSavedId(null);
+    setLastSavedForTool(null);
   };
+
 
   const isThumbnail = active?.id === "thumbnail";
   const credits = creditsQuery.data;
