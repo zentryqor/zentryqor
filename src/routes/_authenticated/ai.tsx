@@ -9,6 +9,7 @@ import {
   BookOpen,
   Calendar,
   FileText,
+  FolderHeart,
   Grid3X3,
   Hash,
   Image as ImageIcon,
@@ -26,7 +27,9 @@ import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { generateAiText, generateAiImage, getAiCredits } from "@/lib/ai.functions";
 import { shareToGallery } from "@/lib/gallery.functions";
+import { saveGeneration } from "@/lib/library.functions";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 
 export const Route = createFileRoute("/_authenticated/ai")({
   head: () => ({
