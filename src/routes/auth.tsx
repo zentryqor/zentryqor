@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import authLogo from "@/assets/zentry-auth-logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -11,10 +12,10 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({
     meta: [
-      { title: "Sign in — Zentry Qor" },
-      { name: "description", content: "Sign in to your Zentry Qor creator vault to access your assets, AI tools, and workspace." },
-      { property: "og:title", content: "Sign in — Zentry Qor" },
-      { property: "og:description", content: "Sign in to your Zentry Qor creator vault to access your assets, AI tools, and workspace." },
+      { title: "Log in — Zentry Qor" },
+      { name: "description", content: "Log in to your Zentry Qor creator vault to access your assets, AI tools, and workspace." },
+      { property: "og:title", content: "Log in — Zentry Qor" },
+      { property: "og:description", content: "Log in to your Zentry Qor creator vault to access your assets, AI tools, and workspace." },
       { property: "og:url", content: "https://zentryqor.lovable.app/auth" },
     ],
     links: [{ rel: "canonical", href: "https://zentryqor.lovable.app/auth" }],
@@ -29,6 +30,12 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // OTP verification state (signup flow)
+  const [otpStage, setOtpStage] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+
   const navigate = useNavigate();
   const router = useRouter();
   const { redirect: redirectTo } = Route.useSearch();
@@ -39,6 +46,12 @@ function AuthPage() {
       if (data.session) navigate({ to: dest });
     });
   }, [navigate, dest]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setInterval(() => setResendCooldown((c) => (c > 0 ? c - 1 : 0)), 1000);
+    return () => clearInterval(t);
+  }, [resendCooldown]);
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
@@ -55,7 +68,9 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Account created. Check your email to verify.");
+        toast.success("We sent a 6-digit code to your email.");
+        setOtpStage(true);
+        setResendCooldown(45);
       } else {
         const res = await fetch("/api/public/auth/signin", {
           method: "POST",
@@ -68,7 +83,7 @@ function AuthPage() {
             payload?.error ||
             (res.status === 401
               ? "Incorrect email or password."
-              : "Sign-in failed. Please try again.");
+              : "Log in failed. Please try again.");
           throw new Error(msg);
         }
         const { error: setErr } = await supabase.auth.setSession({
@@ -88,29 +103,61 @@ function AuthPage() {
     }
   }
 
-  async function handleGoogle() {
-    setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}${dest}`,
-    });
-    if (result.error) {
-      toast.error("Google sign-in failed");
-      setLoading(false);
+  async function handleVerifyOtp(e: React.FormEvent) {
+    e.preventDefault();
+    setFormError(null);
+    if (otp.length !== 6) {
+      setFormError("Enter the 6-digit code.");
       return;
     }
-    if (result.redirected) return;
-    await router.invalidate();
-    navigate({ to: dest });
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otp,
+        type: "signup",
+      });
+      if (error) throw error;
+      toast.success("Email verified. Welcome!");
+      await router.invalidate();
+      navigate({ to: dest });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Invalid or expired code";
+      setFormError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResendOtp() {
+    if (resendCooldown > 0) return;
+    setFormError(null);
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: { emailRedirectTo: `${window.location.origin}${dest}` },
+      });
+      if (error) throw error;
+      toast.success("New code sent.");
+      setResendCooldown(45);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not resend code";
+      setFormError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const isSignin = mode === "signin";
 
   return (
     <div className="min-h-[100dvh] w-full flex items-center justify-center bg-background text-foreground px-5 py-10 relative overflow-hidden">
-      {/* Ambient glows */}
       <div className="fixed -top-24 -right-24 w-80 h-80 rounded-full bg-accent/15 blur-[110px] pointer-events-none" />
       <div className="fixed -bottom-24 -left-24 w-96 h-96 rounded-full bg-primary/20 blur-[130px] pointer-events-none" />
-      {/* Scanner lines */}
       <div className="fixed inset-0 pointer-events-none opacity-20">
         <div className="absolute w-full h-px bg-gradient-to-r from-transparent via-foreground/25 to-transparent top-1/4 animate-pulse" />
         <div className="absolute w-px h-full bg-gradient-to-b from-transparent via-foreground/10 to-transparent left-1/4" />
@@ -121,12 +168,14 @@ function AuthPage() {
         <div className="mb-8 text-center">
           <Link
             to="/"
-            className="inline-block mb-4 p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors"
+            className="inline-block mb-4"
             aria-label="Back to home"
           >
-            <div className="w-8 h-8 bg-foreground rounded-sm rotate-45 flex items-center justify-center">
-              <div className="w-4 h-4 bg-background rotate-45" />
-            </div>
+            <img
+              src={authLogo.url}
+              alt="Zentry Qor logo"
+              className="h-20 w-20 mx-auto drop-shadow-[0_10px_30px_rgba(59,130,246,0.35)]"
+            />
           </Link>
           <h1 className="text-3xl font-bold tracking-tighter uppercase text-gradient">
             Zentry Qor
@@ -136,39 +185,39 @@ function AuthPage() {
           </p>
         </div>
 
-        {/* Card */}
         <div className="glass-strong rounded-3xl p-1 shadow-2xl overflow-hidden">
-          {/* Tab switcher */}
-          <div className="flex bg-background/50 rounded-[22px] p-1">
-            <button
-              type="button"
-              onClick={() => {
-                setFormError(null);
-                setMode("signin");
-              }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
-                isSignin
-                  ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
-                  : "text-muted-foreground hover:text-foreground/70"
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setFormError(null);
-                setMode("signup");
-              }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
-                !isSignin
-                  ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
-                  : "text-muted-foreground hover:text-foreground/70"
-              }`}
-            >
-              Join
-            </button>
-          </div>
+          {!otpStage && (
+            <div className="flex bg-background/50 rounded-[22px] p-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setFormError(null);
+                  setMode("signin");
+                }}
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
+                  isSignin
+                    ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
+                    : "text-muted-foreground hover:text-foreground/70"
+                }`}
+              >
+                Log In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormError(null);
+                  setMode("signup");
+                }}
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
+                  !isSignin
+                    ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
+                    : "text-muted-foreground hover:text-foreground/70"
+                }`}
+              >
+                Create Account
+              </button>
+            </div>
+          )}
 
           <div className="px-5 pb-7 pt-5">
             {formError && (
@@ -180,93 +229,167 @@ function AuthPage() {
               </div>
             )}
 
-            <form onSubmit={handleEmail} className="space-y-4">
-              {!isSignin && (
+            {otpStage ? (
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <div className="text-center space-y-1">
+                  <h2 className="text-lg font-bold uppercase tracking-wider">Verify email</h2>
+                  <p className="text-xs text-muted-foreground">
+                    Enter the 6-digit code sent to <span className="text-foreground/80">{email}</span>
+                  </p>
+                </div>
+
                 <div className="space-y-1.5">
                   <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
-                    Creator name
+                    Verification code
                   </label>
                   <input
                     type="text"
-                    placeholder="Your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    pattern="[0-9]*"
+                    placeholder="000000"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    maxLength={6}
                     required
-                    maxLength={60}
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
+                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-center text-2xl tracking-[0.6em] font-mono text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
                   />
                 </div>
-              )}
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
-                  Identification
-                </label>
-                <input
-                  type="email"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  maxLength={255}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
-                />
-              </div>
+                <button
+                  type="submit"
+                  disabled={loading || otp.length !== 6}
+                  className="relative w-full mt-2 bg-foreground text-background py-4 rounded-2xl font-bold text-sm uppercase tracking-wider disabled:opacity-60 disabled:cursor-not-allowed hover:bg-foreground/90 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                >
+                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Verify & Continue
+                </button>
 
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center ml-1">
-                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
-                    Security
-                  </label>
-                  {isSignin && (
-                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
-                      6+ chars
-                    </span>
-                  )}
+                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOtpStage(false);
+                      setOtp("");
+                      setFormError(null);
+                    }}
+                    className="hover:text-foreground transition-colors"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    disabled={loading || resendCooldown > 0}
+                    className="hover:text-foreground transition-colors disabled:opacity-50"
+                  >
+                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
+                  </button>
                 </div>
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  maxLength={72}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
-                />
-              </div>
+              </form>
+            ) : (
+              <>
+                <form onSubmit={handleEmail} className="space-y-4">
+                  {!isSignin && (
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
+                        Creator name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Your name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                        maxLength={60}
+                        className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
+                      />
+                    </div>
+                  )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="relative w-full mt-2 bg-foreground text-background py-4 rounded-2xl font-bold text-sm uppercase tracking-wider disabled:opacity-60 disabled:cursor-not-allowed hover:bg-foreground/90 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
-              >
-                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                {isSignin ? "Authorize Space" : "Create Account"}
-              </button>
-            </form>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="Email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      maxLength={255}
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
+                    />
+                  </div>
 
-            {/* Divider */}
-            <div className="relative my-7">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10" />
-              </div>
-              <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-                <span className="px-3 bg-elevated text-muted-foreground/60 font-bold">
-                  Rapid Access
-                </span>
-              </div>
-            </div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-center ml-1">
+                      <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+                        Security
+                      </label>
+                      {isSignin && (
+                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                          6+ chars
+                        </span>
+                      )}
+                    </div>
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      maxLength={72}
+                      className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
+                    />
+                  </div>
 
-            <button
-              type="button"
-              onClick={handleGoogle}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-3 bg-white/[0.04] border border-white/10 rounded-2xl py-3.5 hover:bg-white/[0.08] transition-colors disabled:opacity-50 text-sm font-medium text-foreground"
-            >
-              <GoogleIcon />
-              Continue with Google
-            </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="relative w-full mt-2 bg-foreground text-background py-4 rounded-2xl font-bold text-sm uppercase tracking-wider disabled:opacity-60 disabled:cursor-not-allowed hover:bg-foreground/90 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                  >
+                    {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {isSignin ? "Log In" : "Create Account"}
+                  </button>
+                </form>
+
+                <div className="relative my-7">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-white/10" />
+                  </div>
+                  <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
+                    <span className="px-3 bg-elevated text-muted-foreground/60 font-bold">
+                      Rapid Access
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setLoading(true);
+                    const result = await lovable.auth.signInWithOAuth("google", {
+                      redirect_uri: `${window.location.origin}${dest}`,
+                    });
+                    if (result.error) {
+                      toast.error("Google sign-in failed");
+                      setLoading(false);
+                      return;
+                    }
+                    if (result.redirected) return;
+                    await router.invalidate();
+                    navigate({ to: dest });
+                  }}
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-3 bg-white/[0.04] border border-white/10 rounded-2xl py-3.5 hover:bg-white/[0.08] transition-colors disabled:opacity-50 text-sm font-medium text-foreground"
+                >
+                  <GoogleIcon />
+                  Continue with Google
+                </button>
+              </>
+            )}
           </div>
         </div>
 
