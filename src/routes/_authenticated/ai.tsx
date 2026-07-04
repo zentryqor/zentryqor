@@ -216,6 +216,7 @@ function AiStudio() {
 
   const mut = useMutation({
     mutationFn: async ({ tool, value }: { tool: Tool; value: string }) => {
+      setLastPromptUsed(tool.buildPrompt(value));
       if (tool.id === "thumbnail") {
         const r = await runImage({ data: { prompt: tool.buildPrompt(value), aspectRatio } });
         return { kind: "image" as const, image: r.image };
@@ -237,6 +238,17 @@ function AiStudio() {
       toast.error(e?.message ?? "Generation failed");
       creditsQuery.refetch();
     },
+  });
+
+  const shareMut = useMutation({
+    mutationFn: async (payload: { kind: "text" | "image"; prompt: string; outputText?: string; imageUrl?: string }) => {
+      return share({ data: payload });
+    },
+    onSuccess: (r) => {
+      setSharedIds((s) => new Set(s).add(r.id));
+      toast.success("Shared to gallery");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Share failed"),
   });
 
   const openTool = (id: ToolId) => {
