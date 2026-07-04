@@ -48,9 +48,9 @@ export function Nav() {
                 Log in
               </Link>
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-                <Link to="/auth" className="inline-flex whitespace-nowrap items-center justify-center h-7 sm:h-8 px-2.5 sm:px-4 rounded-xl bg-[oklch(0.62_0.19_255)] text-white text-[11px] sm:text-xs font-semibold hover:opacity-90 transition-opacity shadow-[0_4px_14px_oklch(0.62_0.19_255/0.4)]">
-                  Get started
-                </Link>
+              <Link to="/auth" className="inline-flex whitespace-nowrap items-center justify-center h-7 sm:h-8 px-2.5 sm:px-4 rounded-xl bg-white text-black text-[11px] sm:text-xs font-semibold hover:bg-white/90 transition-colors shadow-[0_4px_14px_rgba(255,255,255,0.2)]">
+                Get started
+              </Link>
               </motion.div>
             </>
           )}
