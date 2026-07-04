@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
@@ -31,11 +31,6 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // OTP verification state (signup flow)
-  const [otpStage, setOtpStage] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [resendCooldown, setResendCooldown] = useState(0);
-
   const navigate = useNavigate();
   const router = useRouter();
   const { redirect: redirectTo } = Route.useSearch();
@@ -47,30 +42,29 @@ function AuthPage() {
     });
   }, [navigate, dest]);
 
-  useEffect(() => {
-    if (resendCooldown <= 0) return;
-    const t = setInterval(() => setResendCooldown((c) => (c > 0 ? c - 1 : 0)), 1000);
-    return () => clearInterval(t);
-  }, [resendCooldown]);
-
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
     setLoading(true);
     try {
       if (mode === "signup") {
-        const res = await fetch("/api/public/auth/send-otp", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, name }),
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}${dest}`,
+            data: { full_name: name },
+          },
         });
-        const payload = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw new Error(payload?.error || "Could not send verification code.");
+        if (error) throw error;
+        if (!data.session) {
+          // Fall back to explicit sign-in in case email confirmation is enforced.
+          const { error: siErr } = await supabase.auth.signInWithPassword({ email, password });
+          if (siErr) throw siErr;
         }
-        toast.success("We sent a 6-digit code to your email.");
-        setOtpStage(true);
-        setResendCooldown(45);
+        toast.success("Welcome to Zentry Qor!");
+        await router.invalidate();
+        navigate({ to: dest });
       } else {
         const res = await fetch("/api/public/auth/signin", {
           method: "POST",
@@ -96,62 +90,6 @@ function AuthPage() {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
-      setFormError(message);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleVerifyOtp(e: React.FormEvent) {
-    e.preventDefault();
-    setFormError(null);
-    if (otp.length !== 6) {
-      setFormError("Enter the 6-digit code.");
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await fetch("/api/public/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code: otp, password, name }),
-      });
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(payload?.error || "Invalid or expired code");
-      const { error: setErr } = await supabase.auth.setSession({
-        access_token: payload.access_token,
-        refresh_token: payload.refresh_token,
-      });
-      if (setErr) throw setErr;
-      toast.success("Email verified. Welcome!");
-      await router.invalidate();
-      navigate({ to: dest });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Invalid or expired code";
-      setFormError(message);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleResendOtp() {
-    if (resendCooldown > 0) return;
-    setFormError(null);
-    setLoading(true);
-    try {
-      const res = await fetch("/api/public/auth/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name }),
-      });
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(payload?.error || "Could not resend code");
-      toast.success("New code sent.");
-      setResendCooldown(45);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not resend code";
       setFormError(message);
       toast.error(message);
     } finally {
@@ -193,38 +131,36 @@ function AuthPage() {
         </div>
 
         <div className="glass-strong rounded-3xl p-1 shadow-2xl overflow-hidden">
-          {!otpStage && (
-            <div className="flex bg-background/50 rounded-[22px] p-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setFormError(null);
-                  setMode("signin");
-                }}
-                className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
-                  isSignin
-                    ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
-                    : "text-muted-foreground hover:text-foreground/70"
-                }`}
-              >
-                Log In
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setFormError(null);
-                  setMode("signup");
-                }}
-                className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
-                  !isSignin
-                    ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
-                    : "text-muted-foreground hover:text-foreground/70"
-                }`}
-              >
-                Create Account
-              </button>
-            </div>
-          )}
+          <div className="flex bg-background/50 rounded-[22px] p-1">
+            <button
+              type="button"
+              onClick={() => {
+                setFormError(null);
+                setMode("signin");
+              }}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
+                isSignin
+                  ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
+                  : "text-muted-foreground hover:text-foreground/70"
+              }`}
+            >
+              Log In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFormError(null);
+                setMode("signup");
+              }}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
+                !isSignin
+                  ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
+                  : "text-muted-foreground hover:text-foreground/70"
+              }`}
+            >
+              Create Account
+            </button>
+          </div>
 
           <div className="px-5 pb-7 pt-5">
             {formError && (
@@ -236,66 +172,7 @@ function AuthPage() {
               </div>
             )}
 
-            {otpStage ? (
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
-                <div className="text-center space-y-1">
-                  <h2 className="text-lg font-bold uppercase tracking-wider">Verify email</h2>
-                  <p className="text-xs text-muted-foreground">
-                    Enter the 6-digit code sent to <span className="text-foreground/80">{email}</span>
-                  </p>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
-                    Verification code
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    pattern="[0-9]*"
-                    placeholder="000000"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    maxLength={6}
-                    required
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-center text-2xl tracking-[0.6em] font-mono text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading || otp.length !== 6}
-                  className="relative w-full mt-2 bg-foreground text-background py-4 rounded-2xl font-bold text-sm uppercase tracking-wider disabled:opacity-60 disabled:cursor-not-allowed hover:bg-foreground/90 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
-                >
-                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Verify & Continue
-                </button>
-
-                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOtpStage(false);
-                      setOtp("");
-                      setFormError(null);
-                    }}
-                    className="hover:text-foreground transition-colors"
-                  >
-                    ← Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleResendOtp}
-                    disabled={loading || resendCooldown > 0}
-                    className="hover:text-foreground transition-colors disabled:opacity-50"
-                  >
-                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <>
+            <>
                 <form onSubmit={handleEmail} className="space-y-4">
                   {!isSignin && (
                     <div className="space-y-1.5">
@@ -396,7 +273,6 @@ function AuthPage() {
                   Continue with Google
                 </button>
               </>
-            )}
           </div>
         </div>
 
