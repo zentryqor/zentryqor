@@ -260,6 +260,26 @@ function AuthPage() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+
+              {!isSignin && (
+                <div className="animate-enter">
+                  <div className="flex items-center gap-2 ml-1">
+                    <div className="flex-1 flex gap-1 h-1">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className={`flex-1 rounded-full transition-all duration-300 ${
+                            i < strength.score ? strengthColor : "bg-white/10"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground min-w-[50px] text-right">
+                      {strengthLabel}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <button
