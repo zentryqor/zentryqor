@@ -8,8 +8,9 @@ export const Route = createFileRoute("/api/public/v1/credits")({
         return corsPreflight();
       },
       GET: async ({ request }) => {
-        const { authenticateApiKey, apiJson, apiJsonError } = await import("@/lib/api-auth.server");
+        const { authenticateApiKey, apiJson, apiJsonError, logApiUsage } = await import("@/lib/api-auth.server");
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const start = Date.now();
         const auth = await authenticateApiKey(request);
         if (!auth) return apiJsonError(401, "Invalid or missing API key.");
 
@@ -22,6 +23,15 @@ export const Route = createFileRoute("/api/public/v1/credits")({
           .maybeSingle();
         const limit = 1000;
         const used = data?.used ?? 0;
+        await logApiUsage({
+          userId: auth.userId,
+          apiKeyId: auth.keyId,
+          endpoint: "/v1/credits",
+          method: "GET",
+          status: 200,
+          creditsCost: 0,
+          latencyMs: Date.now() - start,
+        });
         return apiJson({
           limit,
           used,
