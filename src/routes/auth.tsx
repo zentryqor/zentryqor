@@ -131,38 +131,36 @@ function AuthPage() {
         </div>
 
         <div className="glass-strong rounded-3xl p-1 shadow-2xl overflow-hidden">
-          {!otpStage && (
-            <div className="flex bg-background/50 rounded-[22px] p-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setFormError(null);
-                  setMode("signin");
-                }}
-                className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
-                  isSignin
-                    ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
-                    : "text-muted-foreground hover:text-foreground/70"
-                }`}
-              >
-                Log In
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setFormError(null);
-                  setMode("signup");
-                }}
-                className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
-                  !isSignin
-                    ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
-                    : "text-muted-foreground hover:text-foreground/70"
-                }`}
-              >
-                Create Account
-              </button>
-            </div>
-          )}
+          <div className="flex bg-background/50 rounded-[22px] p-1">
+            <button
+              type="button"
+              onClick={() => {
+                setFormError(null);
+                setMode("signin");
+              }}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
+                isSignin
+                  ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
+                  : "text-muted-foreground hover:text-foreground/70"
+              }`}
+            >
+              Log In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFormError(null);
+                setMode("signup");
+              }}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
+                !isSignin
+                  ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
+                  : "text-muted-foreground hover:text-foreground/70"
+              }`}
+            >
+              Create Account
+            </button>
+          </div>
 
           <div className="px-5 pb-7 pt-5">
             {formError && (
