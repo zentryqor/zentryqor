@@ -1,0 +1,2 @@
+
+ALTER TABLE public.pending_signups DISABLE ROW LEVEL SECURITY;
