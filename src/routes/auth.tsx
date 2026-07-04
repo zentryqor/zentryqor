@@ -172,66 +172,7 @@ function AuthPage() {
               </div>
             )}
 
-            {otpStage ? (
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
-                <div className="text-center space-y-1">
-                  <h2 className="text-lg font-bold uppercase tracking-wider">Verify email</h2>
-                  <p className="text-xs text-muted-foreground">
-                    Enter the 6-digit code sent to <span className="text-foreground/80">{email}</span>
-                  </p>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
-                    Verification code
-                  </label>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    pattern="[0-9]*"
-                    placeholder="000000"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    maxLength={6}
-                    required
-                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-center text-2xl tracking-[0.6em] font-mono text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading || otp.length !== 6}
-                  className="relative w-full mt-2 bg-foreground text-background py-4 rounded-2xl font-bold text-sm uppercase tracking-wider disabled:opacity-60 disabled:cursor-not-allowed hover:bg-foreground/90 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
-                >
-                  {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  Verify & Continue
-                </button>
-
-                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOtpStage(false);
-                      setOtp("");
-                      setFormError(null);
-                    }}
-                    className="hover:text-foreground transition-colors"
-                  >
-                    ← Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleResendOtp}
-                    disabled={loading || resendCooldown > 0}
-                    className="hover:text-foreground transition-colors disabled:opacity-50"
-                  >
-                    {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend code"}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <>
+            <>
                 <form onSubmit={handleEmail} className="space-y-4">
                   {!isSignin && (
                     <div className="space-y-1.5">
