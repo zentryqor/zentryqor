@@ -82,6 +82,21 @@ function ApiKeysPage() {
           </div>
         </div>
 
+        <div className="flex flex-wrap gap-3 mb-8">
+          <Link
+            to="/api-docs"
+            className="inline-flex items-center gap-2 rounded-xl glass-strong px-4 py-2.5 text-sm hover:bg-white/[0.06] transition-colors"
+          >
+            <BookOpen className="w-4 h-4" /> Interactive API docs
+          </Link>
+          <Link
+            to="/api-usage"
+            className="inline-flex items-center gap-2 rounded-xl glass-strong px-4 py-2.5 text-sm hover:bg-white/[0.06] transition-colors"
+          >
+            <Activity className="w-4 h-4" /> Usage history
+          </Link>
+        </div>
+
         {!isPremium && (
           <div className="glass-strong rounded-2xl p-6 mb-8 flex items-start gap-4">
             <Sparkles className="w-5 h-5 mt-0.5 shrink-0" />
