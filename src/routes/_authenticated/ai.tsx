@@ -24,6 +24,7 @@ import ReactMarkdown from "react-markdown";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { generateAiText, generateAiImage, getAiCredits } from "@/lib/ai.functions";
+import { shareToGallery } from "@/lib/gallery.functions";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export const Route = createFileRoute("/_authenticated/ai")({
@@ -38,7 +39,7 @@ export const Route = createFileRoute("/_authenticated/ai")({
     ],
   }),
   validateSearch: (s: Record<string, unknown>) =>
-    z.object({ tool: z.string().optional() }).parse(s),
+    z.object({ tool: z.string().optional(), prompt: z.string().optional() }).parse(s),
   component: AiStudio,
 });
 
@@ -179,17 +180,20 @@ const TOOLS: Tool[] = [
 type AspectRatio = "16:9" | "9:16" | "4:3" | "3:4";
 
 function AiStudio() {
-  const { tool: toolParam } = Route.useSearch();
+  const { tool: toolParam, prompt: promptParam } = Route.useSearch() as { tool?: string; prompt?: string };
   const navigate = useNavigate();
   const [activeId, setActiveId] = useState<ToolId | null>(null);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [imageOutput, setImageOutput] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9");
+  const [lastPromptUsed, setLastPromptUsed] = useState<string>("");
+  const [sharedIds, setSharedIds] = useState<Set<string>>(new Set());
 
   const runText = useServerFn(generateAiText);
   const runImage = useServerFn(generateAiImage);
   const fetchCredits = useServerFn(getAiCredits);
+  const share = useServerFn(shareToGallery);
   const active = TOOLS.find((t) => t.id === activeId) ?? null;
 
   // Deep-link: open tool via ?tool=<id>
@@ -198,6 +202,11 @@ function AiStudio() {
       setActiveId(toolParam as ToolId);
     }
   }, [toolParam]);
+
+  // Deep-link: pre-fill prompt from ?prompt= (template flow)
+  useEffect(() => {
+    if (promptParam) setInput(promptParam);
+  }, [promptParam]);
 
   const creditsQuery = useQuery({
     queryKey: ["ai-credits"],
