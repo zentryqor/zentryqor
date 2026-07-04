@@ -273,7 +273,6 @@ function AuthPage() {
                   Continue with Google
                 </button>
               </>
-            )}
           </div>
         </div>
 
