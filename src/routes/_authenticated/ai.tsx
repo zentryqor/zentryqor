@@ -536,10 +536,10 @@ function AiStudio() {
                     onClick={() =>
                       shareMut.mutate({ kind: "text", prompt: lastPromptUsed || input, outputText: output })
                     }
-                    disabled={shareMut.isPending || shareMut.isSuccess}
+                    disabled={shareMut.isPending}
                     className="text-muted-foreground hover:text-foreground normal-case tracking-normal text-xs disabled:opacity-60"
                   >
-                    {shareMut.isSuccess ? "✓ Shared" : shareMut.isPending ? "Sharing…" : "Share to gallery"}
+                    {shareMut.isPending ? "Sharing…" : "Share to gallery"}
                   </button>
                 </div>
                 <div className="prose prose-sm prose-invert max-w-none">
@@ -557,10 +557,10 @@ function AiStudio() {
                       onClick={() =>
                         shareMut.mutate({ kind: "image", prompt: lastPromptUsed || input, imageUrl: imageOutput })
                       }
-                      disabled={shareMut.isPending || shareMut.isSuccess}
+                      disabled={shareMut.isPending}
                       className="text-muted-foreground hover:text-foreground normal-case tracking-normal text-xs disabled:opacity-60"
                     >
-                      {shareMut.isSuccess ? "✓ Shared" : shareMut.isPending ? "Sharing…" : "Share to gallery"}
+                      {shareMut.isPending ? "Sharing…" : "Share to gallery"}
                     </button>
                     <a
                       href={imageOutput}
