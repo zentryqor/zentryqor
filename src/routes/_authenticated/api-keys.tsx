@@ -93,7 +93,13 @@ function ApiKeysPage() {
             to="/api-usage"
             className="inline-flex items-center gap-2 rounded-xl glass-strong px-4 py-2.5 text-sm hover:bg-white/[0.06] transition-colors"
           >
-            <Activity className="w-4 h-4" /> Usage history
+            <Activity className="w-4 h-4" /> Usage & charts
+          </Link>
+          <Link
+            to="/api-limits"
+            className="inline-flex items-center gap-2 rounded-xl glass-strong px-4 py-2.5 text-sm hover:bg-white/[0.06] transition-colors"
+          >
+            <Activity className="w-4 h-4" /> Rate limits
           </Link>
         </div>
 
