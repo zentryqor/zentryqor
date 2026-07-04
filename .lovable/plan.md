@@ -1,86 +1,94 @@
-# Cloud Storage Sync
 
-Let users push their saved Zentry Qor assets to **their own** Google Drive or OneDrive. One-click manual export from the Saved page, plus an optional auto-sync toggle in Settings. Free plan capped, Premium unlimited.
+# Site-Wide Signature Redesign
 
-Google Drive and OneDrive both require **per-user OAuth** (the built-in Lovable connectors authenticate the workspace owner, not each end user). So we build a small OAuth broker into the app for each provider.
+A coordinated pass across every page to add heavy motion, asymmetry, a wow interaction, and sharper copy — without changing functionality.
 
-## What the user gets
+## 1. Global motion primitives (build once, reuse everywhere)
 
-- **Settings → Cloud Storage**
-  - "Connect Google Drive" and "Connect OneDrive" buttons (OAuth popup)
-  - Shows connected account email, connected-since date, disconnect button
-  - "Auto-sync new saves" toggle per provider
-  - Destination folder name (default: `Zentry Qor`)
-- **Saved page**
-  - New "Export to cloud" split button on each asset (Google Drive / OneDrive)
-  - Bulk "Sync all saved" action in the header
-  - Small status chip: `12/25 synced today` for Free users
-- **Auto-sync**: when a user saves an asset, if auto-sync is on and quota allows, the file is queued and uploaded server-side to the linked destination
-- **Limits**: Free = 15 syncs/day total across providers; Premium = unlimited. Hitting the cap surfaces an upgrade prompt reusing the existing `DownloadLimitModal` pattern
+New files under `src/components/motion/`:
+- `MagneticButton.tsx` — wraps any element, tracks mouse and pulls the element ~8–14px toward cursor with spring physics. Used on every primary CTA.
+- `TiltCard.tsx` — perspective-1000 wrapper, reads mouse position, applies `rotateX/rotateY` (max ~10°) + a moving specular highlight overlay. Used on hero preview, pricing card, vault tiles, dashboard stat cards.
+- `ParallaxLayer.tsx` — `useScroll` + `useTransform` from framer-motion. Three speeds (slow/med/fast) for backgrounds and decorative orbs.
+- `Reveal.tsx` — IntersectionObserver-based "blur-to-focus" + slide reveal. Replaces ad-hoc `whileInView` blocks for consistent timing.
+- `GlassMorph.tsx` — animated backdrop-blur transition (blur 0px → 24px) for modal/drawer open and section dividers.
+- `ScrollProgressRail.tsx` — sticky thin gradient bar on the right edge of long pages.
 
-## Technical design
+## 2. Hero — make it signature
 
-### Database (one migration)
+Goal: stop feeling like a SaaS template.
 
-- `cloud_connections` — one row per (user, provider): `provider` (`google_drive` | `onedrive`), `account_email`, `access_token`, `refresh_token`, `token_expires_at`, `destination_folder_id`, `destination_folder_name`, `auto_sync` bool, timestamps. RLS: user reads/writes own; tokens never exposed to client (fetched server-side only).
-- `cloud_sync_logs` — one row per sync attempt: `provider`, `asset_id`, `status` (`ok` | `error` | `skipped_quota`), `remote_file_id`, `error_message`, `bytes`, timestamps. Used for history + daily quota counting.
-- Reuse `is_premium()` + new SQL helper `claim_cloud_sync(_provider)` that atomically checks the 15/day Free cap (mirrors `claim_asset_download`).
+- Replace centered hero with an **asymmetric split**: oversized left-aligned wordmark headline, smaller right-column "manifesto" paragraph + dual CTAs.
+- **Marquee strip** of creator handles/categories drifting horizontally beneath the headline (low-opacity, parallax-counter-scroll).
+- **Floating glass orbs** with parallax (3 layers, different speeds, mouse-parallax on hover of hero area).
+- **Live mock dashboard preview** becomes a `TiltCard` with:
+  - Animated counter that increments on view (Downloads 1,284 → counts up)
+  - A faux "AI run" line that types itself character-by-character every 6s
+  - A small animated sparkline in one stat card
+  - Subtle floating "pack thumbnail" cards that drift on a slow loop
+- **Aurora gradient text** (MagicUI-style) on the brand line — animated hue shift, not static gradient.
+- Copy rewrite: replace "Your ultimate creator operating system" with a sharper, opinionated line (3 options — picks one with most punch, e.g. *"Stop juggling 9 tools. Ship like a studio."*).
 
-### OAuth (per-user, custom)
+## 3. Asymmetry across grids
 
-Both providers need OAuth apps the user (project owner) creates once:
-- **Google**: OAuth client in Google Cloud Console with `https://www.googleapis.com/auth/drive.file` scope (only files the app creates — safest scope).
-- **Microsoft**: App registration in Entra ID with `Files.ReadWrite.AppFolder` + `offline_access`.
+- **Features (Bento)**: rebuild as a true bento grid — 5 cards of 3 different sizes (large hero card spans 2×2, two wide cards span 2×1, two compact 1×1). One card features a live mini-preview (e.g. a tiny animated chart for Analytics; a typed-out caption for AI tools). Each card uses `TiltCard` + glass hover sheen.
+- **VaultPreview**: break the uniform 3-col grid — first card spans 2 cols and is taller, badges animate in with stagger, hover reveals a "Preview" overlay with `GlassMorph` blur-in.
+- **Testimonials**: alternating column heights (1st & 3rd taller, 2nd & 4th shorter with offset translateY), each with a magnetic hover and a quote-mark watermark that parallaxes inside the card.
+- **Pricing**: featured plan card scales 1.05× and floats; competitor columns slightly recede. Add a subtle border-beam to the recommended plan.
 
-The app owner adds four secrets (I'll request them with `add_secret` after this plan is approved):
-`GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `MICROSOFT_OAUTH_CLIENT_ID`, `MICROSOFT_OAUTH_CLIENT_SECRET`.
+## 4. Wow interaction — Scroll Storytelling
 
-Server routes handle the flow:
-- `GET /api/public/cloud/{provider}/start` — signed-in user; creates state, redirects to provider consent
-- `GET /api/public/cloud/{provider}/callback` — exchanges code, stores tokens in `cloud_connections`, redirects back to Settings
-- Server-only helpers refresh tokens transparently before each upload
+A new `<ScrollStory />` section between Features and VaultPreview:
+- Pinned 100vh canvas with a stylized creator workflow diorama
+- As the user scrolls, 4 stages transition: *Idea → Asset → Edit → Ship*
+- Each stage animates: icons morph, lines connect via `AnimatedBeam`-style SVG paths, the previous stage blurs and recedes
+- Implemented with `useScroll({ offset: ['start start', 'end start'] })` and `useTransform` to drive opacity/translateY of each stage panel
+- Mobile fallback: simplified vertical stepper with staggered reveals (no pinning)
 
-### Upload logic
+## 5. Glass-morph section transitions
 
-- `src/lib/cloud-sync.server.ts`
-  - `uploadAssetToDrive(userId, assetId)` — downloads the asset bytes from the private `assets` bucket via signed URL, POSTs to Drive `files/upload?uploadType=multipart` inside the destination folder
-  - `uploadAssetToOneDrive(userId, assetId)` — same shape against Graph `/me/drive/special/approot:/{name}:/content` (uses AppFolder scope so the app can't see other files)
-  - Both refresh tokens on 401, log to `cloud_sync_logs`
-- `src/lib/cloud.functions.ts` — auth'd server fns: `listCloudConnections`, `disconnectCloudProvider`, `setAutoSync`, `syncAssetNow({assetId, provider})`, `bulkSyncSaved({provider})`, `listSyncHistory`
-- Auto-sync hook: when `asset_saves` insert happens, the existing save handler calls `syncAssetNow` fire-and-forget for every connection with `auto_sync=true` (respects quota, silent on cap-hit)
+Between every major landing section: a thin animated divider that uses `backdrop-blur` + a moving gradient highlight that sweeps left→right when the section enters view. Replaces flat `border-y` lines.
 
-### UI
+## 6. Other pages — same motion language
 
-- New route `src/routes/_authenticated/cloud-sync.tsx` (Settings-style page) — connect/disconnect, auto-sync switches, destination folder name, recent sync history table
-- Link in `ProfileMenu` under "API keys" → "Cloud sync"
-- `src/components/CloudExportButton.tsx` — dropdown button used on `assets.$id.tsx` and `saved.tsx`
-- Header CTA on `saved.tsx` for bulk sync with progress toast
+- **Auth (`/auth`)**: split layout, left side animated gradient orbs + rotating creator quotes, right side glass card form with magnetic submit button.
+- **Dashboard (`/dashboard`)**: stat cards become `TiltCard`s with count-up numbers; greeting line types in; sidebar items get a magnetic hover.
+- **Billing (`/billing`)**: pricing card gets border-beam, plan-feature list reveals row-by-row with stagger, the existing toggle keeps its sliding pill (already done) plus a subtle scale pulse on switch.
+- **AI Studio (`/ai`)**: tool tiles become a bento (3 sizes), the modal opens with a `GlassMorph` blur-in instead of a hard fade, generate button is magnetic, output reveals with the typewriter effect.
+- **Assets (`/assets`)**: vault grid mirrors landing VaultPreview asymmetry; hover-tilt on cards.
+- **Onboarding**: each step transitions via glass-morph blur, progress dots animate fill.
 
-### Files to create / edit
+## 7. Copywriting pass
 
-**Create**
-- `supabase/migrations/<ts>_cloud_sync.sql`
-- `src/routes/api/public/cloud/google_drive.start.ts`, `google_drive.callback.ts`, `onedrive.start.ts`, `onedrive.callback.ts`
-- `src/lib/cloud-sync.server.ts`, `src/lib/cloud.functions.ts`
-- `src/routes/_authenticated/cloud-sync.tsx`
-- `src/components/CloudExportButton.tsx`
+Rewrite generic AI-sounding copy across:
+- Hero headline + sub + CTAs
+- Section eyebrows ("The system" → something with edge)
+- Feature card titles + descriptions (cut hedging words, add specifics)
+- Pricing plan descriptions
+- Testimonials (keep voice, tighten)
+- FAQ answers (cut filler, lead with the answer)
+- CTA footer line
 
-**Edit**
-- `src/components/ProfileMenu.tsx` — add Cloud Sync link
-- `src/routes/_authenticated/saved.tsx` — bulk sync + per-item export button
-- `src/routes/_authenticated/assets.$id.tsx` — export button
-- `src/lib/assets.functions.ts` — trigger auto-sync on save
+Voice target: confident, direct, slightly opinionated — like Linear or Vercel marketing. Short sentences. Concrete nouns. Numbers where possible.
 
-## What I need from you before I build
+## 8. Performance guardrails
 
-Two things:
+- Respect `prefers-reduced-motion`: every motion primitive checks the media query and degrades to static fade-in.
+- All tilt/parallax handlers throttled with `requestAnimationFrame`.
+- Heavy effects (scroll story canvas) lazy-mount via IntersectionObserver — don't render until ~200px before viewport.
+- Marquee uses CSS `@keyframes` (GPU-cheap), not JS.
 
-1. **Confirm this plan** (any changes to scope, limits, or provider list).
-2. After you approve, I'll ask you to paste four secrets — the Google + Microsoft OAuth client IDs and secrets from consoles you control. I'll walk you through creating the OAuth apps (redirect URIs, scopes) before requesting them so you have everything ready.
+## 9. Dependencies
 
-## Out of scope for this pass
+Already installed: `framer-motion`, `lucide-react`. No new packages required (MagicUI components ported inline where used, no npm install).
 
-- Dropbox / S3 (can add later with the same shape)
-- Two-way sync / editing files back from cloud → app
-- Sharing links, permissions management on the cloud side
-- Team/shared drives (personal Drive + personal OneDrive only)
+## Out of scope
+
+- No backend, schema, auth, or business-logic changes.
+- No new routes, no removed pages.
+- No design-system token changes beyond adding 1–2 motion-related CSS variables (e.g. `--ease-magnetic`).
+
+## Effort
+
+Roughly 12–16 file edits + 6 new motion primitive files. Largest churn is on landing components; other pages get lighter polish using the same primitives. I'll work in this order: motion primitives → hero → bento features → scroll story → vault/testimonials/pricing → other pages → copywriting sweep.
+
+Tell me to proceed and I'll start.
