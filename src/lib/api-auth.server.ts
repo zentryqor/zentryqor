@@ -14,6 +14,32 @@ async function sha256Hex(input: string): Promise<string> {
 
 export type ApiKeyAuth = { userId: string; keyId: string };
 
+export async function logApiUsage(params: {
+  userId: string;
+  apiKeyId: string | null;
+  endpoint: string;
+  method: string;
+  status: number;
+  creditsCost?: number;
+  latencyMs?: number;
+  errorMessage?: string | null;
+}) {
+  try {
+    await supabaseAdmin.from("api_usage_logs").insert({
+      user_id: params.userId,
+      api_key_id: params.apiKeyId,
+      endpoint: params.endpoint,
+      method: params.method,
+      status: params.status,
+      credits_cost: params.creditsCost ?? 0,
+      latency_ms: params.latencyMs ?? null,
+      error_message: params.errorMessage ?? null,
+    });
+  } catch {
+    // best-effort logging
+  }
+}
+
 export async function authenticateApiKey(request: Request): Promise<ApiKeyAuth | null> {
   const header = request.headers.get("authorization");
   if (!header) return null;
