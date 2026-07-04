@@ -30,6 +30,7 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedApiUsageRouteImport } from './routes/_authenticated/api-usage'
+import { Route as AuthenticatedApiLimitsRouteImport } from './routes/_authenticated/api-limits'
 import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated/api-keys'
 import { Route as AuthenticatedApiDocsRouteImport } from './routes/_authenticated/api-docs'
 import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
@@ -38,6 +39,7 @@ import { Route as AuthenticatedAssetsIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAssetsIdRouteImport } from './routes/_authenticated/assets.$id'
 import { Route as ApiPublicV1TextRouteImport } from './routes/api/public/v1/text'
 import { Route as ApiPublicV1ImageRouteImport } from './routes/api/public/v1/image'
+import { Route as ApiPublicV1HealthRouteImport } from './routes/api/public/v1/health'
 import { Route as ApiPublicV1CreditsRouteImport } from './routes/api/public/v1/credits'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicAuthSigninRouteImport } from './routes/api/public/auth/signin'
@@ -147,6 +149,11 @@ const AuthenticatedApiUsageRoute = AuthenticatedApiUsageRouteImport.update({
   path: '/api-usage',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedApiLimitsRoute = AuthenticatedApiLimitsRouteImport.update({
+  id: '/api-limits',
+  path: '/api-limits',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedApiKeysRoute = AuthenticatedApiKeysRouteImport.update({
   id: '/api-keys',
   path: '/api-keys',
@@ -186,6 +193,11 @@ const ApiPublicV1TextRoute = ApiPublicV1TextRouteImport.update({
 const ApiPublicV1ImageRoute = ApiPublicV1ImageRouteImport.update({
   id: '/api/public/v1/image',
   path: '/api/public/v1/image',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1HealthRoute = ApiPublicV1HealthRouteImport.update({
+  id: '/api/public/v1/health',
+  path: '/api/public/v1/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicV1CreditsRoute = ApiPublicV1CreditsRouteImport.update({
@@ -229,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/ai': typeof AuthenticatedAiRoute
   '/api-docs': typeof AuthenticatedApiDocsRoute
   '/api-keys': typeof AuthenticatedApiKeysRoute
+  '/api-limits': typeof AuthenticatedApiLimitsRoute
   '/api-usage': typeof AuthenticatedApiUsageRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -241,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/v1/credits': typeof ApiPublicV1CreditsRoute
+  '/api/public/v1/health': typeof ApiPublicV1HealthRoute
   '/api/public/v1/image': typeof ApiPublicV1ImageRoute
   '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
@@ -263,6 +277,7 @@ export interface FileRoutesByTo {
   '/ai': typeof AuthenticatedAiRoute
   '/api-docs': typeof AuthenticatedApiDocsRoute
   '/api-keys': typeof AuthenticatedApiKeysRoute
+  '/api-limits': typeof AuthenticatedApiLimitsRoute
   '/api-usage': typeof AuthenticatedApiUsageRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -275,6 +290,7 @@ export interface FileRoutesByTo {
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/v1/credits': typeof ApiPublicV1CreditsRoute
+  '/api/public/v1/health': typeof ApiPublicV1HealthRoute
   '/api/public/v1/image': typeof ApiPublicV1ImageRoute
   '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
@@ -299,6 +315,7 @@ export interface FileRoutesById {
   '/_authenticated/ai': typeof AuthenticatedAiRoute
   '/_authenticated/api-docs': typeof AuthenticatedApiDocsRoute
   '/_authenticated/api-keys': typeof AuthenticatedApiKeysRoute
+  '/_authenticated/api-limits': typeof AuthenticatedApiLimitsRoute
   '/_authenticated/api-usage': typeof AuthenticatedApiUsageRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -311,6 +328,7 @@ export interface FileRoutesById {
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/v1/credits': typeof ApiPublicV1CreditsRoute
+  '/api/public/v1/health': typeof ApiPublicV1HealthRoute
   '/api/public/v1/image': typeof ApiPublicV1ImageRoute
   '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
@@ -335,6 +353,7 @@ export interface FileRouteTypes {
     | '/ai'
     | '/api-docs'
     | '/api-keys'
+    | '/api-limits'
     | '/api-usage'
     | '/billing'
     | '/dashboard'
@@ -347,6 +366,7 @@ export interface FileRouteTypes {
     | '/api/public/auth/signin'
     | '/api/public/payments/webhook'
     | '/api/public/v1/credits'
+    | '/api/public/v1/health'
     | '/api/public/v1/image'
     | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
@@ -369,6 +389,7 @@ export interface FileRouteTypes {
     | '/ai'
     | '/api-docs'
     | '/api-keys'
+    | '/api-limits'
     | '/api-usage'
     | '/billing'
     | '/dashboard'
@@ -381,6 +402,7 @@ export interface FileRouteTypes {
     | '/api/public/auth/signin'
     | '/api/public/payments/webhook'
     | '/api/public/v1/credits'
+    | '/api/public/v1/health'
     | '/api/public/v1/image'
     | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
@@ -404,6 +426,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ai'
     | '/_authenticated/api-docs'
     | '/_authenticated/api-keys'
+    | '/_authenticated/api-limits'
     | '/_authenticated/api-usage'
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
@@ -416,6 +439,7 @@ export interface FileRouteTypes {
     | '/api/public/auth/signin'
     | '/api/public/payments/webhook'
     | '/api/public/v1/credits'
+    | '/api/public/v1/health'
     | '/api/public/v1/image'
     | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
@@ -440,6 +464,7 @@ export interface RootRouteChildren {
   ApiPublicAuthSigninRoute: typeof ApiPublicAuthSigninRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicV1CreditsRoute: typeof ApiPublicV1CreditsRoute
+  ApiPublicV1HealthRoute: typeof ApiPublicV1HealthRoute
   ApiPublicV1ImageRoute: typeof ApiPublicV1ImageRoute
   ApiPublicV1TextRoute: typeof ApiPublicV1TextRoute
   ApiPublicAssetsDownloadIdRoute: typeof ApiPublicAssetsDownloadIdRoute
@@ -594,6 +619,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedApiUsageRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/api-limits': {
+      id: '/_authenticated/api-limits'
+      path: '/api-limits'
+      fullPath: '/api-limits'
+      preLoaderRoute: typeof AuthenticatedApiLimitsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/api-keys': {
       id: '/_authenticated/api-keys'
       path: '/api-keys'
@@ -650,6 +682,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicV1ImageRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/v1/health': {
+      id: '/api/public/v1/health'
+      path: '/api/public/v1/health'
+      fullPath: '/api/public/v1/health'
+      preLoaderRoute: typeof ApiPublicV1HealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/credits': {
       id: '/api/public/v1/credits'
       path: '/api/public/v1/credits'
@@ -686,6 +725,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAiRoute: typeof AuthenticatedAiRoute
   AuthenticatedApiDocsRoute: typeof AuthenticatedApiDocsRoute
   AuthenticatedApiKeysRoute: typeof AuthenticatedApiKeysRoute
+  AuthenticatedApiLimitsRoute: typeof AuthenticatedApiLimitsRoute
   AuthenticatedApiUsageRoute: typeof AuthenticatedApiUsageRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -701,6 +741,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAiRoute: AuthenticatedAiRoute,
   AuthenticatedApiDocsRoute: AuthenticatedApiDocsRoute,
   AuthenticatedApiKeysRoute: AuthenticatedApiKeysRoute,
+  AuthenticatedApiLimitsRoute: AuthenticatedApiLimitsRoute,
   AuthenticatedApiUsageRoute: AuthenticatedApiUsageRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -733,6 +774,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAuthSigninRoute: ApiPublicAuthSigninRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicV1CreditsRoute: ApiPublicV1CreditsRoute,
+  ApiPublicV1HealthRoute: ApiPublicV1HealthRoute,
   ApiPublicV1ImageRoute: ApiPublicV1ImageRoute,
   ApiPublicV1TextRoute: ApiPublicV1TextRoute,
   ApiPublicAssetsDownloadIdRoute: ApiPublicAssetsDownloadIdRoute,
