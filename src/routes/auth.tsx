@@ -59,15 +59,15 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}${dest}`,
-            data: { full_name: name },
-          },
+        const res = await fetch("/api/public/auth/send-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, name }),
         });
-        if (error) throw error;
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(payload?.error || "Could not send verification code.");
+        }
         toast.success("We sent a 6-digit code to your email.");
         setOtpStage(true);
         setResendCooldown(45);
