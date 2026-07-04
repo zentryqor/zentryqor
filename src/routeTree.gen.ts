@@ -29,10 +29,14 @@ import { Route as AuthenticatedSavedRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
+import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated/api-keys'
 import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAssetsIndexRouteImport } from './routes/_authenticated/assets.index'
 import { Route as AuthenticatedAssetsIdRouteImport } from './routes/_authenticated/assets.$id'
+import { Route as ApiPublicV1TextRouteImport } from './routes/api/public/v1/text'
+import { Route as ApiPublicV1ImageRouteImport } from './routes/api/public/v1/image'
+import { Route as ApiPublicV1CreditsRouteImport } from './routes/api/public/v1/credits'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicAuthSigninRouteImport } from './routes/api/public/auth/signin'
 import { Route as ApiPublicAssetsDownloadIdRouteImport } from './routes/api/public/assets/download.$id'
@@ -136,6 +140,11 @@ const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedApiKeysRoute = AuthenticatedApiKeysRouteImport.update({
+  id: '/api-keys',
+  path: '/api-keys',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAiRoute = AuthenticatedAiRouteImport.update({
   id: '/ai',
   path: '/ai',
@@ -156,6 +165,21 @@ const AuthenticatedAssetsIdRoute = AuthenticatedAssetsIdRouteImport.update({
   id: '/assets/$id',
   path: '/assets/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiPublicV1TextRoute = ApiPublicV1TextRouteImport.update({
+  id: '/api/public/v1/text',
+  path: '/api/public/v1/text',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1ImageRoute = ApiPublicV1ImageRouteImport.update({
+  id: '/api/public/v1/image',
+  path: '/api/public/v1/image',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1CreditsRoute = ApiPublicV1CreditsRouteImport.update({
+  id: '/api/public/v1/credits',
+  path: '/api/public/v1/credits',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicPaymentsWebhookRoute =
   ApiPublicPaymentsWebhookRouteImport.update({
@@ -191,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai': typeof AuthenticatedAiRoute
+  '/api-keys': typeof AuthenticatedApiKeysRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -201,6 +226,9 @@ export interface FileRoutesByFullPath {
   '/assets/': typeof AuthenticatedAssetsIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/v1/credits': typeof ApiPublicV1CreditsRoute
+  '/api/public/v1/image': typeof ApiPublicV1ImageRoute
+  '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
 }
 export interface FileRoutesByTo {
@@ -219,6 +247,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai': typeof AuthenticatedAiRoute
+  '/api-keys': typeof AuthenticatedApiKeysRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -229,6 +258,9 @@ export interface FileRoutesByTo {
   '/assets': typeof AuthenticatedAssetsIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/v1/credits': typeof ApiPublicV1CreditsRoute
+  '/api/public/v1/image': typeof ApiPublicV1ImageRoute
+  '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
 }
 export interface FileRoutesById {
@@ -249,6 +281,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/ai': typeof AuthenticatedAiRoute
+  '/_authenticated/api-keys': typeof AuthenticatedApiKeysRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
@@ -259,6 +292,9 @@ export interface FileRoutesById {
   '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
+  '/api/public/v1/credits': typeof ApiPublicV1CreditsRoute
+  '/api/public/v1/image': typeof ApiPublicV1ImageRoute
+  '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
 }
 export interface FileRouteTypes {
@@ -279,6 +315,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/ai'
+    | '/api-keys'
     | '/billing'
     | '/dashboard'
     | '/onboarding'
@@ -289,6 +326,9 @@ export interface FileRouteTypes {
     | '/assets/'
     | '/api/public/auth/signin'
     | '/api/public/payments/webhook'
+    | '/api/public/v1/credits'
+    | '/api/public/v1/image'
+    | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -307,6 +347,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/ai'
+    | '/api-keys'
     | '/billing'
     | '/dashboard'
     | '/onboarding'
@@ -317,6 +358,9 @@ export interface FileRouteTypes {
     | '/assets'
     | '/api/public/auth/signin'
     | '/api/public/payments/webhook'
+    | '/api/public/v1/credits'
+    | '/api/public/v1/image'
+    | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
   id:
     | '__root__'
@@ -336,6 +380,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/admin'
     | '/_authenticated/ai'
+    | '/_authenticated/api-keys'
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
     | '/_authenticated/onboarding'
@@ -346,6 +391,9 @@ export interface FileRouteTypes {
     | '/_authenticated/assets/'
     | '/api/public/auth/signin'
     | '/api/public/payments/webhook'
+    | '/api/public/v1/credits'
+    | '/api/public/v1/image'
+    | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
   fileRoutesById: FileRoutesById
 }
@@ -367,6 +415,9 @@ export interface RootRouteChildren {
   GuidesUgcEssentialsRoute: typeof GuidesUgcEssentialsRoute
   ApiPublicAuthSigninRoute: typeof ApiPublicAuthSigninRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
+  ApiPublicV1CreditsRoute: typeof ApiPublicV1CreditsRoute
+  ApiPublicV1ImageRoute: typeof ApiPublicV1ImageRoute
+  ApiPublicV1TextRoute: typeof ApiPublicV1TextRoute
   ApiPublicAssetsDownloadIdRoute: typeof ApiPublicAssetsDownloadIdRoute
 }
 
@@ -512,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBillingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/api-keys': {
+      id: '/_authenticated/api-keys'
+      path: '/api-keys'
+      fullPath: '/api-keys'
+      preLoaderRoute: typeof AuthenticatedApiKeysRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/ai': {
       id: '/_authenticated/ai'
       path: '/ai'
@@ -540,6 +598,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssetsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/v1/text': {
+      id: '/api/public/v1/text'
+      path: '/api/public/v1/text'
+      fullPath: '/api/public/v1/text'
+      preLoaderRoute: typeof ApiPublicV1TextRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/image': {
+      id: '/api/public/v1/image'
+      path: '/api/public/v1/image'
+      fullPath: '/api/public/v1/image'
+      preLoaderRoute: typeof ApiPublicV1ImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/credits': {
+      id: '/api/public/v1/credits'
+      path: '/api/public/v1/credits'
+      fullPath: '/api/public/v1/credits'
+      preLoaderRoute: typeof ApiPublicV1CreditsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/webhook': {
       id: '/api/public/payments/webhook'
       path: '/api/public/payments/webhook'
@@ -567,6 +646,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAiRoute: typeof AuthenticatedAiRoute
+  AuthenticatedApiKeysRoute: typeof AuthenticatedApiKeysRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
@@ -579,6 +659,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedAiRoute: AuthenticatedAiRoute,
+  AuthenticatedApiKeysRoute: AuthenticatedApiKeysRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
@@ -609,18 +690,11 @@ const rootRouteChildren: RootRouteChildren = {
   GuidesUgcEssentialsRoute: GuidesUgcEssentialsRoute,
   ApiPublicAuthSigninRoute: ApiPublicAuthSigninRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
+  ApiPublicV1CreditsRoute: ApiPublicV1CreditsRoute,
+  ApiPublicV1ImageRoute: ApiPublicV1ImageRoute,
+  ApiPublicV1TextRoute: ApiPublicV1TextRoute,
   ApiPublicAssetsDownloadIdRoute: ApiPublicAssetsDownloadIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
