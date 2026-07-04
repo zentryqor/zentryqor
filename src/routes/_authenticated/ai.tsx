@@ -6,9 +6,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 import {
   ArrowUpRight,
+  BookOpen,
   Calendar,
   FileText,
-  
+  Grid3X3,
   Hash,
   Image as ImageIcon,
   Loader2,
@@ -373,6 +374,21 @@ function AiStudio() {
             <p className="text-sm text-muted-foreground mt-3">
               Nine AI tools tuned for creators — captions, hooks, scripts, trends, and more.
             </p>
+
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                to="/templates"
+                className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-elevated/40 hover:bg-elevated/80 hover:border-foreground/30 px-4 py-2 text-xs font-medium transition-all"
+              >
+                <BookOpen className="h-3.5 w-3.5 text-accent icon-fx" /> Templates
+              </Link>
+              <Link
+                to="/gallery"
+                className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-elevated/40 hover:bg-elevated/80 hover:border-foreground/30 px-4 py-2 text-xs font-medium transition-all"
+              >
+                <Grid3X3 className="h-3.5 w-3.5 text-primary icon-fx" /> Community Gallery
+              </Link>
+            </div>
           </div>
 
           {/* Tool grid */}
