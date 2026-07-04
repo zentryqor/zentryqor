@@ -160,10 +160,35 @@ function RootComponent() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     let mounted = true;
+
+    // Capture ?ref=CODE from URL and stash for post-signup processing
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get("ref");
+      if (ref && /^[A-Za-z0-9]{4,32}$/.test(ref)) {
+        window.localStorage.setItem("zq_ref_code", ref.toUpperCase());
+      }
+    } catch {}
+
     import("@/integrations/supabase/client").then(({ supabase }) => {
       if (!mounted) return;
       const { data } = supabase.auth.onAuthStateChange((event) => {
         if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+
+        // On sign-in, if we have a stashed referral code, apply it (best-effort)
+        if (event === "SIGNED_IN") {
+          try {
+            const ref = window.localStorage.getItem("zq_ref_code");
+            if (ref) {
+              import("@/lib/referrals.functions").then(({ recordReferralFromCode }) => {
+                recordReferralFromCode({ data: { code: ref } })
+                  .then(() => window.localStorage.removeItem("zq_ref_code"))
+                  .catch(() => {});
+              });
+            }
+          } catch {}
+        }
+
         router.invalidate();
         if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
       });

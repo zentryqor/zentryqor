@@ -24,6 +24,7 @@ import ReactMarkdown from "react-markdown";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { generateAiText, generateAiImage, getAiCredits } from "@/lib/ai.functions";
+import { shareToGallery } from "@/lib/gallery.functions";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export const Route = createFileRoute("/_authenticated/ai")({
@@ -38,7 +39,7 @@ export const Route = createFileRoute("/_authenticated/ai")({
     ],
   }),
   validateSearch: (s: Record<string, unknown>) =>
-    z.object({ tool: z.string().optional() }).parse(s),
+    z.object({ tool: z.string().optional(), prompt: z.string().optional() }).parse(s),
   component: AiStudio,
 });
 
@@ -179,17 +180,20 @@ const TOOLS: Tool[] = [
 type AspectRatio = "16:9" | "9:16" | "4:3" | "3:4";
 
 function AiStudio() {
-  const { tool: toolParam } = Route.useSearch();
+  const { tool: toolParam, prompt: promptParam } = Route.useSearch() as { tool?: string; prompt?: string };
   const navigate = useNavigate();
   const [activeId, setActiveId] = useState<ToolId | null>(null);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [imageOutput, setImageOutput] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9");
+  const [lastPromptUsed, setLastPromptUsed] = useState<string>("");
+  const [sharedIds, setSharedIds] = useState<Set<string>>(new Set());
 
   const runText = useServerFn(generateAiText);
   const runImage = useServerFn(generateAiImage);
   const fetchCredits = useServerFn(getAiCredits);
+  const share = useServerFn(shareToGallery);
   const active = TOOLS.find((t) => t.id === activeId) ?? null;
 
   // Deep-link: open tool via ?tool=<id>
@@ -199,6 +203,11 @@ function AiStudio() {
     }
   }, [toolParam]);
 
+  // Deep-link: pre-fill prompt from ?prompt= (template flow)
+  useEffect(() => {
+    if (promptParam) setInput(promptParam);
+  }, [promptParam]);
+
   const creditsQuery = useQuery({
     queryKey: ["ai-credits"],
     queryFn: () => fetchCredits(),
@@ -207,6 +216,7 @@ function AiStudio() {
 
   const mut = useMutation({
     mutationFn: async ({ tool, value }: { tool: Tool; value: string }) => {
+      setLastPromptUsed(tool.buildPrompt(value));
       if (tool.id === "thumbnail") {
         const r = await runImage({ data: { prompt: tool.buildPrompt(value), aspectRatio } });
         return { kind: "image" as const, image: r.image };
@@ -228,6 +238,17 @@ function AiStudio() {
       toast.error(e?.message ?? "Generation failed");
       creditsQuery.refetch();
     },
+  });
+
+  const shareMut = useMutation({
+    mutationFn: async (payload: { kind: "text" | "image"; prompt: string; outputText?: string; imageUrl?: string }) => {
+      return share({ data: payload });
+    },
+    onSuccess: (r) => {
+      setSharedIds((s) => new Set(s).add(r.id));
+      toast.success("Shared to gallery");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Share failed"),
   });
 
   const openTool = (id: ToolId) => {
@@ -509,8 +530,17 @@ function AiStudio() {
 
             {output && (
               <div className="mt-6 p-5 rounded-2xl bg-elevated/40 border border-border/60">
-                <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3">
-                  Output
+                <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3 flex items-center justify-between gap-3">
+                  <span>Output</span>
+                  <button
+                    onClick={() =>
+                      shareMut.mutate({ kind: "text", prompt: lastPromptUsed || input, outputText: output })
+                    }
+                    disabled={shareMut.isPending}
+                    className="text-muted-foreground hover:text-foreground normal-case tracking-normal text-xs disabled:opacity-60"
+                  >
+                    {shareMut.isPending ? "Sharing…" : "Share to gallery"}
+                  </button>
                 </div>
                 <div className="prose prose-sm prose-invert max-w-none">
                   <ReactMarkdown>{output}</ReactMarkdown>
@@ -520,15 +550,26 @@ function AiStudio() {
 
             {imageOutput && (
               <div className="mt-6 p-5 rounded-2xl bg-elevated/40 border border-border/60">
-                <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3 flex items-center justify-between">
+                <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3 flex items-center justify-between gap-3">
                   <span>Thumbnail</span>
-                  <a
-                    href={imageOutput}
-                    download="thumbnail.png"
-                    className="text-muted-foreground hover:text-foreground normal-case tracking-normal"
-                  >
-                    Download
-                  </a>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() =>
+                        shareMut.mutate({ kind: "image", prompt: lastPromptUsed || input, imageUrl: imageOutput })
+                      }
+                      disabled={shareMut.isPending}
+                      className="text-muted-foreground hover:text-foreground normal-case tracking-normal text-xs disabled:opacity-60"
+                    >
+                      {shareMut.isPending ? "Sharing…" : "Share to gallery"}
+                    </button>
+                    <a
+                      href={imageOutput}
+                      download="thumbnail.png"
+                      className="text-muted-foreground hover:text-foreground normal-case tracking-normal text-xs"
+                    >
+                      Download
+                    </a>
+                  </div>
                 </div>
                 <img
                   src={imageOutput}
