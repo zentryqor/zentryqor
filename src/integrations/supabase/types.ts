@@ -332,6 +332,33 @@ export type Database = {
         }
         Relationships: []
       }
+      status_checks: {
+        Row: {
+          created_at: string
+          id: string
+          latency_ms: number | null
+          message: string | null
+          service: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          latency_ms?: number | null
+          message?: string | null
+          service: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          latency_ms?: number | null
+          message?: string | null
+          service?: string
+          status?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at_period_end: boolean | null

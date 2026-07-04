@@ -1,72 +1,147 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { CheckCircle2, AlertTriangle, XCircle, Circle } from "lucide-react";
 import { PageShell } from "@/components/PageShell";
-import { CheckCircle2 } from "lucide-react";
+import { getStatusData } from "@/lib/status.functions";
+
+const SERVICE_LABELS: Record<string, string> = {
+  web: "Web app",
+  api: "Public API",
+  auth: "Authentication",
+  "ai-text": "AI Studio (text)",
+  "ai-image": "AI Studio (image)",
+  database: "Database",
+};
 
 export const Route = createFileRoute("/status")({
   head: () => ({
     meta: [
       { title: "Status — Zentry Qor" },
-      { name: "description", content: "Live platform uptime and incident history for Zentry Qor." },
+      { name: "description", content: "Live health of Zentry Qor services: web, API, auth, AI text, AI image, and database." },
       { property: "og:title", content: "Status — Zentry Qor" },
-      { property: "og:description", content: "Live platform uptime and incident history." },
+      { property: "og:description", content: "Live platform uptime, health, and incident history." },
     ],
   }),
+  loader: async ({ context }) => {
+    context.queryClient.prefetchQuery({
+      queryKey: ["status-data"],
+      queryFn: () => getStatusData(),
+    });
+  },
   component: StatusPage,
 });
 
-const services = [
-  { name: "Web app", uptime: "99.99%" },
-  { name: "Vault & downloads", uptime: "99.98%" },
-  { name: "AI Studio", uptime: "99.95%" },
-  { name: "Authentication", uptime: "100%" },
-  { name: "Payments (Paddle)", uptime: "100%" },
-  { name: "API", uptime: "99.97%" },
-];
-
-function bars() {
-  return Array.from({ length: 60 }, (_, i) => {
-    const dim = i === 23 || i === 41 ? "bg-emerald-400/40" : "bg-emerald-400/80";
-    return <span key={i} className={`h-7 w-1 rounded-sm ${dim}`} />;
-  });
-}
-
 function StatusPage() {
+  const fetchStatus = useServerFn(getStatusData);
+  const q = useQuery({
+    queryKey: ["status-data"],
+    queryFn: () => fetchStatus(),
+    refetchInterval: 60000,
+  });
+
+  const data = q.data;
+  const overall = data?.overall ?? "up";
+
   return (
     <PageShell
       eyebrow="Status"
-      title={<>All systems <span className="text-aurora italic font-medium">operational.</span></>}
-      description="Real-time platform health for the last 60 days. Subscribe for incident notifications inside Settings."
+      title="Platform status"
+      description="Live health of Zentry Qor services. Updates every minute."
     >
-      <div className="glass-strong rounded-2xl p-6 mb-6 flex items-center gap-4">
-        <span className="relative flex h-3 w-3">
-          <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-60" />
-          <span className="relative h-3 w-3 rounded-full bg-emerald-400" />
-        </span>
-        <div>
-          <p className="text-[15px] font-semibold">All systems normal</p>
-          <p className="text-xs text-muted-foreground">Last checked just now · Updated every 60 seconds</p>
-        </div>
-      </div>
+      <div>
 
-      <div className="space-y-3 mb-10">
-        {services.map((s) => (
-          <div key={s.name} className="glass rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400 icon-fx" />
-                <span className="text-sm font-medium">{s.name}</span>
-              </div>
-              <span className="text-xs text-muted-foreground">{s.uptime} · 60d</span>
+
+        <div
+          className={`rounded-2xl p-6 mb-8 flex items-center gap-4 ${
+            overall === "up"
+              ? "bg-emerald-500/10 border border-emerald-500/20"
+              : overall === "degraded"
+                ? "bg-amber-500/10 border border-amber-500/20"
+                : "bg-red-500/10 border border-red-500/20"
+          }`}
+        >
+          <StatusIcon status={overall} large />
+          <div>
+            <div className="text-lg font-semibold">
+              {overall === "up" ? "All systems operational" : overall === "degraded" ? "Some services degraded" : "Service disruption"}
             </div>
-            <div className="flex gap-0.5 items-end">{bars()}</div>
+            {data?.updatedAt && (
+              <div className="text-xs text-muted-foreground mt-1">
+                Last checked {new Date(data.updatedAt).toLocaleString()}
+              </div>
+            )}
           </div>
-        ))}
-      </div>
+        </div>
 
-      <div className="glass rounded-2xl p-6">
-        <h2 className="text-sm font-semibold tracking-tight mb-3">Recent incidents</h2>
-        <p className="text-sm text-muted-foreground">No incidents reported in the last 30 days.</p>
+        <div className="glass-strong rounded-2xl overflow-hidden">
+          {(data?.services ?? []).map((svc, i) => (
+            <div
+              key={svc.service}
+              className={`p-5 ${i > 0 ? "border-t border-white/5" : ""}`}
+            >
+              <div className="flex items-center justify-between gap-4 mb-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <StatusIcon status={svc.currentStatus} />
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{SERVICE_LABELS[svc.service] ?? svc.service}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {svc.uptimePct.toFixed(2)}% uptime · 90 days
+                      {svc.latencyMs != null && ` · ${svc.latencyMs}ms avg`}
+                    </div>
+                  </div>
+                </div>
+                <span className={`text-xs uppercase tracking-wider ${statusColor(svc.currentStatus)}`}>
+                  {svc.currentStatus}
+                </span>
+              </div>
+              <div className="flex gap-[2px] items-end h-8">
+                {svc.history.map((d) => (
+                  <div
+                    key={d.day}
+                    title={`${d.day}: ${d.status}`}
+                    className={`flex-1 rounded-sm h-full ${
+                      d.status === "up"
+                        ? "bg-emerald-400/80"
+                        : d.status === "degraded"
+                          ? "bg-amber-400/80"
+                          : d.status === "down"
+                            ? "bg-red-500/80"
+                            : "bg-white/5"
+                    }`}
+                  />
+                ))}
+              </div>
+              <div className="flex justify-between text-[10px] text-muted-foreground mt-2">
+                <span>90 days ago</span>
+                <span>Today</span>
+              </div>
+            </div>
+          ))}
+          {!data && (
+            <div className="p-8 text-center text-sm text-muted-foreground">Loading status…</div>
+          )}
+        </div>
+
+        <p className="text-xs text-muted-foreground text-center mt-8">
+          Health checks run every 5 minutes. History covers the last 90 days.
+        </p>
       </div>
     </PageShell>
   );
+}
+
+function StatusIcon({ status, large }: { status: string; large?: boolean }) {
+  const size = large ? "w-6 h-6" : "w-5 h-5";
+  if (status === "up") return <CheckCircle2 className={`${size} text-emerald-400`} />;
+  if (status === "degraded") return <AlertTriangle className={`${size} text-amber-400`} />;
+  if (status === "down") return <XCircle className={`${size} text-red-400`} />;
+  return <Circle className={`${size} text-muted-foreground`} />;
+}
+
+function statusColor(status: string) {
+  if (status === "up") return "text-emerald-300";
+  if (status === "degraded") return "text-amber-300";
+  if (status === "down") return "text-red-300";
+  return "text-muted-foreground";
 }

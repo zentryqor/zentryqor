@@ -1,7 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, ArrowLeft, CheckCircle2, XCircle } from "lucide-react";
+import { Activity, ArrowLeft, CheckCircle2, XCircle, TrendingUp } from "lucide-react";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 import { AppHeader } from "@/components/AppHeader";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { ProfileMenu } from "@/components/ProfileMenu";
@@ -11,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/api-usage")({
   head: () => ({
     meta: [
       { title: "API Usage — Zentry Qor" },
-      { name: "description", content: "See recent API requests, credit cost, latency, and response status." },
+      { name: "description", content: "See recent API requests, credit cost, latency, charts and cost projections." },
     ],
   }),
   component: ApiUsagePage,
@@ -23,6 +34,9 @@ function ApiUsagePage() {
 
   const stats = usageQuery.data?.stats;
   const rows = usageQuery.data?.recent ?? [];
+  const series = usageQuery.data?.series ?? [];
+  const breakdown = usageQuery.data?.breakdown ?? [];
+  const projection = usageQuery.data?.projection;
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
@@ -41,17 +55,76 @@ function ApiUsagePage() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">API usage</h1>
             <p className="text-muted-foreground mt-1 max-w-xl">
-              Recent requests made with your API keys, including credit cost, latency, and response status.
+              Track credits over time, per-endpoint activity, and cost projections for the month.
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           <StatCard label="Requests (7d)" value={stats?.total ?? 0} />
           <StatCard label="Successful" value={stats?.success ?? 0} tone="green" />
           <StatCard label="Errors" value={stats?.errors ?? 0} tone="red" />
-          <StatCard label="Credits spent" value={stats?.creditsSpent ?? 0} />
+          <StatCard label="Credits (7d)" value={stats?.creditsSpent ?? 0} />
         </div>
+
+        {projection && (
+          <section className="glass-strong rounded-2xl p-5 mb-6 flex flex-wrap items-center gap-4">
+            <TrendingUp className="w-5 h-5 text-emerald-300 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <div className="font-medium">Monthly projection</div>
+              <div className="text-sm text-muted-foreground">
+                {projection.mtdCredits.toLocaleString()} credits used in {projection.daysElapsed} of {projection.daysInMonth} days.
+                At this pace you'll spend <span className="text-foreground font-semibold">{projection.projectedMonth.toLocaleString()}</span> credits this month.
+              </div>
+            </div>
+          </section>
+        )}
+
+        <section className="glass-strong rounded-2xl p-4 sm:p-5 mb-6">
+          <h2 className="font-medium mb-4">Credits over time (30 days)</h2>
+          <div className="h-56 w-full">
+            <ResponsiveContainer>
+              <LineChart data={series} margin={{ left: -20, right: 8, top: 8, bottom: 0 }}>
+                <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  stroke="rgba(255,255,255,0.4)"
+                  fontSize={11}
+                  tickFormatter={(v: string) => v.slice(5)}
+                />
+                <YAxis stroke="rgba(255,255,255,0.4)" fontSize={11} />
+                <Tooltip
+                  contentStyle={{ background: "rgba(20,20,20,0.95)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: "#fff" }}
+                />
+                <Line type="monotone" dataKey="credits" stroke="#34d399" strokeWidth={2} dot={false} name="Credits" />
+                <Line type="monotone" dataKey="requests" stroke="#60a5fa" strokeWidth={2} dot={false} name="Requests" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+
+        <section className="glass-strong rounded-2xl p-4 sm:p-5 mb-8">
+          <h2 className="font-medium mb-4">Per-endpoint breakdown (30 days)</h2>
+          {breakdown.length === 0 ? (
+            <div className="text-sm text-muted-foreground py-6 text-center">No requests yet.</div>
+          ) : (
+            <div className="h-56 w-full">
+              <ResponsiveContainer>
+                <BarChart data={breakdown} margin={{ left: -20, right: 8, top: 8, bottom: 0 }}>
+                  <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
+                  <XAxis dataKey="endpoint" stroke="rgba(255,255,255,0.4)" fontSize={11} />
+                  <YAxis stroke="rgba(255,255,255,0.4)" fontSize={11} />
+                  <Tooltip
+                    contentStyle={{ background: "rgba(20,20,20,0.95)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, fontSize: 12 }}
+                  />
+                  <Bar dataKey="requests" fill="#60a5fa" name="Requests" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="credits" fill="#34d399" name="Credits" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </section>
 
         <section className="glass-strong rounded-2xl overflow-hidden">
           <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
