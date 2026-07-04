@@ -74,6 +74,53 @@ export type Database = {
         }
         Relationships: []
       }
+      api_usage_logs: {
+        Row: {
+          api_key_id: string | null
+          created_at: string
+          credits_cost: number
+          endpoint: string
+          error_message: string | null
+          id: string
+          latency_ms: number | null
+          method: string
+          status: number
+          user_id: string
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string
+          credits_cost?: number
+          endpoint: string
+          error_message?: string | null
+          id?: string
+          latency_ms?: number | null
+          method: string
+          status: number
+          user_id: string
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string
+          credits_cost?: number
+          endpoint?: string
+          error_message?: string | null
+          id?: string
+          latency_ms?: number | null
+          method?: string
+          status?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_usage_logs_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       asset_downloads: {
         Row: {
           asset_id: string
