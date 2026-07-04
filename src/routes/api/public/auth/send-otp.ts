@@ -39,24 +39,7 @@ export const Route = createFileRoute("/api/public/auth/send-otp")({
           throw e;
         }
 
-        // Check that user doesn't already exist
-        const { data: existing } = await supabaseAdmin.auth.admin.listUsers({
-          page: 1,
-          perPage: 1,
-        });
-        // listUsers doesn't filter by email in older SDK; do a targeted check via getUserByEmail if available.
-        // Fallback: attempt to look up by iterating is expensive — instead try to sign in silently? Simplest:
-        // Query auth.users via SQL through admin.
-        const { data: userRow } = await supabaseAdmin
-          .schema("auth")
-          .from("users")
-          .select("id")
-          .eq("email", email)
-          .maybeSingle();
-        if (userRow) {
-          return jsonError(409, "An account with this email already exists. Please log in instead.");
-        }
-        void existing;
+        // Existence check is deferred to verify step (createUser will surface "already registered").
 
         // Generate 6-digit code
         const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
