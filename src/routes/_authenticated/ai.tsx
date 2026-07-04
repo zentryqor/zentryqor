@@ -6,9 +6,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 import {
   ArrowUpRight,
+  BookOpen,
   Calendar,
   FileText,
-  
+  Grid3X3,
   Hash,
   Image as ImageIcon,
   Loader2,
