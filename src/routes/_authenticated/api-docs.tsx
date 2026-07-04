@@ -213,10 +213,10 @@ function ApiDocsPage() {
           </section>
 
           {/* Code examples */}
-          <section className="glass-strong rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-4">
+          <section className="glass-strong rounded-2xl p-4 sm:p-5 min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
               <h2 className="font-medium">Code example</h2>
-              <div className="flex items-center gap-1 rounded-lg glass p-1">
+              <div className="flex items-center gap-1 rounded-lg glass p-1 self-start">
                 {(["curl", "node", "python"] as const).map((l) => (
                   <button
                     key={l}
