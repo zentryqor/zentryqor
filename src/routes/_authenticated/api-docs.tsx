@@ -95,24 +95,24 @@ function ApiDocsPage() {
       <AnimatedOrbs />
       <AppHeader right={<ProfileMenu />} />
 
-      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-28 pb-24">
+      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-24">
         <Link to="/api-keys" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6">
           <ArrowLeft className="w-4 h-4" /> Back to API keys
         </Link>
 
-        <div className="flex items-start gap-4 mb-8">
-          <div className="w-12 h-12 rounded-2xl glass-strong flex items-center justify-center shrink-0">
-            <BookOpen className="w-6 h-6" />
+        <div className="flex items-start gap-3 sm:gap-4 mb-8">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl glass-strong flex items-center justify-center shrink-0">
+            <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">API docs</h1>
-            <p className="text-muted-foreground mt-1 max-w-xl">
+            <p className="text-muted-foreground mt-1 text-sm">
               Base URL:{" "}
               <a
                 href={BASE_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="font-mono text-xs underline hover:text-foreground"
+                className="font-mono text-xs underline hover:text-foreground break-all"
               >
                 {BASE_URL}
               </a>
