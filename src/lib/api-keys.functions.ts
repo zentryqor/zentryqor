@@ -33,6 +33,34 @@ export const listApiKeys = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+export const listApiUsage = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("api_usage_logs")
+      .select("id, endpoint, method, status, credits_cost, latency_ms, error_message, api_key_id, created_at")
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (error) throw new Error(error.message);
+
+    // Aggregate 7-day stats
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: recent } = await context.supabase
+      .from("api_usage_logs")
+      .select("status, credits_cost")
+      .gte("created_at", since);
+    const rows = recent ?? [];
+    const total = rows.length;
+    const success = rows.filter((r) => r.status >= 200 && r.status < 300).length;
+    const errors = total - success;
+    const creditsSpent = rows.reduce((n, r) => n + (r.credits_cost ?? 0), 0);
+
+    return {
+      recent: data ?? [],
+      stats: { total, success, errors, creditsSpent },
+    };
+  });
+
 export const createApiKey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input) =>

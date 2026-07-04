@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Copy, Key, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Activity, ArrowLeft, BookOpen, Copy, Key, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { ProfileMenu } from "@/components/ProfileMenu";
@@ -80,6 +80,21 @@ function ApiKeysPage() {
               spends credits from your daily Premium allowance.
             </p>
           </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3 mb-8">
+          <Link
+            to="/api-docs"
+            className="inline-flex items-center gap-2 rounded-xl glass-strong px-4 py-2.5 text-sm hover:bg-white/[0.06] transition-colors"
+          >
+            <BookOpen className="w-4 h-4" /> Interactive API docs
+          </Link>
+          <Link
+            to="/api-usage"
+            className="inline-flex items-center gap-2 rounded-xl glass-strong px-4 py-2.5 text-sm hover:bg-white/[0.06] transition-colors"
+          >
+            <Activity className="w-4 h-4" /> Usage history
+          </Link>
         </div>
 
         {!isPremium && (
