@@ -44,12 +44,13 @@ function StatusPage() {
   const overall = data?.overall ?? "up";
 
   return (
-    <PageShell>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
-        <div className="mb-10">
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Platform status</h1>
-          <p className="text-muted-foreground mt-2">Live health of Zentry Qor services. Updates every minute.</p>
-        </div>
+    <PageShell
+      eyebrow="Status"
+      title="Platform status"
+      description="Live health of Zentry Qor services. Updates every minute."
+    >
+      <div>
+
 
         <div
           className={`rounded-2xl p-6 mb-8 flex items-center gap-4 ${
