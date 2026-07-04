@@ -100,6 +100,16 @@ function AuthPage() {
 
   const isSignin = mode === "signin";
 
+  const strength = getPasswordStrength(password);
+  const strengthLabel = ["Too short", "Weak", "Fair", "Good", "Strong"][strength.score];
+  const strengthColor = [
+    "bg-destructive",
+    "bg-destructive",
+    "bg-accent",
+    "bg-success",
+    "bg-success",
+  ][strength.score];
+
   return (
     <div className="min-h-[100dvh] w-full flex items-center justify-center bg-foreground/5 text-foreground px-5 py-10 relative overflow-hidden">
       <div className="fixed -top-24 -right-24 w-80 h-80 rounded-full bg-accent/15 blur-[110px] pointer-events-none" />
