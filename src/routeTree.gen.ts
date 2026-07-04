@@ -35,6 +35,7 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedLibraryRouteImport } from './routes/_authenticated/library'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
+import { Route as AuthenticatedBatchRouteImport } from './routes/_authenticated/batch'
 import { Route as AuthenticatedApiUsageRouteImport } from './routes/_authenticated/api-usage'
 import { Route as AuthenticatedApiLimitsRouteImport } from './routes/_authenticated/api-limits'
 import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticated/api-keys'
@@ -49,6 +50,7 @@ import { Route as ApiPublicV1ImageRouteImport } from './routes/api/public/v1/ima
 import { Route as ApiPublicV1HealthRouteImport } from './routes/api/public/v1/health'
 import { Route as ApiPublicV1CreditsRouteImport } from './routes/api/public/v1/credits'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicHooksRunScheduledJobsRouteImport } from './routes/api/public/hooks/run-scheduled-jobs'
 import { Route as ApiPublicAuthSigninRouteImport } from './routes/api/public/auth/signin'
 import { Route as ApiPublicAssetsDownloadIdRouteImport } from './routes/api/public/assets/download.$id'
 
@@ -181,6 +183,11 @@ const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBatchRoute = AuthenticatedBatchRouteImport.update({
+  id: '/batch',
+  path: '/batch',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedApiUsageRoute = AuthenticatedApiUsageRouteImport.update({
   id: '/api-usage',
   path: '/api-usage',
@@ -253,6 +260,12 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksRunScheduledJobsRoute =
+  ApiPublicHooksRunScheduledJobsRouteImport.update({
+    id: '/api/public/hooks/run-scheduled-jobs',
+    path: '/api/public/hooks/run-scheduled-jobs',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAuthSigninRoute = ApiPublicAuthSigninRouteImport.update({
   id: '/api/public/auth/signin',
   path: '/api/public/auth/signin',
@@ -287,6 +300,7 @@ export interface FileRoutesByFullPath {
   '/api-keys': typeof AuthenticatedApiKeysRoute
   '/api-limits': typeof AuthenticatedApiLimitsRoute
   '/api-usage': typeof AuthenticatedApiUsageRoute
+  '/batch': typeof AuthenticatedBatchRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/library': typeof AuthenticatedLibraryRouteWithChildren
@@ -301,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/library/$id': typeof AuthenticatedLibraryIdRoute
   '/assets/': typeof AuthenticatedAssetsIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
+  '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/v1/credits': typeof ApiPublicV1CreditsRoute
   '/api/public/v1/health': typeof ApiPublicV1HealthRoute
@@ -330,6 +345,7 @@ export interface FileRoutesByTo {
   '/api-keys': typeof AuthenticatedApiKeysRoute
   '/api-limits': typeof AuthenticatedApiLimitsRoute
   '/api-usage': typeof AuthenticatedApiUsageRoute
+  '/batch': typeof AuthenticatedBatchRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/library': typeof AuthenticatedLibraryRouteWithChildren
@@ -344,6 +360,7 @@ export interface FileRoutesByTo {
   '/library/$id': typeof AuthenticatedLibraryIdRoute
   '/assets': typeof AuthenticatedAssetsIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
+  '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/v1/credits': typeof ApiPublicV1CreditsRoute
   '/api/public/v1/health': typeof ApiPublicV1HealthRoute
@@ -375,6 +392,7 @@ export interface FileRoutesById {
   '/_authenticated/api-keys': typeof AuthenticatedApiKeysRoute
   '/_authenticated/api-limits': typeof AuthenticatedApiLimitsRoute
   '/_authenticated/api-usage': typeof AuthenticatedApiUsageRoute
+  '/_authenticated/batch': typeof AuthenticatedBatchRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/library': typeof AuthenticatedLibraryRouteWithChildren
@@ -389,6 +407,7 @@ export interface FileRoutesById {
   '/_authenticated/library/$id': typeof AuthenticatedLibraryIdRoute
   '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
+  '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/v1/credits': typeof ApiPublicV1CreditsRoute
   '/api/public/v1/health': typeof ApiPublicV1HealthRoute
@@ -420,6 +439,7 @@ export interface FileRouteTypes {
     | '/api-keys'
     | '/api-limits'
     | '/api-usage'
+    | '/batch'
     | '/billing'
     | '/dashboard'
     | '/library'
@@ -434,6 +454,7 @@ export interface FileRouteTypes {
     | '/library/$id'
     | '/assets/'
     | '/api/public/auth/signin'
+    | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/payments/webhook'
     | '/api/public/v1/credits'
     | '/api/public/v1/health'
@@ -463,6 +484,7 @@ export interface FileRouteTypes {
     | '/api-keys'
     | '/api-limits'
     | '/api-usage'
+    | '/batch'
     | '/billing'
     | '/dashboard'
     | '/library'
@@ -477,6 +499,7 @@ export interface FileRouteTypes {
     | '/library/$id'
     | '/assets'
     | '/api/public/auth/signin'
+    | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/payments/webhook'
     | '/api/public/v1/credits'
     | '/api/public/v1/health'
@@ -507,6 +530,7 @@ export interface FileRouteTypes {
     | '/_authenticated/api-keys'
     | '/_authenticated/api-limits'
     | '/_authenticated/api-usage'
+    | '/_authenticated/batch'
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
     | '/_authenticated/library'
@@ -521,6 +545,7 @@ export interface FileRouteTypes {
     | '/_authenticated/library/$id'
     | '/_authenticated/assets/'
     | '/api/public/auth/signin'
+    | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/payments/webhook'
     | '/api/public/v1/credits'
     | '/api/public/v1/health'
@@ -548,6 +573,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   GuidesUgcEssentialsRoute: typeof GuidesUgcEssentialsRoute
   ApiPublicAuthSigninRoute: typeof ApiPublicAuthSigninRoute
+  ApiPublicHooksRunScheduledJobsRoute: typeof ApiPublicHooksRunScheduledJobsRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicV1CreditsRoute: typeof ApiPublicV1CreditsRoute
   ApiPublicV1HealthRoute: typeof ApiPublicV1HealthRoute
@@ -740,6 +766,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBillingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/batch': {
+      id: '/_authenticated/batch'
+      path: '/batch'
+      fullPath: '/batch'
+      preLoaderRoute: typeof AuthenticatedBatchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/api-usage': {
       id: '/_authenticated/api-usage'
       path: '/api-usage'
@@ -838,6 +871,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/run-scheduled-jobs': {
+      id: '/api/public/hooks/run-scheduled-jobs'
+      path: '/api/public/hooks/run-scheduled-jobs'
+      fullPath: '/api/public/hooks/run-scheduled-jobs'
+      preLoaderRoute: typeof ApiPublicHooksRunScheduledJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/auth/signin': {
       id: '/api/public/auth/signin'
       path: '/api/public/auth/signin'
@@ -873,6 +913,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedApiKeysRoute: typeof AuthenticatedApiKeysRoute
   AuthenticatedApiLimitsRoute: typeof AuthenticatedApiLimitsRoute
   AuthenticatedApiUsageRoute: typeof AuthenticatedApiUsageRoute
+  AuthenticatedBatchRoute: typeof AuthenticatedBatchRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRouteWithChildren
@@ -891,6 +932,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedApiKeysRoute: AuthenticatedApiKeysRoute,
   AuthenticatedApiLimitsRoute: AuthenticatedApiLimitsRoute,
   AuthenticatedApiUsageRoute: AuthenticatedApiUsageRoute,
+  AuthenticatedBatchRoute: AuthenticatedBatchRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLibraryRoute: AuthenticatedLibraryRouteWithChildren,
@@ -947,6 +989,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   GuidesUgcEssentialsRoute: GuidesUgcEssentialsRoute,
   ApiPublicAuthSigninRoute: ApiPublicAuthSigninRoute,
+  ApiPublicHooksRunScheduledJobsRoute: ApiPublicHooksRunScheduledJobsRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicV1CreditsRoute: ApiPublicV1CreditsRoute,
   ApiPublicV1HealthRoute: ApiPublicV1HealthRoute,

@@ -248,6 +248,110 @@ export type Database = {
         }
         Relationships: []
       }
+      batch_items: {
+        Row: {
+          batch_id: string
+          created_at: string
+          credits_cost: number | null
+          error: string | null
+          generation_id: string | null
+          id: string
+          output_image: string | null
+          output_text: string | null
+          position: number
+          prompt: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          batch_id: string
+          created_at?: string
+          credits_cost?: number | null
+          error?: string | null
+          generation_id?: string | null
+          id?: string
+          output_image?: string | null
+          output_text?: string | null
+          position: number
+          prompt: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          batch_id?: string
+          created_at?: string
+          credits_cost?: number | null
+          error?: string | null
+          generation_id?: string | null
+          id?: string
+          output_image?: string | null
+          output_text?: string | null
+          position?: number
+          prompt?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "batch_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "batch_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      batch_jobs: {
+        Row: {
+          aspect_ratio: string | null
+          completed: number
+          created_at: string
+          error: string | null
+          failed: number
+          id: string
+          kind: string
+          name: string
+          status: string
+          system_prompt: string | null
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          aspect_ratio?: string | null
+          completed?: number
+          created_at?: string
+          error?: string | null
+          failed?: number
+          id?: string
+          kind: string
+          name: string
+          status?: string
+          system_prompt?: string | null
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          aspect_ratio?: string | null
+          completed?: number
+          created_at?: string
+          error?: string | null
+          failed?: number
+          id?: string
+          kind?: string
+          name?: string
+          status?: string
+          system_prompt?: string | null
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       creator_preferences: {
         Row: {
           created_at: string
@@ -524,6 +628,60 @@ export type Database = {
           id?: string
           referee_id?: string
           referrer_id?: string
+        }
+        Relationships: []
+      }
+      scheduled_jobs: {
+        Row: {
+          active: boolean
+          aspect_ratio: string | null
+          cadence: string
+          created_at: string
+          hour_utc: number
+          id: string
+          kind: string
+          last_run_at: string | null
+          name: string
+          next_run_at: string | null
+          prompts: Json
+          system_prompt: string | null
+          updated_at: string
+          user_id: string
+          weekday: number | null
+        }
+        Insert: {
+          active?: boolean
+          aspect_ratio?: string | null
+          cadence: string
+          created_at?: string
+          hour_utc?: number
+          id?: string
+          kind: string
+          last_run_at?: string | null
+          name: string
+          next_run_at?: string | null
+          prompts?: Json
+          system_prompt?: string | null
+          updated_at?: string
+          user_id: string
+          weekday?: number | null
+        }
+        Update: {
+          active?: boolean
+          aspect_ratio?: string | null
+          cadence?: string
+          created_at?: string
+          hour_utc?: number
+          id?: string
+          kind?: string
+          last_run_at?: string | null
+          name?: string
+          next_run_at?: string | null
+          prompts?: Json
+          system_prompt?: string | null
+          updated_at?: string
+          user_id?: string
+          weekday?: number | null
         }
         Relationships: []
       }
