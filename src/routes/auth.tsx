@@ -48,18 +48,23 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const res = await fetch("/api/public/auth/send-otp", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, name }),
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}${dest}`,
+            data: { full_name: name },
+          },
         });
-        const payload = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw new Error(payload?.error || "Could not send verification code.");
+        if (error) throw error;
+        if (!data.session) {
+          // Fall back to explicit sign-in in case email confirmation is enforced.
+          const { error: siErr } = await supabase.auth.signInWithPassword({ email, password });
+          if (siErr) throw siErr;
         }
-        toast.success("We sent a 6-digit code to your email.");
-        setOtpStage(true);
-        setResendCooldown(45);
+        toast.success("Welcome to Zentry Qor!");
+        await router.invalidate();
+        navigate({ to: dest });
       } else {
         const res = await fetch("/api/public/auth/signin", {
           method: "POST",
@@ -85,62 +90,6 @@ function AuthPage() {
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
-      setFormError(message);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleVerifyOtp(e: React.FormEvent) {
-    e.preventDefault();
-    setFormError(null);
-    if (otp.length !== 6) {
-      setFormError("Enter the 6-digit code.");
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await fetch("/api/public/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code: otp, password, name }),
-      });
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(payload?.error || "Invalid or expired code");
-      const { error: setErr } = await supabase.auth.setSession({
-        access_token: payload.access_token,
-        refresh_token: payload.refresh_token,
-      });
-      if (setErr) throw setErr;
-      toast.success("Email verified. Welcome!");
-      await router.invalidate();
-      navigate({ to: dest });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Invalid or expired code";
-      setFormError(message);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleResendOtp() {
-    if (resendCooldown > 0) return;
-    setFormError(null);
-    setLoading(true);
-    try {
-      const res = await fetch("/api/public/auth/send-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name }),
-      });
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(payload?.error || "Could not resend code");
-      toast.success("New code sent.");
-      setResendCooldown(45);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not resend code";
       setFormError(message);
       toast.error(message);
     } finally {
