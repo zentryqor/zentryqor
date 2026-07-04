@@ -530,8 +530,17 @@ function AiStudio() {
 
             {output && (
               <div className="mt-6 p-5 rounded-2xl bg-elevated/40 border border-border/60">
-                <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3">
-                  Output
+                <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3 flex items-center justify-between gap-3">
+                  <span>Output</span>
+                  <button
+                    onClick={() =>
+                      shareMut.mutate({ kind: "text", prompt: lastPromptUsed || input, outputText: output })
+                    }
+                    disabled={shareMut.isPending || shareMut.isSuccess}
+                    className="text-muted-foreground hover:text-foreground normal-case tracking-normal text-xs disabled:opacity-60"
+                  >
+                    {shareMut.isSuccess ? "✓ Shared" : shareMut.isPending ? "Sharing…" : "Share to gallery"}
+                  </button>
                 </div>
                 <div className="prose prose-sm prose-invert max-w-none">
                   <ReactMarkdown>{output}</ReactMarkdown>
@@ -541,15 +550,26 @@ function AiStudio() {
 
             {imageOutput && (
               <div className="mt-6 p-5 rounded-2xl bg-elevated/40 border border-border/60">
-                <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3 flex items-center justify-between">
+                <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3 flex items-center justify-between gap-3">
                   <span>Thumbnail</span>
-                  <a
-                    href={imageOutput}
-                    download="thumbnail.png"
-                    className="text-muted-foreground hover:text-foreground normal-case tracking-normal"
-                  >
-                    Download
-                  </a>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() =>
+                        shareMut.mutate({ kind: "image", prompt: lastPromptUsed || input, imageUrl: imageOutput })
+                      }
+                      disabled={shareMut.isPending || shareMut.isSuccess}
+                      className="text-muted-foreground hover:text-foreground normal-case tracking-normal text-xs disabled:opacity-60"
+                    >
+                      {shareMut.isSuccess ? "✓ Shared" : shareMut.isPending ? "Sharing…" : "Share to gallery"}
+                    </button>
+                    <a
+                      href={imageOutput}
+                      download="thumbnail.png"
+                      className="text-muted-foreground hover:text-foreground normal-case tracking-normal text-xs"
+                    >
+                      Download
+                    </a>
+                  </div>
                 </div>
                 <img
                   src={imageOutput}
