@@ -100,7 +100,7 @@ function AuthPage() {
   const isSignin = mode === "signin";
 
   return (
-    <div className="min-h-[100dvh] w-full flex items-center justify-center bg-background text-foreground px-5 py-10 relative overflow-hidden">
+    <div className="min-h-[100dvh] w-full flex items-center justify-center bg-surface text-foreground px-5 py-10 relative overflow-hidden">
       <div className="fixed -top-24 -right-24 w-80 h-80 rounded-full bg-accent/15 blur-[110px] pointer-events-none" />
       <div className="fixed -bottom-24 -left-24 w-96 h-96 rounded-full bg-primary/20 blur-[130px] pointer-events-none" />
       <div className="fixed inset-0 pointer-events-none opacity-20">
@@ -130,7 +130,7 @@ function AuthPage() {
           </p>
         </div>
 
-        <div className="space-y-5">
+        <div key={mode} className="space-y-5 animate-enter">
           <div className="flex gap-2">
             <button
               type="button"
@@ -138,7 +138,7 @@ function AuthPage() {
                 setFormError(null);
                 setMode("signin");
               }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all ${
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all duration-300 ${
                 isSignin
                   ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
                   : "text-muted-foreground hover:text-foreground/70"
@@ -152,7 +152,7 @@ function AuthPage() {
                 setFormError(null);
                 setMode("signup");
               }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all ${
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all duration-300 ${
                 !isSignin
                   ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
                   : "text-muted-foreground hover:text-foreground/70"
@@ -165,29 +165,31 @@ function AuthPage() {
           {formError && (
             <div
               role="alert"
-              className="rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+              className="rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive animate-enter"
             >
               {formError}
             </div>
           )}
 
           <form onSubmit={handleEmail} className="space-y-4">
-            {!isSignin && (
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
-                  Creator name
-                </label>
-                <input
-                  type="text"
-                  placeholder="Your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  maxLength={60}
-                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
-                />
-              </div>
-            )}
+            <div
+              className={`space-y-1.5 transition-all duration-300 ${
+                isSignin ? "max-h-0 opacity-0 overflow-hidden" : "max-h-24 opacity-100"
+              }`}
+            >
+              <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
+                Creator name
+              </label>
+              <input
+                type="text"
+                placeholder="Your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required={!isSignin}
+                maxLength={60}
+                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
+              />
+            </div>
 
             <div className="space-y-1.5">
               <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
@@ -242,7 +244,7 @@ function AuthPage() {
               <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-              <span className="px-3 bg-background text-muted-foreground/60 font-bold">
+              <span className="px-3 bg-surface text-muted-foreground/60 font-bold">
                 Rapid Access
               </span>
             </div>
