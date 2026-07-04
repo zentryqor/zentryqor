@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, Copy, Key, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Activity, ArrowLeft, BookOpen, Copy, Key, Loader2, Plus, Sparkles, Trash2 } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { ProfileMenu } from "@/components/ProfileMenu";
