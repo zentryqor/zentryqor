@@ -130,15 +130,15 @@ function AuthPage() {
           </p>
         </div>
 
-        <div className="glass-strong rounded-3xl p-1 shadow-2xl overflow-hidden">
-          <div className="flex bg-background/50 rounded-[22px] p-1">
+        <div className="relative w-full max-w-[380px] z-10 space-y-5">
+          <div className="flex gap-2">
             <button
               type="button"
               onClick={() => {
                 setFormError(null);
                 setMode("signin");
               }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all ${
                 isSignin
                   ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
                   : "text-muted-foreground hover:text-foreground/70"
@@ -152,7 +152,7 @@ function AuthPage() {
                 setFormError(null);
                 setMode("signup");
               }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-[18px] transition-all ${
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all ${
                 !isSignin
                   ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
                   : "text-muted-foreground hover:text-foreground/70"
@@ -162,118 +162,114 @@ function AuthPage() {
             </button>
           </div>
 
-          <div className="px-5 pb-7 pt-5">
-            {formError && (
-              <div
-                role="alert"
-                className="mb-4 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
-              >
-                {formError}
+          {formError && (
+            <div
+              role="alert"
+              className="rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+            >
+              {formError}
+            </div>
+          )}
+
+          <form onSubmit={handleEmail} className="space-y-4">
+            {!isSignin && (
+              <div className="space-y-1.5">
+                <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
+                  Creator name
+                </label>
+                <input
+                  type="text"
+                  placeholder="Your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  maxLength={60}
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
+                />
               </div>
             )}
 
-            <>
-                <form onSubmit={handleEmail} className="space-y-4">
-                  {!isSignin && (
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
-                        Creator name
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Your name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        maxLength={60}
-                        className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
-                      />
-                    </div>
-                  )}
+            <div className="space-y-1.5">
+              <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
+                Email
+              </label>
+              <input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                maxLength={255}
+                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
+              />
+            </div>
 
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="Email address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      maxLength={255}
-                      className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
-                    />
-                  </div>
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center ml-1">
+                <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+                  Security
+                </label>
+                {isSignin && (
+                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
+                    6+ chars
+                  </span>
+                )}
+              </div>
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                maxLength={72}
+                className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
+              />
+            </div>
 
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between items-center ml-1">
-                      <label className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
-                        Security
-                      </label>
-                      {isSignin && (
-                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
-                          6+ chars
-                        </span>
-                      )}
-                    </div>
-                    <input
-                      type="password"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                      maxLength={72}
-                      className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-3.5 px-5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-foreground/30 focus:border-foreground/20 transition-all"
-                    />
-                  </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="relative w-full mt-2 bg-foreground text-background py-4 rounded-2xl font-bold text-sm uppercase tracking-wider disabled:opacity-60 disabled:cursor-not-allowed hover:bg-foreground/90 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+            >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              {isSignin ? "Log In" : "Create Account"}
+            </button>
+          </form>
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="relative w-full mt-2 bg-foreground text-background py-4 rounded-2xl font-bold text-sm uppercase tracking-wider disabled:opacity-60 disabled:cursor-not-allowed hover:bg-foreground/90 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
-                  >
-                    {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                    {isSignin ? "Log In" : "Create Account"}
-                  </button>
-                </form>
-
-                <div className="relative my-7">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-white/10" />
-                  </div>
-                  <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-                    <span className="px-3 bg-elevated text-muted-foreground/60 font-bold">
-                      Rapid Access
-                    </span>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setLoading(true);
-                    const result = await lovable.auth.signInWithOAuth("google", {
-                      redirect_uri: `${window.location.origin}${dest}`,
-                    });
-                    if (result.error) {
-                      toast.error("Google sign-in failed");
-                      setLoading(false);
-                      return;
-                    }
-                    if (result.redirected) return;
-                    await router.invalidate();
-                    navigate({ to: dest });
-                  }}
-                  disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 bg-white/[0.04] border border-white/10 rounded-2xl py-3.5 hover:bg-white/[0.08] transition-colors disabled:opacity-50 text-sm font-medium text-foreground"
-                >
-                  <GoogleIcon />
-                  Continue with Google
-                </button>
-              </>
+          <div className="relative my-7">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10" />
+            </div>
+            <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
+              <span className="px-3 bg-background text-muted-foreground/60 font-bold">
+                Rapid Access
+              </span>
+            </div>
           </div>
+
+          <button
+            type="button"
+            onClick={async () => {
+              setLoading(true);
+              const result = await lovable.auth.signInWithOAuth("google", {
+                redirect_uri: `${window.location.origin}${dest}`,
+              });
+              if (result.error) {
+                toast.error("Google sign-in failed");
+                setLoading(false);
+                return;
+              }
+              if (result.redirected) return;
+              await router.invalidate();
+              navigate({ to: dest });
+            }}
+            disabled={loading}
+            className="w-full flex items-center justify-center gap-3 bg-white/[0.04] border border-white/10 rounded-2xl py-3.5 hover:bg-white/[0.08] transition-colors disabled:opacity-50 text-sm font-medium text-foreground"
+          >
+            <GoogleIcon />
+            Continue with Google
+          </button>
         </div>
 
         <p className="mt-7 text-center text-[10px] text-muted-foreground/50 uppercase tracking-[0.28em] font-medium">
