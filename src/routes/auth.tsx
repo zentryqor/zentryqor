@@ -100,7 +100,7 @@ function AuthPage() {
   const isSignin = mode === "signin";
 
   return (
-    <div className="min-h-[100dvh] w-full flex items-center justify-center bg-surface text-foreground px-5 py-10 relative overflow-hidden">
+    <div className="min-h-[100dvh] w-full flex items-center justify-center bg-elevated text-foreground px-5 py-10 relative overflow-hidden">
       <div className="fixed -top-24 -right-24 w-80 h-80 rounded-full bg-accent/15 blur-[110px] pointer-events-none" />
       <div className="fixed -bottom-24 -left-24 w-96 h-96 rounded-full bg-primary/20 blur-[130px] pointer-events-none" />
       <div className="fixed inset-0 pointer-events-none opacity-20">
@@ -244,7 +244,7 @@ function AuthPage() {
               <div className="w-full border-t border-white/10" />
             </div>
             <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-              <span className="px-3 bg-surface text-muted-foreground/60 font-bold">
+              <span className="px-3 bg-elevated text-muted-foreground/60 font-bold">
                 Rapid Access
               </span>
             </div>
