@@ -23,6 +23,16 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+function getPasswordStrength(password: string) {
+  let score = 0;
+  if (password.length >= 6) score++;
+  if (password.length >= 10) score++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+  if (/\d/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  return { score: Math.min(4, score) };
+}
+
 function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
@@ -99,6 +109,16 @@ function AuthPage() {
   }
 
   const isSignin = mode === "signin";
+
+  const strength = getPasswordStrength(password);
+  const strengthLabel = ["Too short", "Weak", "Fair", "Good", "Strong"][strength.score];
+  const strengthColor = [
+    "bg-destructive",
+    "bg-destructive",
+    "bg-accent",
+    "bg-success",
+    "bg-success",
+  ][strength.score];
 
   return (
     <div className="min-h-[100dvh] w-full flex items-center justify-center bg-foreground/5 text-foreground px-5 py-10 relative overflow-hidden">
@@ -240,6 +260,26 @@ function AuthPage() {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+
+              {!isSignin && (
+                <div className="animate-enter">
+                  <div className="flex items-center gap-2 ml-1">
+                    <div className="flex-1 flex gap-1 h-1">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className={`flex-1 rounded-full transition-all duration-300 ${
+                            i < strength.score ? strengthColor : "bg-white/10"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground min-w-[50px] text-right">
+                      {strengthLabel}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <button
