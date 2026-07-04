@@ -32,6 +32,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedSavedRouteImport } from './routes/_authenticated/saved'
 import { Route as AuthenticatedReferRouteImport } from './routes/_authenticated/refer'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedLibraryRouteImport } from './routes/_authenticated/library'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedApiUsageRouteImport } from './routes/_authenticated/api-usage'
@@ -41,6 +42,7 @@ import { Route as AuthenticatedApiDocsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAssetsIndexRouteImport } from './routes/_authenticated/assets.index'
+import { Route as AuthenticatedLibraryIdRouteImport } from './routes/_authenticated/library.$id'
 import { Route as AuthenticatedAssetsIdRouteImport } from './routes/_authenticated/assets.$id'
 import { Route as ApiPublicV1TextRouteImport } from './routes/api/public/v1/text'
 import { Route as ApiPublicV1ImageRouteImport } from './routes/api/public/v1/image'
@@ -164,6 +166,11 @@ const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLibraryRoute = AuthenticatedLibraryRouteImport.update({
+  id: '/library',
+  path: '/library',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -210,6 +217,11 @@ const AuthenticatedAssetsIndexRoute =
     path: '/assets/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLibraryIdRoute = AuthenticatedLibraryIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedLibraryRoute,
+} as any)
 const AuthenticatedAssetsIdRoute = AuthenticatedAssetsIdRouteImport.update({
   id: '/assets/$id',
   path: '/assets/$id',
@@ -277,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/api-usage': typeof AuthenticatedApiUsageRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/library': typeof AuthenticatedLibraryRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/refer': typeof AuthenticatedReferRoute
   '/saved': typeof AuthenticatedSavedRoute
@@ -285,6 +298,7 @@ export interface FileRoutesByFullPath {
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/templates/$slug': typeof TemplatesSlugRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
+  '/library/$id': typeof AuthenticatedLibraryIdRoute
   '/assets/': typeof AuthenticatedAssetsIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -318,6 +332,7 @@ export interface FileRoutesByTo {
   '/api-usage': typeof AuthenticatedApiUsageRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/library': typeof AuthenticatedLibraryRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/refer': typeof AuthenticatedReferRoute
   '/saved': typeof AuthenticatedSavedRoute
@@ -326,6 +341,7 @@ export interface FileRoutesByTo {
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/templates/$slug': typeof TemplatesSlugRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
+  '/library/$id': typeof AuthenticatedLibraryIdRoute
   '/assets': typeof AuthenticatedAssetsIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -361,6 +377,7 @@ export interface FileRoutesById {
   '/_authenticated/api-usage': typeof AuthenticatedApiUsageRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/library': typeof AuthenticatedLibraryRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/refer': typeof AuthenticatedReferRoute
   '/_authenticated/saved': typeof AuthenticatedSavedRoute
@@ -369,6 +386,7 @@ export interface FileRoutesById {
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/templates/$slug': typeof TemplatesSlugRoute
   '/_authenticated/assets/$id': typeof AuthenticatedAssetsIdRoute
+  '/_authenticated/library/$id': typeof AuthenticatedLibraryIdRoute
   '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -404,6 +422,7 @@ export interface FileRouteTypes {
     | '/api-usage'
     | '/billing'
     | '/dashboard'
+    | '/library'
     | '/onboarding'
     | '/refer'
     | '/saved'
@@ -412,6 +431,7 @@ export interface FileRouteTypes {
     | '/guides/ugc-essentials'
     | '/templates/$slug'
     | '/assets/$id'
+    | '/library/$id'
     | '/assets/'
     | '/api/public/auth/signin'
     | '/api/public/payments/webhook'
@@ -445,6 +465,7 @@ export interface FileRouteTypes {
     | '/api-usage'
     | '/billing'
     | '/dashboard'
+    | '/library'
     | '/onboarding'
     | '/refer'
     | '/saved'
@@ -453,6 +474,7 @@ export interface FileRouteTypes {
     | '/guides/ugc-essentials'
     | '/templates/$slug'
     | '/assets/$id'
+    | '/library/$id'
     | '/assets'
     | '/api/public/auth/signin'
     | '/api/public/payments/webhook'
@@ -487,6 +509,7 @@ export interface FileRouteTypes {
     | '/_authenticated/api-usage'
     | '/_authenticated/billing'
     | '/_authenticated/dashboard'
+    | '/_authenticated/library'
     | '/_authenticated/onboarding'
     | '/_authenticated/refer'
     | '/_authenticated/saved'
@@ -495,6 +518,7 @@ export interface FileRouteTypes {
     | '/guides/ugc-essentials'
     | '/templates/$slug'
     | '/_authenticated/assets/$id'
+    | '/_authenticated/library/$id'
     | '/_authenticated/assets/'
     | '/api/public/auth/signin'
     | '/api/public/payments/webhook'
@@ -695,6 +719,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/library': {
+      id: '/_authenticated/library'
+      path: '/library'
+      fullPath: '/library'
+      preLoaderRoute: typeof AuthenticatedLibraryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -758,6 +789,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssetsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/library/$id': {
+      id: '/_authenticated/library/$id'
+      path: '/$id'
+      fullPath: '/library/$id'
+      preLoaderRoute: typeof AuthenticatedLibraryIdRouteImport
+      parentRoute: typeof AuthenticatedLibraryRoute
+    }
     '/_authenticated/assets/$id': {
       id: '/_authenticated/assets/$id'
       path: '/assets/$id'
@@ -817,6 +855,17 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedLibraryRouteChildren {
+  AuthenticatedLibraryIdRoute: typeof AuthenticatedLibraryIdRoute
+}
+
+const AuthenticatedLibraryRouteChildren: AuthenticatedLibraryRouteChildren = {
+  AuthenticatedLibraryIdRoute: AuthenticatedLibraryIdRoute,
+}
+
+const AuthenticatedLibraryRouteWithChildren =
+  AuthenticatedLibraryRoute._addFileChildren(AuthenticatedLibraryRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedAiRoute: typeof AuthenticatedAiRoute
@@ -826,6 +875,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedApiUsageRoute: typeof AuthenticatedApiUsageRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRouteWithChildren
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedReferRoute: typeof AuthenticatedReferRoute
   AuthenticatedSavedRoute: typeof AuthenticatedSavedRoute
@@ -843,6 +893,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedApiUsageRoute: AuthenticatedApiUsageRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedLibraryRoute: AuthenticatedLibraryRouteWithChildren,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedReferRoute: AuthenticatedReferRoute,
   AuthenticatedSavedRoute: AuthenticatedSavedRoute,

@@ -326,6 +326,108 @@ export type Database = {
         }
         Relationships: []
       }
+      generation_folders: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      generations: {
+        Row: {
+          aspect_ratio: string | null
+          created_at: string
+          credits_cost: number | null
+          folder_id: string | null
+          id: string
+          input: string | null
+          is_favorite: boolean
+          kind: string
+          output_image: string | null
+          output_text: string | null
+          parent_id: string | null
+          prompt: string
+          system_prompt: string | null
+          tool_id: string
+          tool_name: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          aspect_ratio?: string | null
+          created_at?: string
+          credits_cost?: number | null
+          folder_id?: string | null
+          id?: string
+          input?: string | null
+          is_favorite?: boolean
+          kind: string
+          output_image?: string | null
+          output_text?: string | null
+          parent_id?: string | null
+          prompt: string
+          system_prompt?: string | null
+          tool_id: string
+          tool_name?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          aspect_ratio?: string | null
+          created_at?: string
+          credits_cost?: number | null
+          folder_id?: string | null
+          id?: string
+          input?: string | null
+          is_favorite?: boolean
+          kind?: string
+          output_image?: string | null
+          output_text?: string | null
+          parent_id?: string | null
+          prompt?: string
+          system_prompt?: string | null
+          tool_id?: string
+          tool_name?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generations_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "generation_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generations_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "generations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

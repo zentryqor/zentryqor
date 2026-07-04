@@ -9,6 +9,7 @@ import {
   BookOpen,
   Calendar,
   FileText,
+  FolderHeart,
   Grid3X3,
   Hash,
   Image as ImageIcon,
@@ -26,7 +27,9 @@ import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { generateAiText, generateAiImage, getAiCredits } from "@/lib/ai.functions";
 import { shareToGallery } from "@/lib/gallery.functions";
+import { saveGeneration } from "@/lib/library.functions";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 
 export const Route = createFileRoute("/_authenticated/ai")({
   head: () => ({
@@ -190,11 +193,14 @@ function AiStudio() {
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9");
   const [lastPromptUsed, setLastPromptUsed] = useState<string>("");
   const [sharedIds, setSharedIds] = useState<Set<string>>(new Set());
+  const [lastSavedId, setLastSavedId] = useState<string | null>(null);
+  const [lastSavedForTool, setLastSavedForTool] = useState<ToolId | null>(null);
 
   const runText = useServerFn(generateAiText);
   const runImage = useServerFn(generateAiImage);
   const fetchCredits = useServerFn(getAiCredits);
   const share = useServerFn(shareToGallery);
+  const save = useServerFn(saveGeneration);
   const active = TOOLS.find((t) => t.id === activeId) ?? null;
 
   // Deep-link: open tool via ?tool=<id>
@@ -217,15 +223,16 @@ function AiStudio() {
 
   const mut = useMutation({
     mutationFn: async ({ tool, value }: { tool: Tool; value: string }) => {
-      setLastPromptUsed(tool.buildPrompt(value));
+      const builtPrompt = tool.buildPrompt(value);
+      setLastPromptUsed(builtPrompt);
       if (tool.id === "thumbnail") {
-        const r = await runImage({ data: { prompt: tool.buildPrompt(value), aspectRatio } });
-        return { kind: "image" as const, image: r.image };
+        const r = await runImage({ data: { prompt: builtPrompt, aspectRatio } });
+        return { kind: "image" as const, image: r.image, tool, builtPrompt, value };
       }
-      const r = await runText({ data: { prompt: tool.buildPrompt(value), system: tool.system } });
-      return { kind: "text" as const, text: r.text };
+      const r = await runText({ data: { prompt: builtPrompt, system: tool.system } });
+      return { kind: "text" as const, text: r.text, tool, builtPrompt, value };
     },
-    onSuccess: (r) => {
+    onSuccess: async (r) => {
       if (r.kind === "image") {
         setImageOutput(r.image);
         setOutput("");
@@ -234,6 +241,30 @@ function AiStudio() {
         setImageOutput(null);
       }
       creditsQuery.refetch();
+
+      // Auto-save to library; link as a version when the same tool is re-run
+      try {
+        const parentId = lastSavedForTool === r.tool.id ? lastSavedId ?? undefined : undefined;
+        const saved = await save({
+          data: {
+            toolId: r.tool.id,
+            toolName: r.tool.name,
+            kind: r.kind,
+            prompt: r.builtPrompt,
+            systemPrompt: r.tool.system || undefined,
+            input: r.value,
+            outputText: r.kind === "text" ? r.text : undefined,
+            outputImage: r.kind === "image" ? r.image : undefined,
+            aspectRatio: r.kind === "image" ? aspectRatio : undefined,
+            creditsCost: r.kind === "image" ? 30 : 10,
+            parentId,
+          },
+        });
+        setLastSavedId(saved.id);
+        setLastSavedForTool(r.tool.id);
+      } catch {
+        // silent — library save is best-effort
+      }
     },
     onError: (e: any) => {
       toast.error(e?.message ?? "Generation failed");
@@ -252,13 +283,17 @@ function AiStudio() {
     onError: (e: any) => toast.error(e?.message ?? "Share failed"),
   });
 
+
   const openTool = (id: ToolId) => {
     setActiveId(id);
     setInput("");
     setOutput("");
     setImageOutput(null);
     setAspectRatio("16:9");
+    setLastSavedId(null);
+    setLastSavedForTool(null);
   };
+
 
   const isThumbnail = active?.id === "thumbnail";
   const credits = creditsQuery.data;
@@ -388,6 +423,13 @@ function AiStudio() {
               >
                 <Grid3X3 className="h-3.5 w-3.5 text-primary icon-fx" /> Community Gallery
               </Link>
+              <Link
+                to="/library"
+                className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-elevated/40 hover:bg-elevated/80 hover:border-foreground/30 px-4 py-2 text-xs font-medium transition-all"
+              >
+                <FolderHeart className="h-3.5 w-3.5 text-rose-400 icon-fx" /> My Library
+              </Link>
+
             </div>
           </div>
 
