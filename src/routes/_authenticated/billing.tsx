@@ -29,7 +29,7 @@ function Billing() {
   const [interval, setInterval] = useState<"month" | "year">("month");
 
   const priceId =
-    interval === "month" ? "zentry_premium_monthly" : "zentry_premium_annual";
+    interval === "month" ? "premium_monthly" : "premium_annual";
   const displayPrice = interval === "month" ? "$12.99" : "$129";
   const cadence = interval === "month" ? "/month" : "/year";
   const annualSavings = interval === "year";
