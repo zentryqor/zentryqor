@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight, LogOut, Settings, Sparkles } from "lucide-react";
+import { ChevronRight, Key, LogOut, Settings, Sparkles } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
@@ -109,6 +109,12 @@ export function ProfileMenu() {
           </Link>
         )}
 
+        <Link
+          to="/api-keys"
+          className="w-full rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition flex items-center gap-2"
+        >
+          <Key className="h-3.5 w-3.5" /> API keys
+        </Link>
         <Link
           to="/settings"
           className="w-full rounded-xl px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition flex items-center gap-2"
