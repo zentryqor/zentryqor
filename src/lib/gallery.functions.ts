@@ -93,12 +93,37 @@ export const shareToGallery = createServerFn({ method: "POST" })
         kind: z.enum(["text", "image"]),
         prompt: z.string().trim().min(1).max(4000),
         outputText: z.string().max(20000).optional(),
-        imageUrl: z.string().max(4000).optional(),
+        // Accept data URLs (base64) or remote URLs; upload happens server-side.
+        imageUrl: z.string().max(15_000_000).optional(),
         title: z.string().trim().max(120).optional(),
       })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    let storedImageRef: string | null = null;
+
+    if (data.kind === "image" && data.imageUrl) {
+      if (data.imageUrl.startsWith("data:")) {
+        const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(data.imageUrl);
+        if (!match) throw new Error("Invalid image data URL");
+        const mime = match[1];
+        const b64 = match[2];
+        const ext = mime.split("/")[1]?.split("+")[0] ?? "png";
+        const bytes = Buffer.from(b64, "base64");
+        const path = `${context.userId}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { error: upErr } = await (supabaseAdmin as any).storage
+          .from("gallery")
+          .upload(path, bytes, { contentType: mime, upsert: false });
+        if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
+        storedImageRef = path;
+      } else if (/^https?:\/\//i.test(data.imageUrl)) {
+        storedImageRef = data.imageUrl;
+      } else {
+        throw new Error("Unsupported image URL");
+      }
+    }
+
     const { data: row, error } = await (context.supabase as any)
       .from("gallery_items")
       .insert({
@@ -106,7 +131,7 @@ export const shareToGallery = createServerFn({ method: "POST" })
         kind: data.kind,
         prompt: data.prompt,
         output_text: data.outputText ?? null,
-        image_url: data.imageUrl ?? null,
+        image_url: storedImageRef,
         title: data.title ?? null,
         is_public: true,
       })
