@@ -4,6 +4,9 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 
+const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
+
+
 function publicClient() {
   return createClient<Database>(
     process.env.SUPABASE_URL!,
