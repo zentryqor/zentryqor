@@ -314,7 +314,7 @@ function AiStudio() {
         aria-hidden
       />
 
-      <div className="relative pb-28">
+      <div className="relative pb-40 sm:pb-32">
         <AppHeader
           nav={
             <>
