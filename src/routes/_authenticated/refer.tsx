@@ -25,7 +25,9 @@ function ReferPage() {
   const info = q.data;
   const [copied, setCopied] = useState(false);
 
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const origin = typeof window !== "undefined" && !/lovable\.app$/i.test(window.location.hostname)
+    ? window.location.origin
+    : "https://zentryqor.lovable.app";
   const link = info?.code ? `${origin}/?ref=${info.code}` : "";
 
   return (
