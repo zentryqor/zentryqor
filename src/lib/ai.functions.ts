@@ -97,22 +97,22 @@ async function spendCredits(userId: string, cost: number) {
 }
 
 async function callLovableAiText(messages: Array<{ role: string; content: any }>) {
-  const apiKey = process.env.LOVABLE_API_KEY;
-  if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
+  const apiKey = process.env.NVIDIA_API_KEY;
+  if (!apiKey) throw new Error("NVIDIA_API_KEY is not configured");
 
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const res = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ model: "google/gemini-3-flash-preview", messages }),
+    body: JSON.stringify({ model: "z-ai/glm-5.2", messages }),
   });
 
   if (!res.ok) {
     const text = await res.text();
     if (res.status === 429) throw new Error("AI is busy right now — please try again in a moment.");
-    if (res.status === 402) throw new Error("AI credits exhausted. Please add credits to your workspace.");
+    if (res.status === 402) throw new Error("AI credits exhausted.");
     throw new Error(`AI ${res.status}: ${text.slice(0, 300)}`);
   }
   return res.json();
