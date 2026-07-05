@@ -96,27 +96,24 @@ async function spendCredits(userId: string, cost: number) {
   return { isPremium: state.isPremium, limit: state.limit, used: state.used + fromDaily };
 }
 
-async function callOpenRouter(model: string, messages: Array<{ role: string; content: any }>, modalities?: string[]) {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error("OPENROUTER_API_KEY is not configured");
+async function callLovableAiText(messages: Array<{ role: string; content: any }>) {
+  const apiKey = process.env.LOVABLE_API_KEY;
+  if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
 
-  const body: Record<string, unknown> = { model, messages };
-  if (modalities) body.modalities = modalities;
-
-  const res = await fetch(OPENROUTER_URL, {
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": "https://zentryqor.lovable.app",
-      "X-Title": "Zentry Qor",
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ model: "google/gemini-3-flash-preview", messages }),
   });
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`OpenRouter ${res.status}: ${text.slice(0, 300)}`);
+    if (res.status === 429) throw new Error("AI is busy right now — please try again in a moment.");
+    if (res.status === 402) throw new Error("AI credits exhausted. Please add credits to your workspace.");
+    throw new Error(`AI ${res.status}: ${text.slice(0, 300)}`);
   }
   return res.json();
 }
@@ -153,7 +150,7 @@ export const generateAiText = createServerFn({ method: "POST" })
         ...(data.system ? [{ role: "system", content: data.system }] : []),
         { role: "user", content: data.prompt },
       ];
-      const json = await callOpenRouter("openai/gpt-oss-120b:free", messages);
+      const json = await callLovableAiText(messages);
       const text: string = json.choices?.[0]?.message?.content ?? "";
       try { await supabaseAdmin.rpc("award_referral_bonus", { _referee: context.userId }); } catch {}
       return { text, usage };
