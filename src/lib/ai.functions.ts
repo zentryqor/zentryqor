@@ -155,6 +155,7 @@ export const generateAiText = createServerFn({ method: "POST" })
       ];
       const json = await callOpenRouter("openai/gpt-oss-120b:free", messages);
       const text: string = json.choices?.[0]?.message?.content ?? "";
+      try { await supabaseAdmin.rpc("award_referral_bonus", { _referee: context.userId }); } catch {}
       return { text, usage };
     } catch (e) {
       // Refund credits on failure
