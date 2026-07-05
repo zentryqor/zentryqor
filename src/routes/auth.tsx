@@ -175,36 +175,56 @@ function AuthPage() {
         </div>
 
         <div className="space-y-5">
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setFormError(null);
-                setMode("signin");
-              }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all duration-300 ${
-                isSignin
-                  ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
-                  : "text-muted-foreground hover:text-foreground/70"
-              }`}
-            >
-              Log In
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setFormError(null);
-                setMode("signup");
-              }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all duration-300 ${
-                !isSignin
-                  ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
-                  : "text-muted-foreground hover:text-foreground/70"
-              }`}
-            >
-              Create Account
-            </button>
-          </div>
+          {isInvited ? (
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 animate-enter">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                  <Gift className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold">
+                    <span className="text-aurora">{inviterName ?? "A friend"}</span> invited you
+                  </div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                    <Sparkles className="w-3 h-3 text-accent" />
+                    Create your account to claim 30 bonus AI credits
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setFormError(null);
+                  setMode("signin");
+                }}
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all duration-300 ${
+                  isSignin
+                    ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
+                    : "text-muted-foreground hover:text-foreground/70"
+                }`}
+              >
+                Log In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormError(null);
+                  setMode("signup");
+                }}
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all duration-300 ${
+                  !isSignin
+                    ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
+                    : "text-muted-foreground hover:text-foreground/70"
+                }`}
+              >
+                Create Account
+              </button>
+            </div>
+          )}
+
 
           {formError && (
             <div
