@@ -925,6 +925,12 @@ export type Database = {
         }[]
       }
       ensure_referral_code: { Args: { _user_id: string }; Returns: string }
+      get_referrer_by_code: {
+        Args: { _code: string }
+        Returns: {
+          display_name: string
+        }[]
+      }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }
         Returns: boolean
