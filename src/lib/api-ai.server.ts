@@ -111,7 +111,7 @@ export async function callOpenRouterText(prompt: string, system: string | undefi
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "z-ai/glm-5.2",
+      model: "deepseek-ai/deepseek-v4-flash",
       messages,
       max_tokens: 1024,
       temperature: 0.7,
