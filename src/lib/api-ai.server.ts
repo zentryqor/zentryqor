@@ -98,26 +98,24 @@ export async function refundCredits(userId: string, cost: number) {
 }
 
 export async function callOpenRouterText(prompt: string, system: string | undefined) {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error("OPENROUTER_API_KEY not configured");
+  const apiKey = process.env.NVIDIA_API_KEY;
+  if (!apiKey) throw new Error("NVIDIA_API_KEY not configured");
   const messages = [
     ...(system ? [{ role: "system", content: system }] : []),
     { role: "user", content: prompt },
   ];
-  const res = await fetch(OPENROUTER_URL, {
+  const res = await fetch(NVIDIA_URL, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": "https://zentryqor.lovable.app",
-      "X-Title": "Zentry Qor API",
     },
-    body: JSON.stringify({ model: "openai/gpt-oss-120b:free", messages }),
+    body: JSON.stringify({ model: "z-ai/glm-5.2", messages }),
   });
   if (!res.ok) {
     const t = await res.text();
     const err: any = new Error(`Upstream ${res.status}: ${t.slice(0, 200)}`);
-    err.status = 502;
+    err.status = res.status === 429 ? 429 : 502;
     throw err;
   }
   const json = await res.json();
