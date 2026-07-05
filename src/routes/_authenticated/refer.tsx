@@ -54,8 +54,8 @@ function ReferPage() {
 
         <section className="glass-strong rounded-2xl p-6 mb-6">
           <div className="grid sm:grid-cols-3 gap-4 mb-6">
-            <RewardCard title="You get" amount={20} />
-            <RewardCard title="Your friend gets" amount={10} />
+            <RewardCard title="You get" amount={50} />
+            <RewardCard title="Your friend gets" amount={30} />
             <RewardCard title="Per activated invite" amount={0} note="Credits never expire" />
           </div>
 

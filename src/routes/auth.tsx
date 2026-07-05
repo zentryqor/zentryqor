@@ -1,14 +1,21 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { getReferrerByCode } from "@/lib/referrals.functions";
 import { toast } from "sonner";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, Gift, Sparkles } from "lucide-react";
 import authLogo from "@/assets/zentry-auth-logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>) => ({
     redirect: typeof search.redirect === "string" ? search.redirect : undefined,
+    ref: typeof search.ref === "string" ? search.ref : undefined,
+    invited:
+      search.invited === 1 || search.invited === "1" || search.invited === true
+        ? 1
+        : undefined,
   }),
   head: () => ({
     meta: [
@@ -34,24 +41,40 @@ function getPasswordStrength(password: string) {
 }
 
 function AuthPage() {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const { redirect: redirectTo, ref: refCode, invited } = Route.useSearch();
+  const isInvited = invited === 1 && !!refCode;
+  const [mode, setMode] = useState<"signin" | "signup">(isInvited ? "signup" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [inviterName, setInviterName] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const router = useRouter();
-  const { redirect: redirectTo } = Route.useSearch();
   const dest = redirectTo && redirectTo.startsWith("/") ? redirectTo : "/dashboard";
+  const fetchReferrer = useServerFn(getReferrerByCode);
+
+  useEffect(() => {
+    // Stash referral code so the SIGNED_IN listener can apply it after signup.
+    if (isInvited && refCode && typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem("zq_ref_code", refCode.toUpperCase());
+      } catch {}
+      fetchReferrer({ data: { code: refCode } })
+        .then((r) => setInviterName(r.displayName))
+        .catch(() => setInviterName("A friend"));
+    }
+  }, [isInvited, refCode, fetchReferrer]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: dest });
     });
   }, [navigate, dest]);
+
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
@@ -152,36 +175,56 @@ function AuthPage() {
         </div>
 
         <div className="space-y-5">
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setFormError(null);
-                setMode("signin");
-              }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all duration-300 ${
-                isSignin
-                  ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
-                  : "text-muted-foreground hover:text-foreground/70"
-              }`}
-            >
-              Log In
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setFormError(null);
-                setMode("signup");
-              }}
-              className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all duration-300 ${
-                !isSignin
-                  ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
-                  : "text-muted-foreground hover:text-foreground/70"
-              }`}
-            >
-              Create Account
-            </button>
-          </div>
+          {isInvited ? (
+            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 animate-enter">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
+                  <Gift className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold">
+                    <span className="text-aurora">{inviterName ?? "A friend"}</span> invited you
+                  </div>
+                  <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                    <Sparkles className="w-3 h-3 text-accent" />
+                    Create your account to claim 30 bonus AI credits
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setFormError(null);
+                  setMode("signin");
+                }}
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all duration-300 ${
+                  isSignin
+                    ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
+                    : "text-muted-foreground hover:text-foreground/70"
+                }`}
+              >
+                Log In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormError(null);
+                  setMode("signup");
+                }}
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-2xl transition-all duration-300 ${
+                  !isSignin
+                    ? "text-foreground bg-white/10 border border-white/10 shadow-lg"
+                    : "text-muted-foreground hover:text-foreground/70"
+                }`}
+              >
+                Create Account
+              </button>
+            </div>
+          )}
+
 
           {formError && (
             <div
