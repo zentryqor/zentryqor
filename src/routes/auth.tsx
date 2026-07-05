@@ -41,24 +41,40 @@ function getPasswordStrength(password: string) {
 }
 
 function AuthPage() {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const { redirect: redirectTo, ref: refCode, invited } = Route.useSearch();
+  const isInvited = invited === 1 && !!refCode;
+  const [mode, setMode] = useState<"signin" | "signup">(isInvited ? "signup" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [inviterName, setInviterName] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const router = useRouter();
-  const { redirect: redirectTo } = Route.useSearch();
   const dest = redirectTo && redirectTo.startsWith("/") ? redirectTo : "/dashboard";
+  const fetchReferrer = useServerFn(getReferrerByCode);
+
+  useEffect(() => {
+    // Stash referral code so the SIGNED_IN listener can apply it after signup.
+    if (isInvited && refCode && typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem("zq_ref_code", refCode.toUpperCase());
+      } catch {}
+      fetchReferrer({ data: { code: refCode } })
+        .then((r) => setInviterName(r.displayName))
+        .catch(() => setInviterName("A friend"));
+    }
+  }, [isInvited, refCode, fetchReferrer]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: dest });
     });
   }, [navigate, dest]);
+
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
