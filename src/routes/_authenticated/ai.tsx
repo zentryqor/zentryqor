@@ -465,7 +465,7 @@ function AiStudio() {
           onClick={() => { setActiveId(null); if (toolParam) navigate({ to: "/ai", search: {} }); }}
         >
           <div
-            className="relative w-full sm:max-w-2xl max-h-[92vh] overflow-y-auto glass-strong border border-border/60 rounded-t-3xl sm:rounded-3xl p-6 sm:p-8"
+            className="relative w-full sm:max-w-2xl max-h-[85vh] sm:max-h-[92vh] overflow-y-auto glass-strong border border-border/60 rounded-t-3xl sm:rounded-3xl p-6 pb-32 sm:p-8 sm:pb-8"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between mb-6">
