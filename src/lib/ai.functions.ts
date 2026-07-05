@@ -150,7 +150,7 @@ export const generateAiText = createServerFn({ method: "POST" })
         ...(data.system ? [{ role: "system", content: data.system }] : []),
         { role: "user", content: data.prompt },
       ];
-      const json = await callOpenRouter("openai/gpt-oss-120b:free", messages);
+      const json = await callLovableAiText(messages);
       const text: string = json.choices?.[0]?.message?.content ?? "";
       try { await supabaseAdmin.rpc("award_referral_bonus", { _referee: context.userId }); } catch {}
       return { text, usage };
