@@ -155,6 +155,7 @@ export const generateAiText = createServerFn({ method: "POST" })
       ];
       const json = await callOpenRouter("openai/gpt-oss-120b:free", messages);
       const text: string = json.choices?.[0]?.message?.content ?? "";
+      try { await supabaseAdmin.rpc("award_referral_bonus", { _referee: context.userId }); } catch {}
       return { text, usage };
     } catch (e) {
       // Refund credits on failure
@@ -220,6 +221,7 @@ export const generateAiImage = createServerFn({ method: "POST" })
       const b64: string | undefined = json.data?.[0]?.b64_json;
       if (!b64) throw new Error("No image returned");
 
+      try { await supabaseAdmin.rpc("award_referral_bonus", { _referee: context.userId }); } catch {}
       return { image: `data:image/png;base64,${b64}`, usage };
     } catch (e) {
       await supabaseAdmin
