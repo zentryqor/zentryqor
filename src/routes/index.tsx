@@ -11,6 +11,7 @@ import { CtaFooter } from "@/components/landing/CtaFooter";
 import { MobileStickyCTA } from "@/components/landing/MobileStickyCTA";
 import { ColorfulBackground } from "@/components/landing/ColorfulBackground";
 import { GlassDivider } from "@/components/motion/GlassDivider";
+import { InviteBanner } from "@/components/InviteBanner";
 
 const HOME_FAQS = [
   { q: "What's actually in Zentry Qor?", a: "A growing vault of premium asset packs (overlays, LUTs, hook libraries, templates) and nine AI tools tuned for short-form: captions, hooks, scripts, thumbnails, hashtags, trends, planner, brand bio, and video ideas." },
@@ -81,6 +82,7 @@ function Index() {
   return (
     <div className="relative min-h-screen text-foreground overflow-x-hidden">
       <ColorfulBackground />
+      <InviteBanner />
       <Nav />
       <main className="relative z-10">
         <Hero />

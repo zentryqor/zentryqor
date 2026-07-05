@@ -62,3 +62,17 @@ export const recordReferralFromCode = createServerFn({ method: "POST" })
     });
     return { linked: !!result };
   });
+
+export const getReferrerByCode = createServerFn({ method: "GET" })
+  .inputValidator((input) =>
+    z.object({ code: z.string().trim().min(1).max(32) }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: rows } = await (supabaseAdmin as any).rpc("get_referrer_by_code", {
+      _code: data.code.toUpperCase(),
+    });
+    const first = Array.isArray(rows) ? rows[0] : rows;
+    const displayName = (first?.display_name as string | undefined) ?? null;
+    return { displayName };
+  });
