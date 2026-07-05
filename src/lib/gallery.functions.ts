@@ -15,6 +15,26 @@ function publicClient() {
   );
 }
 
+async function signImageUrls<T extends { image_url: string | null }>(items: T[]): Promise<T[]> {
+  const needsSigning = items.filter(
+    (it) => it.image_url && !/^https?:\/\//i.test(it.image_url) && !it.image_url.startsWith("data:"),
+  );
+  if (needsSigning.length === 0) return items;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const paths = needsSigning.map((it) => it.image_url as string);
+  const { data: signed } = await (supabaseAdmin as any).storage
+    .from("gallery")
+    .createSignedUrls(paths, SIGNED_URL_TTL);
+  const map = new Map<string, string>();
+  for (let i = 0; i < paths.length; i++) {
+    const s = signed?.[i]?.signedUrl;
+    if (s) map.set(paths[i], s);
+  }
+  return items.map((it) =>
+    it.image_url && map.has(it.image_url) ? { ...it, image_url: map.get(it.image_url)! } : it,
+  );
+}
+
 export const listPublicGallery = createServerFn({ method: "GET" })
   .inputValidator((input) =>
     z.object({ limit: z.number().int().min(1).max(60).optional() }).parse(input ?? {}),
@@ -27,7 +47,8 @@ export const listPublicGallery = createServerFn({ method: "GET" })
       .eq("is_public", true)
       .order("created_at", { ascending: false })
       .limit(data.limit ?? 30);
-    return (items ?? []) as Array<{
+    const signed = await signImageUrls((items ?? []) as any[]);
+    return signed as Array<{
       id: string;
       kind: "text" | "image";
       prompt: string;
@@ -49,7 +70,9 @@ export const getGalleryItem = createServerFn({ method: "GET" })
       .eq("id", data.id)
       .eq("is_public", true)
       .maybeSingle();
-    return item as {
+    if (!item) return null;
+    const [signed] = await signImageUrls([item as any]);
+    return signed as {
       id: string;
       kind: "text" | "image";
       prompt: string;
@@ -59,7 +82,7 @@ export const getGalleryItem = createServerFn({ method: "GET" })
       created_at: string;
       user_id: string;
       is_public: boolean;
-    } | null;
+    };
   });
 
 export const shareToGallery = createServerFn({ method: "POST" })
