@@ -110,7 +110,14 @@ export async function callOpenRouterText(prompt: string, system: string | undefi
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ model: "z-ai/glm-5.2", messages }),
+    body: JSON.stringify({
+      model: "z-ai/glm-5.2",
+      messages,
+      max_tokens: 1024,
+      temperature: 0.7,
+      top_p: 0.9,
+      stream: false,
+    }),
   });
   if (!res.ok) {
     const t = await res.text();
