@@ -4,11 +4,34 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 
+const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
+
+
 function publicClient() {
   return createClient<Database>(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_PUBLISHABLE_KEY!,
     { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
+  );
+}
+
+async function signImageUrls<T extends { image_url: string | null }>(items: T[]): Promise<T[]> {
+  const needsSigning = items.filter(
+    (it) => it.image_url && !/^https?:\/\//i.test(it.image_url) && !it.image_url.startsWith("data:"),
+  );
+  if (needsSigning.length === 0) return items;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const paths = needsSigning.map((it) => it.image_url as string);
+  const { data: signed } = await (supabaseAdmin as any).storage
+    .from("gallery")
+    .createSignedUrls(paths, SIGNED_URL_TTL);
+  const map = new Map<string, string>();
+  for (let i = 0; i < paths.length; i++) {
+    const s = signed?.[i]?.signedUrl;
+    if (s) map.set(paths[i], s);
+  }
+  return items.map((it) =>
+    it.image_url && map.has(it.image_url) ? { ...it, image_url: map.get(it.image_url)! } : it,
   );
 }
 
@@ -24,7 +47,8 @@ export const listPublicGallery = createServerFn({ method: "GET" })
       .eq("is_public", true)
       .order("created_at", { ascending: false })
       .limit(data.limit ?? 30);
-    return (items ?? []) as Array<{
+    const signed = await signImageUrls((items ?? []) as any[]);
+    return signed as Array<{
       id: string;
       kind: "text" | "image";
       prompt: string;
@@ -46,7 +70,9 @@ export const getGalleryItem = createServerFn({ method: "GET" })
       .eq("id", data.id)
       .eq("is_public", true)
       .maybeSingle();
-    return item as {
+    if (!item) return null;
+    const [signed] = await signImageUrls([item as any]);
+    return signed as {
       id: string;
       kind: "text" | "image";
       prompt: string;
@@ -56,7 +82,7 @@ export const getGalleryItem = createServerFn({ method: "GET" })
       created_at: string;
       user_id: string;
       is_public: boolean;
-    } | null;
+    };
   });
 
 export const shareToGallery = createServerFn({ method: "POST" })
@@ -67,12 +93,37 @@ export const shareToGallery = createServerFn({ method: "POST" })
         kind: z.enum(["text", "image"]),
         prompt: z.string().trim().min(1).max(4000),
         outputText: z.string().max(20000).optional(),
-        imageUrl: z.string().max(4000).optional(),
+        // Accept data URLs (base64) or remote URLs; upload happens server-side.
+        imageUrl: z.string().max(15_000_000).optional(),
         title: z.string().trim().max(120).optional(),
       })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
+    let storedImageRef: string | null = null;
+
+    if (data.kind === "image" && data.imageUrl) {
+      if (data.imageUrl.startsWith("data:")) {
+        const match = /^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(data.imageUrl);
+        if (!match) throw new Error("Invalid image data URL");
+        const mime = match[1];
+        const b64 = match[2];
+        const ext = mime.split("/")[1]?.split("+")[0] ?? "png";
+        const bytes = Buffer.from(b64, "base64");
+        const path = `${context.userId}/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { error: upErr } = await (supabaseAdmin as any).storage
+          .from("gallery")
+          .upload(path, bytes, { contentType: mime, upsert: false });
+        if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
+        storedImageRef = path;
+      } else if (/^https?:\/\//i.test(data.imageUrl)) {
+        storedImageRef = data.imageUrl;
+      } else {
+        throw new Error("Unsupported image URL");
+      }
+    }
+
     const { data: row, error } = await (context.supabase as any)
       .from("gallery_items")
       .insert({
@@ -80,7 +131,7 @@ export const shareToGallery = createServerFn({ method: "POST" })
         kind: data.kind,
         prompt: data.prompt,
         output_text: data.outputText ?? null,
-        image_url: data.imageUrl ?? null,
+        image_url: storedImageRef,
         title: data.title ?? null,
         is_public: true,
       })

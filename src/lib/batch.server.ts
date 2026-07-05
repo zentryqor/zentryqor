@@ -174,6 +174,8 @@ export async function processBatchTick(batchId: string, maxItems = 3): Promise<{
     .limit(maxItems);
 
   let processed = 0;
+  let successes = 0;
+  let failures = 0;
   const cost = batch.kind === "image" ? IMAGE_COST : TEXT_COST;
 
   for (const item of pending ?? []) {
@@ -219,9 +221,10 @@ export async function processBatchTick(batchId: string, maxItems = 3): Promise<{
           generation_id: gen?.id ?? null,
         })
         .eq("id", item.id);
+      successes++;
       await (supabaseAdmin as any)
         .from("batch_jobs")
-        .update({ completed: (batch.completed ?? 0) + processed + 1 })
+        .update({ completed: (batch.completed ?? 0) + successes })
         .eq("id", batchId);
     } catch (e: any) {
       await refundCredits(batch.user_id, cost).catch(() => {});
@@ -229,9 +232,10 @@ export async function processBatchTick(batchId: string, maxItems = 3): Promise<{
         .from("batch_items")
         .update({ status: "failed", error: String(e?.message ?? e).slice(0, 500) })
         .eq("id", item.id);
+      failures++;
       await (supabaseAdmin as any)
         .from("batch_jobs")
-        .update({ failed: (batch.failed ?? 0) + 1 })
+        .update({ failed: (batch.failed ?? 0) + failures })
         .eq("id", batchId);
     }
     processed++;
