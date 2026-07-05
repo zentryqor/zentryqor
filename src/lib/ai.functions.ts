@@ -221,6 +221,7 @@ export const generateAiImage = createServerFn({ method: "POST" })
       const b64: string | undefined = json.data?.[0]?.b64_json;
       if (!b64) throw new Error("No image returned");
 
+      try { await supabaseAdmin.rpc("award_referral_bonus", { _referee: context.userId }); } catch {}
       return { image: `data:image/png;base64,${b64}`, usage };
     } catch (e) {
       await supabaseAdmin
