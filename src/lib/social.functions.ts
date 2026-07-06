@@ -8,7 +8,7 @@ export type SocialAccountRow = {
   handle: string | null;
   expires_at: string | null;
   scopes: string | null;
-  meta: Record<string, unknown>;
+  meta: Record<string, any>;
   connected_at: string;
   revoked_at: string | null;
 };
