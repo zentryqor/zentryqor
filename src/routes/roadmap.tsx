@@ -17,11 +17,11 @@ export const Route = createFileRoute("/roadmap")({
 const items = [
   { status: "shipped", title: "AI Studio v2", body: "Nine tools tuned for short-form with 1000 credits/day on Premium." },
   { status: "shipped", title: "Floating glass header", body: "Premium nav across every authenticated page." },
+  { status: "shipped", title: "Public API", body: "Programmatic /text, /image, and /credits endpoints via API keys at /api-docs." },
   { status: "progress", title: "Team workspaces", body: "Shared vaults, roles, and seat-based billing. Private beta now." },
   { status: "progress", title: "Mobile app (iOS)", body: "Vault browsing, AI runs, and quick publish from your phone." },
   { status: "planned", title: "Brand kits", body: "Auto-apply your fonts, colors, and watermark across every export." },
   { status: "planned", title: "Native scheduler", body: "Queue posts to TikTok, Reels, and Shorts from inside the workspace." },
-  { status: "planned", title: "Public API", body: "Programmatic access to vault search and AI tool runs." },
 ];
 
 const meta: Record<string, { label: string; icon: typeof CheckCircle2; cls: string }> = {
