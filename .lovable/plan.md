@@ -1,64 +1,67 @@
-# Nine-feature rollout plan
+# Native scheduler — per-user OAuth for TikTok, Reels, Shorts
 
-This is a large scope (9 features, ~15-20 new routes, ~8 new tables). I'll ship it in 4 phases so you can review as we go and stop or reorder anytime. Each phase is independently useful and shippable.
+## Reality check (read first)
 
-## Phase 1 — API observability (builds on what we just shipped)
-1. **Rate-limit dashboard** (`/api-limits`)
-   - Show current tier limits (Free vs Premium): requests/min, requests/day, burst allowance
-   - Live counter: "You've used X/Y this minute", reset countdown
-   - Retry guidance with exponential-backoff code snippet
-   - Data source: extend existing `rate_limit_buckets` table + `consume_rate_limit` RPC
-2. **Detailed usage charts** (extend `/api-usage`)
-   - Line chart: credits/requests over last 30 days (recharts)
-   - Bar chart: per-endpoint breakdown (`/text` vs `/image` vs `/credits`)
-   - Cost projection: "At current pace, you'll spend N credits this month"
-   - Data source: existing `api_usage_logs`
-3. **Public status page** (`/status`, public route)
-   - Health check endpoint `/api/public/v1/health` pinging each upstream (OpenRouter, image gen)
-   - 90-day uptime bar per endpoint (stored in new `status_checks` table, populated by cron every 5 min)
-   - Current incidents banner (manual admin toggle)
+Auto-publishing to these three platforms requires **your own OAuth apps** on each provider — the Lovable connectors sign in as the workspace owner, not each end user, so they can't be used here.
 
-## Phase 2 — Community & growth
-4. **Public gallery** (`/gallery`, public)
-   - Users can toggle "share to gallery" on saved outputs
-   - Grid view with prompt, thumbnail, "Created with Zentry Qor" badge overlay
-   - Individual shareable pages `/gallery/$id` with OG image
-   - New table: `gallery_items` (public read policy, owner write)
-5. **Referral program** (`/refer`)
-   - Each user gets unique code `?ref=CODE` on signup
-   - Referrer +10 credits, referee +5 credits (granted after referee's first successful generation)
-   - Dashboard: your code, link, referrals count, credits earned
-   - New tables: `referral_codes`, `referrals`
-6. **Template library** (`/templates`, `/templates/$slug` public SEO pages)
-   - Curated prompts: YouTube thumbnail, IG ad, LinkedIn post, product shot, blog header, etc.
-   - Each template = SEO landing page with unique title/description/OG
-   - "Use this template" prefills the generator
-   - New table: `templates` (seeded via migration)
+| Platform | What we register | Review needed to publish for real users |
+|---|---|---|
+| TikTok | TikTok for Developers app, `video.publish` + `video.upload` scopes | Yes — TikTok Content Posting API review (days–weeks) |
+| Instagram Reels | Meta app, Instagram Graph API, `instagram_content_publish` + `pages_show_list` + `business_management` | Yes — Meta App Review + Business Verification (1–3 weeks). Only Business/Creator IG accounts linked to a Facebook Page can post. |
+| YouTube Shorts | Google Cloud OAuth client, `youtube.upload` scope | Yes — Google security assessment for sensitive scope (weeks) and CASA if scale grows |
 
-## Phase 3 — Productivity for logged-in users
-7. **Saved generations & folders** (`/library`)
-   - Save any output, organize into folders, mark favorites
-   - Grid + list views, search, filter by type/folder/favorite
-   - New tables: `folders`, `saved_generations` (already have `asset_saves` — extend or replace)
-8. **Prompt version history**
-   - Every generation stores prompt + params; user can "fork" a prompt, edit, regenerate
-   - Side-by-side compare: two versions with their outputs
-   - New table: `prompt_versions` linking to `saved_generations`
+Until each review clears, publishing works in **sandbox/test-user mode only**. The scheduler UI, storage, connection flow, and cron worker all work day 1 — we just can't guarantee a random signed-up user can post to their real IG until Meta approves the app.
 
-## Phase 4 — Automation (heaviest)
-9. **Scheduled / batch generation** (`/batch`)
-   - Batch: upload CSV or paste list of prompts → runs sequentially, shows progress
-   - Schedule: cron-like recurrence (daily/weekly at time X) — Premium only
-   - Runs on pg_cron hitting `/api/public/hooks/run-scheduled-jobs`
-   - New tables: `batch_jobs`, `batch_items`, `scheduled_jobs`
+I'll build the whole system now with sandbox credentials and give you a checklist to submit each app for review. That's the honest path.
 
-## Technical notes
-- All new tables get RLS + GRANTs in same migration
-- Public routes (`/gallery`, `/templates/$slug`, `/status`) use publishable-key server client with `TO anon` SELECT policies for SSR + OG tags
-- Owner-scoped fetchers via `requireSupabaseAuth` for dashboards
-- Charts use `recharts` (already in stack)
-- Status cron every 5 min via existing `pg_cron`
-- Rough credit spend: Phase 1 small, Phase 2 medium, Phase 3 medium, Phase 4 largest
+## Scope
 
-## Recommendation
-Ship **Phase 1 first** (smallest, extends what you just built, immediate value for API users). After you review it, we do Phase 2, etc. Reply with "go" to start Phase 1, or tell me to reorder / drop / combine phases.
+### New database (one migration)
+
+- `social_accounts` — one row per user × platform connection
+  - `user_id`, `platform` (`tiktok`|`instagram`|`youtube`), `platform_user_id`, `handle`, `access_token` (encrypted), `refresh_token` (encrypted), `expires_at`, `scopes`, `meta` (jsonb — page_id for IG, channel_id for YT), `connected_at`, `revoked_at`
+- `scheduled_posts` — one row per queued post
+  - `user_id`, `caption`, `video_url` (Supabase Storage path), `thumbnail_url`, `scheduled_for`, `status` (`draft`|`queued`|`publishing`|`published`|`failed`|`canceled`), `error`, `created_at`, `updated_at`
+- `scheduled_post_targets` — fan-out per platform
+  - `scheduled_post_id`, `platform`, `social_account_id`, `platform_post_id` (after publish), `status`, `error`, `published_at`
+- Storage bucket `social-uploads` (private, RLS: owner read/write)
+- All tables: RLS scoped to `auth.uid()`, GRANTs to `authenticated` + `service_role`, encrypted token columns via `pgsodium` or app-layer AES
+
+### New OAuth callback routes (public, signature-safe)
+
+- `src/routes/api/public/oauth/tiktok/start.ts` + `callback.ts`
+- `src/routes/api/public/oauth/instagram/start.ts` + `callback.ts`
+- `src/routes/api/public/oauth/youtube/start.ts` + `callback.ts`
+
+Each: signed `state` (HMAC of `user_id`+nonce+expiry), PKCE where the provider supports it, token exchange, upsert into `social_accounts`. Refresh handled by a helper in `src/lib/social-tokens.server.ts`.
+
+### New pages (authenticated)
+
+- `/scheduler` — calendar/list view, "New post" button, connection status cards
+- `/scheduler/new` — upload video → Supabase Storage, caption, per-platform toggles (only enabled if that platform is connected), datetime picker
+- `/scheduler/$id` — detail, per-target status, retry, cancel, delete
+- `/scheduler/connections` — connect/disconnect buttons per platform, shows handle + scopes + expiry
+
+Dock gets a "Scheduler" entry.
+
+### Publish worker
+
+- `src/lib/scheduler.server.ts` with `publishDuePosts()` — one function per platform:
+  - TikTok: `POST /v2/post/publish/video/init/` → PULL_FROM_URL with signed Supabase Storage URL → poll status
+  - Instagram: create media container `POST /{ig-user-id}/media` (`media_type=REELS`, `video_url=`) → poll `status_code` → `POST /{ig-user-id}/media_publish`
+  - YouTube: resumable upload `POST /upload/youtube/v3/videos` with `snippet` + `status.privacyStatus=public` (Shorts = ≤60s vertical)
+- Cron: extend existing `pg_cron` to hit new `src/routes/api/public/hooks/run-scheduler.ts` every minute
+- Idempotency via `status='publishing'` row lock
+
+### Secrets to request
+
+Six env vars (three client-ID/secret pairs). I'll request them with `add_secret` when the OAuth routes are wired. Callback URLs will be on `zentryqor.lovable.app` so you can copy them straight into each provider console.
+
+## Phasing (so you get something usable this week)
+
+1. **DB + storage + connections UI + OAuth flows** (this build) — you can connect real TikTok/IG/YT accounts, tokens stored and refreshed.
+2. **Scheduler UI + upload + cron worker + TikTok publish** — TikTok is the fastest to get through review; ship real posting first.
+3. **Instagram Reels publish** — after Meta review clears.
+4. **YouTube Shorts publish** — after Google verification clears.
+
+If you say go, I'll start phase 1: migration, storage bucket, connections page, and the three OAuth callback routes with signed state. Reply "go" or tell me to reorder.
