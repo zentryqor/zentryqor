@@ -11,6 +11,7 @@ import {
   Unlink,
   Clock,
   AlertTriangle,
+  Copy,
 } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
