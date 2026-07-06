@@ -21,7 +21,7 @@ export const listSocialAccounts = createServerFn({ method: "GET" })
       .select("id, platform, handle, expires_at, scopes, meta, connected_at, revoked_at")
       .order("connected_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return (data ?? []) as SocialAccountRow[];
+    return (data ?? []) as any as SocialAccountRow[];
   });
 
 export const startSocialOAuth = createServerFn({ method: "POST" })
