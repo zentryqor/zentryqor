@@ -23,6 +23,13 @@ import {
   startSocialOAuth,
   type SocialAccountRow,
 } from "@/lib/social.functions";
+import {
+  cancelScheduledPost,
+  deleteScheduledPost,
+  listScheduledPosts,
+  type ScheduledPostRow,
+} from "@/lib/scheduler.functions";
+import { Plus, Trash2, X as XIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/scheduler")({
   head: () => ({
