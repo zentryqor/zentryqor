@@ -52,6 +52,7 @@ import { Route as ApiPublicV1CreditsRouteImport } from './routes/api/public/v1/c
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksRunScheduledJobsRouteImport } from './routes/api/public/hooks/run-scheduled-jobs'
 import { Route as ApiPublicAuthSigninRouteImport } from './routes/api/public/auth/signin'
+import { Route as ApiPublicOauthTiktokCallbackRouteImport } from './routes/api/public/oauth/tiktok/callback'
 import { Route as ApiPublicAssetsDownloadIdRouteImport } from './routes/api/public/assets/download.$id'
 
 const TermsRoute = TermsRouteImport.update({
@@ -271,6 +272,12 @@ const ApiPublicAuthSigninRoute = ApiPublicAuthSigninRouteImport.update({
   path: '/api/public/auth/signin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicOauthTiktokCallbackRoute =
+  ApiPublicOauthTiktokCallbackRouteImport.update({
+    id: '/api/public/oauth/tiktok/callback',
+    path: '/api/public/oauth/tiktok/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAssetsDownloadIdRoute =
   ApiPublicAssetsDownloadIdRouteImport.update({
     id: '/api/public/assets/download/$id',
@@ -322,6 +329,7 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/image': typeof ApiPublicV1ImageRoute
   '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
+  '/api/public/oauth/tiktok/callback': typeof ApiPublicOauthTiktokCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -367,6 +375,7 @@ export interface FileRoutesByTo {
   '/api/public/v1/image': typeof ApiPublicV1ImageRoute
   '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
+  '/api/public/oauth/tiktok/callback': typeof ApiPublicOauthTiktokCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -414,6 +423,7 @@ export interface FileRoutesById {
   '/api/public/v1/image': typeof ApiPublicV1ImageRoute
   '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
+  '/api/public/oauth/tiktok/callback': typeof ApiPublicOauthTiktokCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -461,6 +471,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/image'
     | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
+    | '/api/public/oauth/tiktok/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -506,6 +517,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/image'
     | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
+    | '/api/public/oauth/tiktok/callback'
   id:
     | '__root__'
     | '/'
@@ -552,6 +564,7 @@ export interface FileRouteTypes {
     | '/api/public/v1/image'
     | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
+    | '/api/public/oauth/tiktok/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -580,6 +593,7 @@ export interface RootRouteChildren {
   ApiPublicV1ImageRoute: typeof ApiPublicV1ImageRoute
   ApiPublicV1TextRoute: typeof ApiPublicV1TextRoute
   ApiPublicAssetsDownloadIdRoute: typeof ApiPublicAssetsDownloadIdRoute
+  ApiPublicOauthTiktokCallbackRoute: typeof ApiPublicOauthTiktokCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -885,6 +899,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAuthSigninRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/oauth/tiktok/callback': {
+      id: '/api/public/oauth/tiktok/callback'
+      path: '/api/public/oauth/tiktok/callback'
+      fullPath: '/api/public/oauth/tiktok/callback'
+      preLoaderRoute: typeof ApiPublicOauthTiktokCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/assets/download/$id': {
       id: '/api/public/assets/download/$id'
       path: '/api/public/assets/download/$id'
@@ -996,6 +1017,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1ImageRoute: ApiPublicV1ImageRoute,
   ApiPublicV1TextRoute: ApiPublicV1TextRoute,
   ApiPublicAssetsDownloadIdRoute: ApiPublicAssetsDownloadIdRoute,
+  ApiPublicOauthTiktokCallbackRoute: ApiPublicOauthTiktokCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
