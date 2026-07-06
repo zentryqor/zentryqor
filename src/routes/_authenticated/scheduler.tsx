@@ -11,6 +11,7 @@ import {
   Unlink,
   Clock,
   AlertTriangle,
+  Copy,
 } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
@@ -200,12 +201,35 @@ function SchedulerPage() {
                             {acct.meta?.channel_title ?? acct.handle ?? "Connected"}
                           </span>
                           {acct.handle && acct.meta?.channel_title && acct.handle !== acct.meta.channel_title && (
-                            <span className="text-xs text-muted-foreground">@{acct.handle.replace(/^@/, "")}</span>
+                            <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                              @{acct.handle.replace(/^@/, "")}
+                              <button
+                                onClick={() => {
+                                  const handle = acct.handle!.replace(/^@/, "");
+                                  navigator.clipboard.writeText(handle).then(() => toast.success("Handle copied"));
+                                }}
+                                className="hover:text-foreground/80 p-0.5 rounded"
+                                aria-label="Copy handle"
+                                title="Copy handle"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </button>
+                            </span>
                           )}
                         </div>
                         {acct.meta?.channel_id && (
-                          <div className="text-[11px] font-mono text-muted-foreground/80 break-all">
+                          <div className="text-[11px] font-mono text-muted-foreground/80 break-all inline-flex items-center gap-1 flex-wrap">
                             Channel ID: {acct.meta.channel_id}
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(acct.meta!.channel_id!).then(() => toast.success("Channel ID copied"));
+                              }}
+                              className="hover:text-foreground/80 p-0.5 rounded"
+                              aria-label="Copy channel ID"
+                              title="Copy channel ID"
+                            >
+                              <Copy className="w-3 h-3" />
+                            </button>
                           </div>
                         )}
                         {acct.expires_at && (
