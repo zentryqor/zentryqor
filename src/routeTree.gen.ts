@@ -56,8 +56,6 @@ import { Route as ApiPublicHooksRunScheduledPostsRouteImport } from './routes/ap
 import { Route as ApiPublicHooksRunScheduledJobsRouteImport } from './routes/api/public/hooks/run-scheduled-jobs'
 import { Route as ApiPublicAuthSigninRouteImport } from './routes/api/public/auth/signin'
 import { Route as ApiPublicOauthYoutubeCallbackRouteImport } from './routes/api/public/oauth/youtube/callback'
-import { Route as ApiPublicOauthTiktokCallbackRouteImport } from './routes/api/public/oauth/tiktok/callback'
-import { Route as ApiPublicOauthInstagramCallbackRouteImport } from './routes/api/public/oauth/instagram/callback'
 import { Route as ApiPublicAssetsDownloadIdRouteImport } from './routes/api/public/assets/download.$id'
 
 const TermsRoute = TermsRouteImport.update({
@@ -300,18 +298,6 @@ const ApiPublicOauthYoutubeCallbackRoute =
     path: '/api/public/oauth/youtube/callback',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicOauthTiktokCallbackRoute =
-  ApiPublicOauthTiktokCallbackRouteImport.update({
-    id: '/api/public/oauth/tiktok/callback',
-    path: '/api/public/oauth/tiktok/callback',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicOauthInstagramCallbackRoute =
-  ApiPublicOauthInstagramCallbackRouteImport.update({
-    id: '/api/public/oauth/instagram/callback',
-    path: '/api/public/oauth/instagram/callback',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicAssetsDownloadIdRoute =
   ApiPublicAssetsDownloadIdRouteImport.update({
     id: '/api/public/assets/download/$id',
@@ -366,8 +352,6 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/image': typeof ApiPublicV1ImageRoute
   '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
-  '/api/public/oauth/instagram/callback': typeof ApiPublicOauthInstagramCallbackRoute
-  '/api/public/oauth/tiktok/callback': typeof ApiPublicOauthTiktokCallbackRoute
   '/api/public/oauth/youtube/callback': typeof ApiPublicOauthYoutubeCallbackRoute
 }
 export interface FileRoutesByTo {
@@ -417,8 +401,6 @@ export interface FileRoutesByTo {
   '/api/public/v1/image': typeof ApiPublicV1ImageRoute
   '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
-  '/api/public/oauth/instagram/callback': typeof ApiPublicOauthInstagramCallbackRoute
-  '/api/public/oauth/tiktok/callback': typeof ApiPublicOauthTiktokCallbackRoute
   '/api/public/oauth/youtube/callback': typeof ApiPublicOauthYoutubeCallbackRoute
 }
 export interface FileRoutesById {
@@ -470,8 +452,6 @@ export interface FileRoutesById {
   '/api/public/v1/image': typeof ApiPublicV1ImageRoute
   '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
-  '/api/public/oauth/instagram/callback': typeof ApiPublicOauthInstagramCallbackRoute
-  '/api/public/oauth/tiktok/callback': typeof ApiPublicOauthTiktokCallbackRoute
   '/api/public/oauth/youtube/callback': typeof ApiPublicOauthYoutubeCallbackRoute
 }
 export interface FileRouteTypes {
@@ -523,8 +503,6 @@ export interface FileRouteTypes {
     | '/api/public/v1/image'
     | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
-    | '/api/public/oauth/instagram/callback'
-    | '/api/public/oauth/tiktok/callback'
     | '/api/public/oauth/youtube/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -574,8 +552,6 @@ export interface FileRouteTypes {
     | '/api/public/v1/image'
     | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
-    | '/api/public/oauth/instagram/callback'
-    | '/api/public/oauth/tiktok/callback'
     | '/api/public/oauth/youtube/callback'
   id:
     | '__root__'
@@ -626,8 +602,6 @@ export interface FileRouteTypes {
     | '/api/public/v1/image'
     | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
-    | '/api/public/oauth/instagram/callback'
-    | '/api/public/oauth/tiktok/callback'
     | '/api/public/oauth/youtube/callback'
   fileRoutesById: FileRoutesById
 }
@@ -658,8 +632,6 @@ export interface RootRouteChildren {
   ApiPublicV1ImageRoute: typeof ApiPublicV1ImageRoute
   ApiPublicV1TextRoute: typeof ApiPublicV1TextRoute
   ApiPublicAssetsDownloadIdRoute: typeof ApiPublicAssetsDownloadIdRoute
-  ApiPublicOauthInstagramCallbackRoute: typeof ApiPublicOauthInstagramCallbackRoute
-  ApiPublicOauthTiktokCallbackRoute: typeof ApiPublicOauthTiktokCallbackRoute
   ApiPublicOauthYoutubeCallbackRoute: typeof ApiPublicOauthYoutubeCallbackRoute
 }
 
@@ -994,20 +966,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicOauthYoutubeCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/oauth/tiktok/callback': {
-      id: '/api/public/oauth/tiktok/callback'
-      path: '/api/public/oauth/tiktok/callback'
-      fullPath: '/api/public/oauth/tiktok/callback'
-      preLoaderRoute: typeof ApiPublicOauthTiktokCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/oauth/instagram/callback': {
-      id: '/api/public/oauth/instagram/callback'
-      path: '/api/public/oauth/instagram/callback'
-      fullPath: '/api/public/oauth/instagram/callback'
-      preLoaderRoute: typeof ApiPublicOauthInstagramCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/assets/download/$id': {
       id: '/api/public/assets/download/$id'
       path: '/api/public/assets/download/$id'
@@ -1136,8 +1094,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1ImageRoute: ApiPublicV1ImageRoute,
   ApiPublicV1TextRoute: ApiPublicV1TextRoute,
   ApiPublicAssetsDownloadIdRoute: ApiPublicAssetsDownloadIdRoute,
-  ApiPublicOauthInstagramCallbackRoute: ApiPublicOauthInstagramCallbackRoute,
-  ApiPublicOauthTiktokCallbackRoute: ApiPublicOauthTiktokCallbackRoute,
   ApiPublicOauthYoutubeCallbackRoute: ApiPublicOauthYoutubeCallbackRoute,
 }
 export const routeTree = rootRouteImport
