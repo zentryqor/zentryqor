@@ -187,14 +187,33 @@ function SchedulerPage() {
                   </div>
                   <div className="text-sm text-muted-foreground mt-1">
                     {acct ? (
-                      <>
-                        <span className="text-foreground/80">{acct.handle ?? "Connected"}</span>
-                        {acct.expires_at && (
-                          <span className="ml-2 text-xs">
-                            · expires {new Date(acct.expires_at).toLocaleDateString()}
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {acct.meta?.thumbnail && (
+                            <img
+                              src={acct.meta.thumbnail}
+                              alt=""
+                              className="w-5 h-5 rounded-full"
+                            />
+                          )}
+                          <span className="text-foreground/90 font-medium">
+                            {acct.meta?.channel_title ?? acct.handle ?? "Connected"}
                           </span>
+                          {acct.handle && acct.meta?.channel_title && acct.handle !== acct.meta.channel_title && (
+                            <span className="text-xs text-muted-foreground">@{acct.handle.replace(/^@/, "")}</span>
+                          )}
+                        </div>
+                        {acct.meta?.channel_id && (
+                          <div className="text-[11px] font-mono text-muted-foreground/80 break-all">
+                            Channel ID: {acct.meta.channel_id}
+                          </div>
                         )}
-                      </>
+                        {acct.expires_at && (
+                          <div className="text-[11px]">
+                            Token expires {new Date(acct.expires_at).toLocaleString()}
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       p.blurb
                     )}
