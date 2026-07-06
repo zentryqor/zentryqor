@@ -12,7 +12,7 @@ export type ScheduledPostRow = {
   created_at: string;
   targets: {
     id: string;
-    platform: "tiktok" | "instagram" | "youtube";
+    platform: "youtube";
     status: string;
     error: string | null;
     platform_post_id: string | null;
@@ -68,7 +68,7 @@ export const createScheduledPost = createServerFn({ method: "POST" })
         videoPath: z.string().min(3),
         scheduledFor: z.string().min(10),
         platforms: z
-          .array(z.enum(["tiktok", "instagram", "youtube"]))
+          .array(z.enum(["youtube"]))
           .min(1),
       })
       .parse(i),

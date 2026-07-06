@@ -45,7 +45,7 @@ export const Route = createFileRoute("/_authenticated/scheduler")({
   component: SchedulerPage,
 });
 
-type Platform = "tiktok" | "instagram" | "youtube";
+type Platform = "youtube";
 
 const PLATFORMS: {
   key: Platform;

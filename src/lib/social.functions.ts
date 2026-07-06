@@ -4,7 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type SocialAccountRow = {
   id: string;
-  platform: "tiktok" | "instagram" | "youtube";
+  platform: "youtube";
   handle: string | null;
   expires_at: string | null;
   scopes: string | null;

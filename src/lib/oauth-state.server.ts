@@ -23,7 +23,7 @@ function fromB64url(s: string): Buffer {
 
 export function signOAuthState(payload: {
   userId: string;
-  platform: "tiktok" | "instagram" | "youtube";
+  platform: "youtube";
   codeVerifier?: string;
 }): string {
   const body = {
@@ -40,7 +40,7 @@ export function signOAuthState(payload: {
 
 export function verifyOAuthState(state: string): {
   userId: string;
-  platform: "tiktok" | "instagram" | "youtube";
+  platform: "youtube";
   codeVerifier: string | null;
 } {
   const [bodyB64, sig] = state.split(".");
