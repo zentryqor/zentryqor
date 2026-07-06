@@ -5,9 +5,7 @@ import { toast } from "sonner";
 import {
   Calendar,
   CheckCircle2,
-  Instagram,
   Loader2,
-  Music2,
   Plug,
   Youtube,
   Unlink,
