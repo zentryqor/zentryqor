@@ -29,6 +29,7 @@ import { Route as TemplatesSlugRouteImport } from './routes/templates.$slug'
 import { Route as GuidesUgcEssentialsRouteImport } from './routes/guides/ugc-essentials'
 import { Route as GalleryIdRouteImport } from './routes/gallery.$id'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedSchedulerRouteImport } from './routes/_authenticated/scheduler'
 import { Route as AuthenticatedSavedRouteImport } from './routes/_authenticated/saved'
 import { Route as AuthenticatedReferRouteImport } from './routes/_authenticated/refer'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -154,6 +155,11 @@ const GalleryIdRoute = GalleryIdRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSchedulerRoute = AuthenticatedSchedulerRouteImport.update({
+  id: '/scheduler',
+  path: '/scheduler',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSavedRoute = AuthenticatedSavedRouteImport.update({
@@ -328,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/refer': typeof AuthenticatedReferRoute
   '/saved': typeof AuthenticatedSavedRoute
+  '/scheduler': typeof AuthenticatedSchedulerRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
@@ -376,6 +383,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/refer': typeof AuthenticatedReferRoute
   '/saved': typeof AuthenticatedSavedRoute
+  '/scheduler': typeof AuthenticatedSchedulerRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
@@ -426,6 +434,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/refer': typeof AuthenticatedReferRoute
   '/_authenticated/saved': typeof AuthenticatedSavedRoute
+  '/_authenticated/scheduler': typeof AuthenticatedSchedulerRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
@@ -476,6 +485,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/refer'
     | '/saved'
+    | '/scheduler'
     | '/settings'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
@@ -524,6 +534,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/refer'
     | '/saved'
+    | '/scheduler'
     | '/settings'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
@@ -573,6 +584,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/refer'
     | '/_authenticated/saved'
+    | '/_authenticated/scheduler'
     | '/_authenticated/settings'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
@@ -764,6 +776,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/scheduler': {
+      id: '/_authenticated/scheduler'
+      path: '/scheduler'
+      fullPath: '/scheduler'
+      preLoaderRoute: typeof AuthenticatedSchedulerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/saved': {
@@ -983,6 +1002,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedReferRoute: typeof AuthenticatedReferRoute
   AuthenticatedSavedRoute: typeof AuthenticatedSavedRoute
+  AuthenticatedSchedulerRoute: typeof AuthenticatedSchedulerRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedAssetsIdRoute: typeof AuthenticatedAssetsIdRoute
   AuthenticatedAssetsIndexRoute: typeof AuthenticatedAssetsIndexRoute
@@ -1002,6 +1022,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedReferRoute: AuthenticatedReferRoute,
   AuthenticatedSavedRoute: AuthenticatedSavedRoute,
+  AuthenticatedSchedulerRoute: AuthenticatedSchedulerRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedAssetsIdRoute: AuthenticatedAssetsIdRoute,
   AuthenticatedAssetsIndexRoute: AuthenticatedAssetsIndexRoute,

@@ -1,12 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Boxes, LayoutDashboard, Settings, WandSparkles } from "lucide-react";
+import { Boxes, Calendar, LayoutDashboard, WandSparkles } from "lucide-react";
 
 const destinations = [
   { to: "/dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
   { to: "/ai" as const, label: "AI Studio", icon: WandSparkles },
+  { to: "/scheduler" as const, label: "Scheduler", icon: Calendar },
   { to: "/assets" as const, label: "Assets", icon: Boxes },
-  { to: "/settings" as const, label: "Settings", icon: Settings },
 ];
 
 export function WorkspaceDock() {
