@@ -51,6 +51,7 @@ import { Route as ApiPublicV1ImageRouteImport } from './routes/api/public/v1/ima
 import { Route as ApiPublicV1HealthRouteImport } from './routes/api/public/v1/health'
 import { Route as ApiPublicV1CreditsRouteImport } from './routes/api/public/v1/credits'
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
+import { Route as ApiPublicHooksRunScheduledPostsRouteImport } from './routes/api/public/hooks/run-scheduled-posts'
 import { Route as ApiPublicHooksRunScheduledJobsRouteImport } from './routes/api/public/hooks/run-scheduled-jobs'
 import { Route as ApiPublicAuthSigninRouteImport } from './routes/api/public/auth/signin'
 import { Route as ApiPublicOauthYoutubeCallbackRouteImport } from './routes/api/public/oauth/youtube/callback'
@@ -269,6 +270,12 @@ const ApiPublicPaymentsWebhookRoute =
     path: '/api/public/payments/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksRunScheduledPostsRoute =
+  ApiPublicHooksRunScheduledPostsRouteImport.update({
+    id: '/api/public/hooks/run-scheduled-posts',
+    path: '/api/public/hooks/run-scheduled-posts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksRunScheduledJobsRoute =
   ApiPublicHooksRunScheduledJobsRouteImport.update({
     id: '/api/public/hooks/run-scheduled-jobs',
@@ -344,6 +351,7 @@ export interface FileRoutesByFullPath {
   '/assets/': typeof AuthenticatedAssetsIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
+  '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/v1/credits': typeof ApiPublicV1CreditsRoute
   '/api/public/v1/health': typeof ApiPublicV1HealthRoute
@@ -393,6 +401,7 @@ export interface FileRoutesByTo {
   '/assets': typeof AuthenticatedAssetsIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
+  '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/v1/credits': typeof ApiPublicV1CreditsRoute
   '/api/public/v1/health': typeof ApiPublicV1HealthRoute
@@ -444,6 +453,7 @@ export interface FileRoutesById {
   '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
+  '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
   '/api/public/v1/credits': typeof ApiPublicV1CreditsRoute
   '/api/public/v1/health': typeof ApiPublicV1HealthRoute
@@ -495,6 +505,7 @@ export interface FileRouteTypes {
     | '/assets/'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
+    | '/api/public/hooks/run-scheduled-posts'
     | '/api/public/payments/webhook'
     | '/api/public/v1/credits'
     | '/api/public/v1/health'
@@ -544,6 +555,7 @@ export interface FileRouteTypes {
     | '/assets'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
+    | '/api/public/hooks/run-scheduled-posts'
     | '/api/public/payments/webhook'
     | '/api/public/v1/credits'
     | '/api/public/v1/health'
@@ -594,6 +606,7 @@ export interface FileRouteTypes {
     | '/_authenticated/assets/'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
+    | '/api/public/hooks/run-scheduled-posts'
     | '/api/public/payments/webhook'
     | '/api/public/v1/credits'
     | '/api/public/v1/health'
@@ -625,6 +638,7 @@ export interface RootRouteChildren {
   GuidesUgcEssentialsRoute: typeof GuidesUgcEssentialsRoute
   ApiPublicAuthSigninRoute: typeof ApiPublicAuthSigninRoute
   ApiPublicHooksRunScheduledJobsRoute: typeof ApiPublicHooksRunScheduledJobsRoute
+  ApiPublicHooksRunScheduledPostsRoute: typeof ApiPublicHooksRunScheduledPostsRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
   ApiPublicV1CreditsRoute: typeof ApiPublicV1CreditsRoute
   ApiPublicV1HealthRoute: typeof ApiPublicV1HealthRoute
@@ -932,6 +946,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaymentsWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/run-scheduled-posts': {
+      id: '/api/public/hooks/run-scheduled-posts'
+      path: '/api/public/hooks/run-scheduled-posts'
+      fullPath: '/api/public/hooks/run-scheduled-posts'
+      preLoaderRoute: typeof ApiPublicHooksRunScheduledPostsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/run-scheduled-jobs': {
       id: '/api/public/hooks/run-scheduled-jobs'
       path: '/api/public/hooks/run-scheduled-jobs'
@@ -1074,6 +1095,7 @@ const rootRouteChildren: RootRouteChildren = {
   GuidesUgcEssentialsRoute: GuidesUgcEssentialsRoute,
   ApiPublicAuthSigninRoute: ApiPublicAuthSigninRoute,
   ApiPublicHooksRunScheduledJobsRoute: ApiPublicHooksRunScheduledJobsRoute,
+  ApiPublicHooksRunScheduledPostsRoute: ApiPublicHooksRunScheduledPostsRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
   ApiPublicV1CreditsRoute: ApiPublicV1CreditsRoute,
   ApiPublicV1HealthRoute: ApiPublicV1HealthRoute,
