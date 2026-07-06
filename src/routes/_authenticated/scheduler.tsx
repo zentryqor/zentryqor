@@ -114,6 +114,24 @@ function SchedulerPage() {
     onError: (e: any) => toast.error(e?.message ?? "Couldn't disconnect"),
   });
 
+  const cancelMut = useMutation({
+    mutationFn: async (id: string) => cancelPost({ data: { id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["scheduled-posts"] });
+      toast.success("Canceled");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Couldn't cancel"),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: async (id: string) => delPost({ data: { id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["scheduled-posts"] });
+      toast.success("Deleted");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Couldn't delete"),
+  });
+
   const active = (accountsQuery.data ?? []).filter(
     (a: SocialAccountRow) => !a.revoked_at,
   );
