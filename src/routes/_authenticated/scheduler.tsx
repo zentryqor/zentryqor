@@ -82,10 +82,19 @@ function SchedulerPage() {
   const list = useServerFn(listSocialAccounts);
   const start = useServerFn(startSocialOAuth);
   const disconnect = useServerFn(disconnectSocialAccount);
+  const listPosts = useServerFn(listScheduledPosts);
+  const cancelPost = useServerFn(cancelScheduledPost);
+  const delPost = useServerFn(deleteScheduledPost);
 
   const accountsQuery = useQuery({
     queryKey: ["social-accounts"],
     queryFn: () => list(),
+  });
+
+  const postsQuery = useQuery({
+    queryKey: ["scheduled-posts"],
+    queryFn: () => listPosts(),
+    refetchInterval: 15_000,
   });
 
   const startMut = useMutation({
