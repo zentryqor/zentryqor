@@ -27,42 +27,28 @@ export const listSocialAccounts = createServerFn({ method: "GET" })
 export const startSocialOAuth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) =>
-    z.object({ platform: z.enum(["tiktok", "instagram", "youtube"]) }).parse(i),
+    z.object({ platform: z.enum(["youtube"]) }).parse(i),
   )
   .handler(async ({ data, context }) => {
-    const { PROVIDERS, providerCreds, callbackUrl } = await import(
+    const { providerCreds, callbackUrl } = await import(
       "@/lib/social-oauth.server"
     );
-    const { signOAuthState, makePkcePair } = await import(
-      "@/lib/oauth-state.server"
-    );
+    const { signOAuthState } = await import("@/lib/oauth-state.server");
     const { clientId, cfg } = providerCreds(data.platform);
-    const pkce = cfg.usesPkce ? makePkcePair() : null;
     const state = signOAuthState({
       userId: context.userId,
       platform: data.platform,
-      codeVerifier: pkce?.verifier,
     });
     const params = new URLSearchParams({
       client_id: clientId,
       response_type: "code",
       redirect_uri: callbackUrl(data.platform),
-      scope: cfg.scopes.join(data.platform === "tiktok" ? "," : " "),
+      scope: cfg.scopes.join(" "),
       state,
+      access_type: "offline",
+      prompt: "consent",
+      include_granted_scopes: "true",
     });
-    if (data.platform === "tiktok") {
-      params.set("client_key", clientId);
-      params.delete("client_id");
-    }
-    if (data.platform === "youtube") {
-      params.set("access_type", "offline");
-      params.set("prompt", "consent");
-      params.set("include_granted_scopes", "true");
-    }
-    if (pkce) {
-      params.set("code_challenge", pkce.challenge);
-      params.set("code_challenge_method", "S256");
-    }
     return { url: `${cfg.authorizeUrl}?${params.toString()}` };
   });
 
