@@ -5,36 +5,9 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 export const PUBLIC_BASE_URL =
   process.env.PUBLIC_APP_URL ?? "https://zentryqor.lovable.app";
 
-export type Platform = "tiktok" | "instagram" | "youtube";
+export type Platform = "youtube";
 
 export const PROVIDERS = {
-  tiktok: {
-    label: "TikTok",
-    authorizeUrl: "https://www.tiktok.com/v2/auth/authorize/",
-    tokenUrl: "https://open.tiktokapis.com/v2/oauth/token/",
-    scopes: ["user.info.basic", "video.upload", "video.publish"],
-    envClient: "TIKTOK_CLIENT_KEY",
-    envSecret: "TIKTOK_CLIENT_SECRET",
-    callbackPath: "/api/public/oauth/tiktok/callback",
-    usesPkce: true,
-  },
-  instagram: {
-    label: "Instagram",
-    // Facebook Login dialog; IG Graph uses FB OAuth
-    authorizeUrl: "https://www.facebook.com/v20.0/dialog/oauth",
-    tokenUrl: "https://graph.facebook.com/v20.0/oauth/access_token",
-    scopes: [
-      "instagram_basic",
-      "instagram_content_publish",
-      "pages_show_list",
-      "pages_read_engagement",
-      "business_management",
-    ],
-    envClient: "INSTAGRAM_CLIENT_ID",
-    envSecret: "INSTAGRAM_CLIENT_SECRET",
-    callbackPath: "/api/public/oauth/instagram/callback",
-    usesPkce: false,
-  },
   youtube: {
     label: "YouTube",
     authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
