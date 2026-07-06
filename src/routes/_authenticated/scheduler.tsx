@@ -261,11 +261,122 @@ function SchedulerPage() {
           })}
         </div>
 
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
+            Scheduled posts
+          </h2>
+          <Link
+            to="/scheduler/new"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-white text-black px-3 py-1.5 text-xs font-medium hover:bg-white/90"
+          >
+            <Plus className="w-3.5 h-3.5" /> New post
+          </Link>
+        </div>
+
+        <div className="space-y-3 mb-10">
+          {postsQuery.isLoading && (
+            <div className="glass-strong rounded-2xl p-5 text-sm text-muted-foreground flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" /> Loading…
+            </div>
+          )}
+          {postsQuery.data && postsQuery.data.length === 0 && (
+            <div className="glass-strong rounded-2xl p-6 text-sm text-muted-foreground text-center">
+              No scheduled posts yet.{" "}
+              <Link to="/scheduler/new" className="text-foreground underline">
+                Schedule your first one
+              </Link>
+              .
+            </div>
+          )}
+          {(postsQuery.data ?? []).map((p: ScheduledPostRow) => {
+            const when = new Date(p.scheduled_for);
+            const statusColor: Record<string, string> = {
+              queued: "bg-sky-500/15 text-sky-300",
+              publishing: "bg-amber-500/15 text-amber-300",
+              published: "bg-emerald-500/15 text-emerald-300",
+              failed: "bg-red-500/15 text-red-300",
+              canceled: "bg-white/10 text-muted-foreground",
+              draft: "bg-white/10 text-muted-foreground",
+            };
+            const first = (p.caption ?? "").split("\n")[0].trim() || "Untitled";
+            return (
+              <div key={p.id} className="glass-strong rounded-2xl p-5">
+                <div className="flex items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="font-medium truncate">{first}</div>
+                      <span
+                        className={`text-[11px] rounded-full px-2 py-0.5 ${statusColor[p.status] ?? "bg-white/10"}`}
+                      >
+                        {p.status}
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {when.toLocaleString()} · {p.targets.length} target
+                      {p.targets.length === 1 ? "" : "s"}
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {p.targets.map((t) => (
+                        <span
+                          key={t.id}
+                          className={`text-[11px] rounded-full px-2 py-0.5 ${statusColor[t.status] ?? "bg-white/10 text-muted-foreground"}`}
+                          title={t.error ?? ""}
+                        >
+                          {t.platform}: {t.status}
+                          {t.platform_post_id && t.platform === "youtube" && (
+                            <>
+                              {" · "}
+                              <a
+                                href={`https://youtu.be/${t.platform_post_id}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="underline"
+                              >
+                                view
+                              </a>
+                            </>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                    {p.error && (
+                      <div className="text-[11px] text-red-300 mt-2">
+                        {p.error}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex gap-1 shrink-0">
+                    {(p.status === "queued" || p.status === "draft") && (
+                      <button
+                        onClick={() => cancelMut.mutate(p.id)}
+                        className="rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-white/[0.06]"
+                        title="Cancel"
+                      >
+                        <XIcon className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        if (confirm("Delete this scheduled post?"))
+                          deleteMut.mutate(p.id);
+                      }}
+                      className="rounded-lg p-2 text-muted-foreground hover:text-red-400 hover:bg-white/[0.06]"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         <div className="glass-strong rounded-2xl p-6">
           <h2 className="font-medium mb-2">What's next</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Phase 1 (connections) is live. Phase 2 adds upload + queue + publish for
-            TikTok, then Instagram and YouTube once their reviews clear.
+            YouTube auto-publish is live. TikTok and Instagram Reels unlock once
+            each platform's app review clears.
           </p>
           <Link
             to="/roadmap"
