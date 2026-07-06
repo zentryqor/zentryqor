@@ -50,29 +50,15 @@ type Platform = "youtube";
 const PLATFORMS: {
   key: Platform;
   label: string;
-  icon: typeof Music2;
+  icon: typeof Youtube;
   blurb: string;
   color: string;
 }[] = [
   {
-    key: "tiktok",
-    label: "TikTok",
-    icon: Music2,
-    blurb: "Auto-publish videos to your TikTok account.",
-    color: "text-pink-400",
-  },
-  {
-    key: "instagram",
-    label: "Instagram Reels",
-    icon: Instagram,
-    blurb: "Requires a Business or Creator IG account linked to a Facebook Page.",
-    color: "text-fuchsia-400",
-  },
-  {
     key: "youtube",
-    label: "YouTube Shorts",
+    label: "YouTube",
     icon: Youtube,
-    blurb: "Upload Shorts (≤ 60s vertical) straight to your channel.",
+    blurb: "Auto-publish videos straight to your channel.",
     color: "text-red-400",
   },
 ];
