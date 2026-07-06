@@ -29,6 +29,7 @@ import { Route as TemplatesSlugRouteImport } from './routes/templates.$slug'
 import { Route as GuidesUgcEssentialsRouteImport } from './routes/guides/ugc-essentials'
 import { Route as GalleryIdRouteImport } from './routes/gallery.$id'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedSchedulerRouteImport } from './routes/_authenticated/scheduler'
 import { Route as AuthenticatedSavedRouteImport } from './routes/_authenticated/saved'
 import { Route as AuthenticatedReferRouteImport } from './routes/_authenticated/refer'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -52,6 +53,9 @@ import { Route as ApiPublicV1CreditsRouteImport } from './routes/api/public/v1/c
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksRunScheduledJobsRouteImport } from './routes/api/public/hooks/run-scheduled-jobs'
 import { Route as ApiPublicAuthSigninRouteImport } from './routes/api/public/auth/signin'
+import { Route as ApiPublicOauthYoutubeCallbackRouteImport } from './routes/api/public/oauth/youtube/callback'
+import { Route as ApiPublicOauthTiktokCallbackRouteImport } from './routes/api/public/oauth/tiktok/callback'
+import { Route as ApiPublicOauthInstagramCallbackRouteImport } from './routes/api/public/oauth/instagram/callback'
 import { Route as ApiPublicAssetsDownloadIdRouteImport } from './routes/api/public/assets/download.$id'
 
 const TermsRoute = TermsRouteImport.update({
@@ -151,6 +155,11 @@ const GalleryIdRoute = GalleryIdRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSchedulerRoute = AuthenticatedSchedulerRouteImport.update({
+  id: '/scheduler',
+  path: '/scheduler',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSavedRoute = AuthenticatedSavedRouteImport.update({
@@ -271,6 +280,24 @@ const ApiPublicAuthSigninRoute = ApiPublicAuthSigninRouteImport.update({
   path: '/api/public/auth/signin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicOauthYoutubeCallbackRoute =
+  ApiPublicOauthYoutubeCallbackRouteImport.update({
+    id: '/api/public/oauth/youtube/callback',
+    path: '/api/public/oauth/youtube/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicOauthTiktokCallbackRoute =
+  ApiPublicOauthTiktokCallbackRouteImport.update({
+    id: '/api/public/oauth/tiktok/callback',
+    path: '/api/public/oauth/tiktok/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicOauthInstagramCallbackRoute =
+  ApiPublicOauthInstagramCallbackRouteImport.update({
+    id: '/api/public/oauth/instagram/callback',
+    path: '/api/public/oauth/instagram/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAssetsDownloadIdRoute =
   ApiPublicAssetsDownloadIdRouteImport.update({
     id: '/api/public/assets/download/$id',
@@ -307,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/refer': typeof AuthenticatedReferRoute
   '/saved': typeof AuthenticatedSavedRoute
+  '/scheduler': typeof AuthenticatedSchedulerRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
@@ -322,6 +350,9 @@ export interface FileRoutesByFullPath {
   '/api/public/v1/image': typeof ApiPublicV1ImageRoute
   '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
+  '/api/public/oauth/instagram/callback': typeof ApiPublicOauthInstagramCallbackRoute
+  '/api/public/oauth/tiktok/callback': typeof ApiPublicOauthTiktokCallbackRoute
+  '/api/public/oauth/youtube/callback': typeof ApiPublicOauthYoutubeCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -352,6 +383,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/refer': typeof AuthenticatedReferRoute
   '/saved': typeof AuthenticatedSavedRoute
+  '/scheduler': typeof AuthenticatedSchedulerRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
@@ -367,6 +399,9 @@ export interface FileRoutesByTo {
   '/api/public/v1/image': typeof ApiPublicV1ImageRoute
   '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
+  '/api/public/oauth/instagram/callback': typeof ApiPublicOauthInstagramCallbackRoute
+  '/api/public/oauth/tiktok/callback': typeof ApiPublicOauthTiktokCallbackRoute
+  '/api/public/oauth/youtube/callback': typeof ApiPublicOauthYoutubeCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -399,6 +434,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/refer': typeof AuthenticatedReferRoute
   '/_authenticated/saved': typeof AuthenticatedSavedRoute
+  '/_authenticated/scheduler': typeof AuthenticatedSchedulerRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
@@ -414,6 +450,9 @@ export interface FileRoutesById {
   '/api/public/v1/image': typeof ApiPublicV1ImageRoute
   '/api/public/v1/text': typeof ApiPublicV1TextRoute
   '/api/public/assets/download/$id': typeof ApiPublicAssetsDownloadIdRoute
+  '/api/public/oauth/instagram/callback': typeof ApiPublicOauthInstagramCallbackRoute
+  '/api/public/oauth/tiktok/callback': typeof ApiPublicOauthTiktokCallbackRoute
+  '/api/public/oauth/youtube/callback': typeof ApiPublicOauthYoutubeCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -446,6 +485,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/refer'
     | '/saved'
+    | '/scheduler'
     | '/settings'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
@@ -461,6 +501,9 @@ export interface FileRouteTypes {
     | '/api/public/v1/image'
     | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
+    | '/api/public/oauth/instagram/callback'
+    | '/api/public/oauth/tiktok/callback'
+    | '/api/public/oauth/youtube/callback'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -491,6 +534,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/refer'
     | '/saved'
+    | '/scheduler'
     | '/settings'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
@@ -506,6 +550,9 @@ export interface FileRouteTypes {
     | '/api/public/v1/image'
     | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
+    | '/api/public/oauth/instagram/callback'
+    | '/api/public/oauth/tiktok/callback'
+    | '/api/public/oauth/youtube/callback'
   id:
     | '__root__'
     | '/'
@@ -537,6 +584,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/refer'
     | '/_authenticated/saved'
+    | '/_authenticated/scheduler'
     | '/_authenticated/settings'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
@@ -552,6 +600,9 @@ export interface FileRouteTypes {
     | '/api/public/v1/image'
     | '/api/public/v1/text'
     | '/api/public/assets/download/$id'
+    | '/api/public/oauth/instagram/callback'
+    | '/api/public/oauth/tiktok/callback'
+    | '/api/public/oauth/youtube/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -580,6 +631,9 @@ export interface RootRouteChildren {
   ApiPublicV1ImageRoute: typeof ApiPublicV1ImageRoute
   ApiPublicV1TextRoute: typeof ApiPublicV1TextRoute
   ApiPublicAssetsDownloadIdRoute: typeof ApiPublicAssetsDownloadIdRoute
+  ApiPublicOauthInstagramCallbackRoute: typeof ApiPublicOauthInstagramCallbackRoute
+  ApiPublicOauthTiktokCallbackRoute: typeof ApiPublicOauthTiktokCallbackRoute
+  ApiPublicOauthYoutubeCallbackRoute: typeof ApiPublicOauthYoutubeCallbackRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -722,6 +776,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/scheduler': {
+      id: '/_authenticated/scheduler'
+      path: '/scheduler'
+      fullPath: '/scheduler'
+      preLoaderRoute: typeof AuthenticatedSchedulerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/saved': {
@@ -885,6 +946,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAuthSigninRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/oauth/youtube/callback': {
+      id: '/api/public/oauth/youtube/callback'
+      path: '/api/public/oauth/youtube/callback'
+      fullPath: '/api/public/oauth/youtube/callback'
+      preLoaderRoute: typeof ApiPublicOauthYoutubeCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/oauth/tiktok/callback': {
+      id: '/api/public/oauth/tiktok/callback'
+      path: '/api/public/oauth/tiktok/callback'
+      fullPath: '/api/public/oauth/tiktok/callback'
+      preLoaderRoute: typeof ApiPublicOauthTiktokCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/oauth/instagram/callback': {
+      id: '/api/public/oauth/instagram/callback'
+      path: '/api/public/oauth/instagram/callback'
+      fullPath: '/api/public/oauth/instagram/callback'
+      preLoaderRoute: typeof ApiPublicOauthInstagramCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/assets/download/$id': {
       id: '/api/public/assets/download/$id'
       path: '/api/public/assets/download/$id'
@@ -920,6 +1002,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedReferRoute: typeof AuthenticatedReferRoute
   AuthenticatedSavedRoute: typeof AuthenticatedSavedRoute
+  AuthenticatedSchedulerRoute: typeof AuthenticatedSchedulerRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedAssetsIdRoute: typeof AuthenticatedAssetsIdRoute
   AuthenticatedAssetsIndexRoute: typeof AuthenticatedAssetsIndexRoute
@@ -939,6 +1022,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedReferRoute: AuthenticatedReferRoute,
   AuthenticatedSavedRoute: AuthenticatedSavedRoute,
+  AuthenticatedSchedulerRoute: AuthenticatedSchedulerRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedAssetsIdRoute: AuthenticatedAssetsIdRoute,
   AuthenticatedAssetsIndexRoute: AuthenticatedAssetsIndexRoute,
@@ -996,17 +1080,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicV1ImageRoute: ApiPublicV1ImageRoute,
   ApiPublicV1TextRoute: ApiPublicV1TextRoute,
   ApiPublicAssetsDownloadIdRoute: ApiPublicAssetsDownloadIdRoute,
+  ApiPublicOauthInstagramCallbackRoute: ApiPublicOauthInstagramCallbackRoute,
+  ApiPublicOauthTiktokCallbackRoute: ApiPublicOauthTiktokCallbackRoute,
+  ApiPublicOauthYoutubeCallbackRoute: ApiPublicOauthYoutubeCallbackRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

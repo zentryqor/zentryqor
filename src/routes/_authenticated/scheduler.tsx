@@ -1,0 +1,246 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import {
+  Calendar,
+  CheckCircle2,
+  Instagram,
+  Loader2,
+  Music2,
+  Plug,
+  Youtube,
+  Unlink,
+  Clock,
+  AlertTriangle,
+} from "lucide-react";
+import { AppHeader } from "@/components/AppHeader";
+import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
+import { ProfileMenu } from "@/components/ProfileMenu";
+import {
+  disconnectSocialAccount,
+  listSocialAccounts,
+  startSocialOAuth,
+  type SocialAccountRow,
+} from "@/lib/social.functions";
+
+export const Route = createFileRoute("/_authenticated/scheduler")({
+  head: () => ({
+    meta: [
+      { title: "Scheduler — Zentry Qor" },
+      {
+        name: "description",
+        content:
+          "Queue posts to TikTok, Instagram Reels, and YouTube Shorts from one workspace.",
+      },
+    ],
+  }),
+  component: SchedulerPage,
+});
+
+type Platform = "tiktok" | "instagram" | "youtube";
+
+const PLATFORMS: {
+  key: Platform;
+  label: string;
+  icon: typeof Music2;
+  blurb: string;
+  color: string;
+}[] = [
+  {
+    key: "tiktok",
+    label: "TikTok",
+    icon: Music2,
+    blurb: "Auto-publish videos to your TikTok account.",
+    color: "text-pink-400",
+  },
+  {
+    key: "instagram",
+    label: "Instagram Reels",
+    icon: Instagram,
+    blurb: "Requires a Business or Creator IG account linked to a Facebook Page.",
+    color: "text-fuchsia-400",
+  },
+  {
+    key: "youtube",
+    label: "YouTube Shorts",
+    icon: Youtube,
+    blurb: "Upload Shorts (≤ 60s vertical) straight to your channel.",
+    color: "text-red-400",
+  },
+];
+
+function SchedulerPage() {
+  const qc = useQueryClient();
+  const list = useServerFn(listSocialAccounts);
+  const start = useServerFn(startSocialOAuth);
+  const disconnect = useServerFn(disconnectSocialAccount);
+
+  const accountsQuery = useQuery({
+    queryKey: ["social-accounts"],
+    queryFn: () => list(),
+  });
+
+  const startMut = useMutation({
+    mutationFn: async (platform: Platform) => start({ data: { platform } }),
+    onSuccess: (res) => {
+      window.location.href = res.url;
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Couldn't start connection"),
+  });
+
+  const disconnectMut = useMutation({
+    mutationFn: async (id: string) => disconnect({ data: { id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["social-accounts"] });
+      toast.success("Disconnected");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Couldn't disconnect"),
+  });
+
+  const active = (accountsQuery.data ?? []).filter(
+    (a: SocialAccountRow) => !a.revoked_at,
+  );
+  const byPlatform = new Map<Platform, SocialAccountRow>();
+  for (const a of active) byPlatform.set(a.platform, a);
+
+  return (
+    <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+      <AnimatedOrbs />
+      <AppHeader right={<ProfileMenu />} />
+
+      <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-28 pb-40">
+        <div className="flex items-start gap-4 mb-8">
+          <div className="w-12 h-12 rounded-2xl glass-strong flex items-center justify-center shrink-0">
+            <Calendar className="w-6 h-6" />
+          </div>
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+              Native scheduler
+            </h1>
+            <p className="text-muted-foreground mt-1 max-w-xl">
+              Connect your accounts, queue posts, and let Zentry Qor publish to TikTok,
+              Instagram Reels, and YouTube Shorts on your schedule.
+            </p>
+          </div>
+        </div>
+
+        <div className="glass-strong rounded-2xl p-5 mb-8 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 mt-0.5 shrink-0 text-amber-400" />
+          <div className="text-sm text-muted-foreground">
+            <span className="text-foreground font-medium">Sandbox mode.</span>{" "}
+            Each platform requires app review before it can post to real accounts at scale.
+            You can connect and test with sandbox/test users today; automated posting for
+            all users unlocks once each provider approves the app.
+          </div>
+        </div>
+
+        <h2 className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-3">
+          Connected accounts
+        </h2>
+
+        <div className="space-y-3 mb-10">
+          {PLATFORMS.map((p) => {
+            const acct = byPlatform.get(p.key);
+            const Icon = p.icon;
+            const expired =
+              acct?.expires_at && new Date(acct.expires_at).getTime() < Date.now();
+            return (
+              <div
+                key={p.key}
+                className="glass-strong rounded-2xl p-5 flex items-start gap-4"
+              >
+                <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 ${p.color}`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="font-medium">{p.label}</div>
+                    {acct && !expired && (
+                      <span className="inline-flex items-center gap-1 text-[11px] rounded-full bg-emerald-500/15 text-emerald-300 px-2 py-0.5">
+                        <CheckCircle2 className="w-3 h-3" /> Connected
+                      </span>
+                    )}
+                    {expired && (
+                      <span className="inline-flex items-center gap-1 text-[11px] rounded-full bg-amber-500/15 text-amber-300 px-2 py-0.5">
+                        <Clock className="w-3 h-3" /> Token expired
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-1">
+                    {acct ? (
+                      <>
+                        <span className="text-foreground/80">{acct.handle ?? "Connected"}</span>
+                        {acct.expires_at && (
+                          <span className="ml-2 text-xs">
+                            · expires {new Date(acct.expires_at).toLocaleDateString()}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      p.blurb
+                    )}
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+                  {acct ? (
+                    <>
+                      <button
+                        onClick={() => startMut.mutate(p.key)}
+                        disabled={startMut.isPending}
+                        className="rounded-xl glass-strong px-3 py-2 text-xs hover:bg-white/[0.06] inline-flex items-center gap-1.5"
+                      >
+                        {startMut.isPending && startMut.variables === p.key ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Plug className="w-3.5 h-3.5" />
+                        )}
+                        Reconnect
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (confirm(`Disconnect ${p.label}?`)) disconnectMut.mutate(acct.id);
+                        }}
+                        disabled={disconnectMut.isPending}
+                        className="rounded-xl px-3 py-2 text-xs text-muted-foreground hover:text-red-400 inline-flex items-center gap-1.5"
+                      >
+                        <Unlink className="w-3.5 h-3.5" /> Disconnect
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => startMut.mutate(p.key)}
+                      disabled={startMut.isPending}
+                      className="rounded-xl bg-white text-black px-4 py-2 text-xs font-medium hover:bg-white/90 inline-flex items-center gap-1.5"
+                    >
+                      {startMut.isPending && startMut.variables === p.key ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Plug className="w-3.5 h-3.5" />
+                      )}
+                      Connect
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="glass-strong rounded-2xl p-6">
+          <h2 className="font-medium mb-2">What's next</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Phase 1 (connections) is live. Phase 2 adds upload + queue + publish for
+            TikTok, then Instagram and YouTube once their reviews clear.
+          </p>
+          <Link
+            to="/roadmap"
+            className="inline-flex items-center gap-2 rounded-xl glass-strong px-4 py-2 text-sm hover:bg-white/[0.06]"
+          >
+            See the roadmap
+          </Link>
+        </div>
+      </main>
+    </div>
+  );
+}

@@ -685,6 +685,157 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_post_targets: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          platform_post_id: string | null
+          published_at: string | null
+          scheduled_post_id: string
+          social_account_id: string | null
+          status: Database["public"]["Enums"]["scheduled_target_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          platform: Database["public"]["Enums"]["social_platform"]
+          platform_post_id?: string | null
+          published_at?: string | null
+          scheduled_post_id: string
+          social_account_id?: string | null
+          status?: Database["public"]["Enums"]["scheduled_target_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          platform?: Database["public"]["Enums"]["social_platform"]
+          platform_post_id?: string | null
+          published_at?: string | null
+          scheduled_post_id?: string
+          social_account_id?: string | null
+          status?: Database["public"]["Enums"]["scheduled_target_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_post_targets_scheduled_post_id_fkey"
+            columns: ["scheduled_post_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_post_targets_social_account_id_fkey"
+            columns: ["social_account_id"]
+            isOneToOne: false
+            referencedRelation: "social_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_post_targets_social_account_id_fkey"
+            columns: ["social_account_id"]
+            isOneToOne: false
+            referencedRelation: "social_accounts_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scheduled_posts: {
+        Row: {
+          caption: string
+          created_at: string
+          error: string | null
+          id: string
+          scheduled_for: string
+          status: Database["public"]["Enums"]["scheduled_post_status"]
+          thumbnail_path: string | null
+          updated_at: string
+          user_id: string
+          video_path: string | null
+        }
+        Insert: {
+          caption?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          scheduled_for: string
+          status?: Database["public"]["Enums"]["scheduled_post_status"]
+          thumbnail_path?: string | null
+          updated_at?: string
+          user_id: string
+          video_path?: string | null
+        }
+        Update: {
+          caption?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          scheduled_for?: string
+          status?: Database["public"]["Enums"]["scheduled_post_status"]
+          thumbnail_path?: string | null
+          updated_at?: string
+          user_id?: string
+          video_path?: string | null
+        }
+        Relationships: []
+      }
+      social_accounts: {
+        Row: {
+          access_token: string
+          connected_at: string
+          expires_at: string | null
+          handle: string | null
+          id: string
+          meta: Json
+          platform: Database["public"]["Enums"]["social_platform"]
+          platform_user_id: string
+          refresh_token: string | null
+          revoked_at: string | null
+          scopes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          connected_at?: string
+          expires_at?: string | null
+          handle?: string | null
+          id?: string
+          meta?: Json
+          platform: Database["public"]["Enums"]["social_platform"]
+          platform_user_id: string
+          refresh_token?: string | null
+          revoked_at?: string | null
+          scopes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          connected_at?: string
+          expires_at?: string | null
+          handle?: string | null
+          id?: string
+          meta?: Json
+          platform?: Database["public"]["Enums"]["social_platform"]
+          platform_user_id?: string
+          refresh_token?: string | null
+          revoked_at?: string | null
+          scopes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       status_checks: {
         Row: {
           created_at: string
@@ -888,7 +1039,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      social_accounts_public: {
+        Row: {
+          connected_at: string | null
+          expires_at: string | null
+          handle: string | null
+          id: string | null
+          meta: Json | null
+          platform: Database["public"]["Enums"]["social_platform"] | null
+          platform_user_id: string | null
+          revoked_at: string | null
+          scopes: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          connected_at?: string | null
+          expires_at?: string | null
+          handle?: string | null
+          id?: string | null
+          meta?: Json | null
+          platform?: Database["public"]["Enums"]["social_platform"] | null
+          platform_user_id?: string | null
+          revoked_at?: string | null
+          scopes?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          connected_at?: string | null
+          expires_at?: string | null
+          handle?: string | null
+          id?: string | null
+          meta?: Json | null
+          platform?: Database["public"]["Enums"]["social_platform"] | null
+          platform_user_id?: string | null
+          revoked_at?: string | null
+          scopes?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       award_referral_bonus: { Args: { _referee: string }; Returns: boolean }
@@ -960,7 +1152,21 @@ export type Database = {
         | "photographer"
         | "developer"
         | "other"
+      scheduled_post_status:
+        | "draft"
+        | "queued"
+        | "publishing"
+        | "published"
+        | "failed"
+        | "canceled"
+      scheduled_target_status:
+        | "pending"
+        | "publishing"
+        | "published"
+        | "failed"
+        | "skipped"
       skill_level: "beginner" | "intermediate" | "advanced" | "pro"
+      social_platform: "tiktok" | "instagram" | "youtube"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1099,7 +1305,23 @@ export const Constants = {
         "developer",
         "other",
       ],
+      scheduled_post_status: [
+        "draft",
+        "queued",
+        "publishing",
+        "published",
+        "failed",
+        "canceled",
+      ],
+      scheduled_target_status: [
+        "pending",
+        "publishing",
+        "published",
+        "failed",
+        "skipped",
+      ],
       skill_level: ["beginner", "intermediate", "advanced", "pro"],
+      social_platform: ["tiktok", "instagram", "youtube"],
     },
   },
 } as const
