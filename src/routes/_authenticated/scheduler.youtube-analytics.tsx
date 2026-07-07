@@ -44,6 +44,7 @@ function AnalyticsPage() {
   const fetchReport = useServerFn(getYouTubeAnalyticsReport);
   const start = useServerFn(startSocialOAuth);
   const [days, setDays] = useState<7 | 14 | 30>(7);
+  const [topN, setTopN] = useState<5 | 10 | 15>(5);
   const q = useQuery({
     queryKey: ["youtube-analytics-report", days],
     queryFn: () => fetchReport({ data: { days } }),
@@ -412,6 +413,8 @@ function AnalyticsPage() {
                     <CountriesTrendChart
                       trend={data.audience.countriesTrend}
                       days={data.rangeDays}
+                      topN={topN}
+                      onChangeTopN={setTopN}
                     />
                   )}
               </section>
@@ -535,18 +538,33 @@ const TREND_COLORS = [
   "#34d399", // emerald
   "#fbbf24", // amber
   "#a78bfa", // violet
+  "#f87171", // red
+  "#60a5fa", // blue
+  "#4ade80", // green
+  "#facc15", // yellow
+  "#c084fc", // purple
+  "#fb923c", // orange
+  "#22d3ee", // cyan
+  "#e879f9", // fuchsia
+  "#a3e635", // lime
+  "#94a3b8", // slate
 ];
 
 function CountriesTrendChart({
   trend,
   days,
+  topN,
+  onChangeTopN,
 }: {
   trend: NonNullable<
     NonNullable<YouTubeAnalyticsReport["audience"]>["countriesTrend"]
   >;
   days: number;
+  topN: 5 | 10 | 15;
+  onChangeTopN: (n: 5 | 10 | 15) => void;
 }) {
-  const { dates, series } = trend;
+  const { dates } = trend;
+  const series = trend.series.slice(0, topN);
   const width = 640;
   const height = 220;
   const padL = 36;
@@ -565,11 +583,28 @@ function CountriesTrendChart({
 
   return (
     <div className="glass-strong rounded-2xl p-5 mt-3">
-      <div className="flex items-baseline justify-between mb-3">
+      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <div className="text-xs text-muted-foreground">
           Country views · last {days} days
         </div>
-        <div className="text-[10px] text-muted-foreground">Daily views</div>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-muted-foreground">Show top</span>
+          <div className="inline-flex rounded-lg glass-strong p-0.5 h-7 items-stretch">
+            {([5, 10, 15] as const).map((n) => (
+              <button
+                key={n}
+                onClick={() => onChangeTopN(n)}
+                className={`px-2 rounded-md text-[11px] font-medium transition ${
+                  topN === n
+                    ? "bg-white text-black"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
       <div className="w-full overflow-x-auto">
         <svg

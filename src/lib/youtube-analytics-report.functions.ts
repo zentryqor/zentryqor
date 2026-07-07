@@ -218,7 +218,7 @@ export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
         `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&metrics=viewerPercentage&dimensions=ageGroup,gender&startDate=${iso(audStart)}&endDate=${iso(end)}`,
       );
       const ctr = await ytFetch(
-        `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&metrics=views&dimensions=country&startDate=${iso(audStart)}&endDate=${iso(end)}&sort=-views&maxResults=6`,
+        `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&metrics=views&dimensions=country&startDate=${iso(audStart)}&endDate=${iso(end)}&sort=-views&maxResults=15`,
       );
       // Country time-series over the selected range (day x country).
       const ctrTrend = await ytFetch(
@@ -266,7 +266,7 @@ export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
           dates.push(iso(d));
         }
         const dateIdx = new Map(dates.map((d, i) => [d, i]));
-        const topSet = new Set(countries.slice(0, 5).map((c) => c.country));
+        const topSet = new Set(countries.slice(0, 15).map((c) => c.country));
         const byCountry = new Map<string, number[]>();
         for (const c of topSet) byCountry.set(c, new Array(days).fill(0));
         for (const r of ctrTrend.json.rows as any[]) {
