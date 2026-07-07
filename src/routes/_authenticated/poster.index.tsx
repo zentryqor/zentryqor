@@ -238,9 +238,10 @@ function PosterPage() {
           {postsQuery.data && postsQuery.data.length === 0 && (
             <div className="glass-strong rounded-2xl p-6 text-sm text-muted-foreground text-center">
               No scheduled posts yet.{" "}
-              {yt ? (
+              {ytAccounts.length > 0 ? (
                 <Link
                   to="/poster/youtube"
+                  search={{ accountId: ytAccounts[0].id }}
                   className="text-foreground underline"
                 >
                   Open your channel to schedule one
