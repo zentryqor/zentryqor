@@ -1,12 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { z } from "zod";
 import { toast } from "sonner";
 import {
   ArrowLeft,
   Calendar,
   ChevronDown,
+  FileText,
   Loader2,
   Upload,
   Youtube,
@@ -18,16 +20,29 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   createScheduledPost,
   createSignedUploadUrl,
+  getScheduledPost,
+  saveDraftPost,
 } from "@/lib/scheduler.functions";
 import { listSocialAccounts } from "@/lib/social.functions";
 import { getYouTubeUploadOptions } from "@/lib/youtube-upload-options.functions";
 
+const searchSchema = z.object({ id: z.string().uuid().optional() });
+
 export const Route = createFileRoute("/_authenticated/scheduler/new")({
+  validateSearch: (s) => searchSchema.parse(s),
   head: () => ({
     meta: [{ title: "Schedule a post — Zentry Qor" }],
   }),
   component: NewScheduledPost,
 });
+
+function toLocalInput(iso: string) {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return defaultWhen();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 
 function defaultWhen() {
   const d = new Date(Date.now() + 15 * 60_000);
@@ -41,9 +56,12 @@ type License = "youtube" | "creativeCommon";
 
 function NewScheduledPost() {
   const nav = useNavigate();
+  const { id: draftId } = Route.useSearch();
   const list = useServerFn(listSocialAccounts);
   const sign = useServerFn(createSignedUploadUrl);
   const create = useServerFn(createScheduledPost);
+  const saveDraft = useServerFn(saveDraftPost);
+  const getDraft = useServerFn(getScheduledPost);
   const ytOpts = useServerFn(getYouTubeUploadOptions);
 
   const accountsQuery = useQuery({
@@ -64,10 +82,18 @@ function NewScheduledPost() {
     staleTime: 5 * 60_000,
   });
 
+  const draftQuery = useQuery({
+    queryKey: ["scheduled-post", draftId],
+    queryFn: () => getDraft({ data: { id: draftId! } }),
+    enabled: !!draftId,
+    staleTime: 0,
+  });
+
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState("");
   const [when, setWhen] = useState(defaultWhen());
   const [file, setFile] = useState<File | null>(null);
+  const [existingVideoPath, setExistingVideoPath] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -83,6 +109,30 @@ function NewScheduledPost() {
   const [locationDesc, setLocationDesc] = useState("");
   const [playlistIds, setPlaylistIds] = useState<string[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    if (!draftQuery.data || hydrated) return;
+    const d = draftQuery.data;
+    const yt = (d.options?.youtube ?? {}) as any;
+    setCaption(d.caption ?? "");
+    setWhen(toLocalInput(d.scheduled_for));
+    setExistingVideoPath(d.video_path ?? null);
+    if (yt.title) setTitle(String(yt.title).slice(0, 100));
+    if (yt.privacyStatus) setVisibility(yt.privacyStatus);
+    if (typeof yt.madeForKids === "boolean") setMadeForKids(yt.madeForKids);
+    if (yt.categoryId) setCategoryId(String(yt.categoryId));
+    if (Array.isArray(yt.tags)) setTagsText(yt.tags.join(", "));
+    if (yt.license) setLicense(yt.license);
+    if (typeof yt.embeddable === "boolean") setEmbeddable(yt.embeddable);
+    if (typeof yt.publicStatsViewable === "boolean")
+      setPublicStats(yt.publicStatsViewable);
+    if (typeof yt.notifySubscribers === "boolean")
+      setNotifySubs(yt.notifySubscribers);
+    if (yt.locationDescription) setLocationDesc(yt.locationDescription);
+    if (Array.isArray(yt.playlistIds)) setPlaylistIds(yt.playlistIds);
+    setHydrated(true);
+  }, [draftQuery.data, hydrated]);
 
   const tags = useMemo(
     () =>
@@ -94,13 +144,11 @@ function NewScheduledPost() {
     [tagsText],
   );
 
-  const mut = useMutation({
-    mutationFn: async () => {
-      if (!file) throw new Error("Pick a video first");
-      if (!ytConnected)
-        throw new Error("Connect YouTube on the scheduler page first");
-
-      setUploading(true);
+  // Uploads the picked video (if any) and returns the storage path to persist.
+  async function ensureVideoPath(): Promise<string | null> {
+    if (!file) return existingVideoPath;
+    setUploading(true);
+    try {
       const signed = await sign({
         data: { filename: file.name, contentType: file.type || "video/mp4" },
       });
@@ -110,29 +158,45 @@ function NewScheduledPost() {
           contentType: file.type || "video/mp4",
           upsert: false,
         });
-      setUploading(false);
       if (up.error) throw new Error(up.error.message);
+      return signed.path;
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function ytPayload() {
+    return {
+      title: title.trim() || undefined,
+      description: caption || undefined,
+      privacyStatus: visibility,
+      madeForKids,
+      categoryId: categoryId || undefined,
+      tags: tags.length > 0 ? tags : undefined,
+      license,
+      embeddable,
+      publicStatsViewable: publicStats,
+      notifySubscribers: notifySubs,
+      locationDescription: locationDesc.trim() || undefined,
+      playlistIds: playlistIds.length > 0 ? playlistIds : undefined,
+    };
+  }
+
+  const mut = useMutation({
+    mutationFn: async () => {
+      if (!ytConnected)
+        throw new Error("Connect YouTube on the scheduler page first");
+      const videoPath = await ensureVideoPath();
+      if (!videoPath) throw new Error("Pick a video first");
 
       return create({
         data: {
+          id: draftId,
           caption,
-          videoPath: signed.path,
+          videoPath,
           scheduledFor: new Date(when).toISOString(),
           platforms: ["youtube"],
-          youtube: {
-            title: title.trim() || undefined,
-            description: caption || undefined,
-            privacyStatus: visibility,
-            madeForKids,
-            categoryId: categoryId || undefined,
-            tags: tags.length > 0 ? tags : undefined,
-            license,
-            embeddable,
-            publicStatsViewable: publicStats,
-            notifySubscribers: notifySubs,
-            locationDescription: locationDesc.trim() || undefined,
-            playlistIds: playlistIds.length > 0 ? playlistIds : undefined,
-          },
+          youtube: ytPayload(),
         },
       });
     },
@@ -146,10 +210,37 @@ function NewScheduledPost() {
     },
   });
 
-  const readyToSubmit = !!file && !!when && !mut.isPending && !uploading;
+  const draftMut = useMutation({
+    mutationFn: async () => {
+      const videoPath = await ensureVideoPath();
+      return saveDraft({
+        data: {
+          id: draftId,
+          caption,
+          videoPath: videoPath ?? undefined,
+          scheduledFor: when ? new Date(when).toISOString() : undefined,
+          platforms: ["youtube"],
+          youtube: ytPayload(),
+        },
+      });
+    },
+    onSuccess: () => {
+      toast.success("Draft saved.");
+      nav({ to: "/scheduler" });
+    },
+    onError: (e: any) => {
+      setUploading(false);
+      toast.error(e?.message ?? "Couldn't save draft");
+    },
+  });
+
+  const busy = mut.isPending || draftMut.isPending || uploading;
+  const readyToSubmit = (!!file || !!existingVideoPath) && !!when && !busy;
+  const canSaveDraft = !busy;
 
   const categories = optionsQuery.data?.categories ?? [];
   const playlists = optionsQuery.data?.playlists ?? [];
+
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
@@ -170,14 +261,22 @@ function NewScheduledPost() {
           </div>
           <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-              Schedule a post
+              {draftId ? "Edit draft" : "Schedule a post"}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Upload a video, set details, and Zentry Qor will publish it to
-              YouTube automatically.
+              {draftId
+                ? "Pick up where you left off. Save again as a draft, or schedule it."
+                : "Upload a video, set details, and Zentry Qor will publish it to YouTube automatically."}
             </p>
           </div>
         </div>
+
+        {draftId && draftQuery.isLoading && (
+          <div className="glass-strong rounded-2xl p-4 mb-5 text-sm text-muted-foreground flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" /> Loading draft…
+          </div>
+        )}
+
 
         <form
           onSubmit={(e) => {
@@ -214,11 +313,20 @@ function NewScheduledPost() {
                     {(file.size / 1024 / 1024).toFixed(1)} MB · click to change
                   </span>
                 </>
+              ) : existingVideoPath ? (
+                <>
+                  <span className="text-foreground truncate max-w-full">
+                    {existingVideoPath.split("/").pop()}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Saved with your draft · click to replace
+                  </span>
+                </>
               ) : (
                 <>
                   <span>Click to select a video</span>
                   <span className="text-xs text-muted-foreground">
-                    Stored privately in your workspace
+                    Optional for drafts · required to schedule
                   </span>
                 </>
               )}
@@ -538,13 +646,30 @@ function NewScheduledPost() {
             </p>
           </div>
 
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-end gap-2 flex-wrap">
             <Link
               to="/scheduler"
               className="text-sm text-muted-foreground hover:text-foreground px-4 py-2"
             >
               Cancel
             </Link>
+            <button
+              type="button"
+              onClick={() => draftMut.mutate()}
+              disabled={!canSaveDraft}
+              className="rounded-xl glass-strong border border-white/10 px-4 py-2.5 text-sm font-medium hover:bg-white/[0.06] inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {draftMut.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <FileText className="w-4 h-4" />
+              )}
+              {draftMut.isPending
+                ? "Saving…"
+                : draftId
+                  ? "Update draft"
+                  : "Save as draft"}
+            </button>
             <button
               type="submit"
               disabled={!readyToSubmit || !ytConnected}
@@ -557,9 +682,12 @@ function NewScheduledPost() {
                 ? "Uploading video…"
                 : mut.isPending
                   ? "Scheduling…"
-                  : "Schedule post"}
+                  : draftId
+                    ? "Schedule now"
+                    : "Schedule post"}
             </button>
           </div>
+
         </form>
       </main>
     </div>

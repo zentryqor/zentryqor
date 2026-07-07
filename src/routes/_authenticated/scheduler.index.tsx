@@ -286,6 +286,16 @@ function SchedulerPage() {
                     )}
                   </div>
                   <div className="flex gap-1 shrink-0">
+                    {p.status === "draft" && (
+                      <Link
+                        to="/scheduler/new"
+                        search={{ id: p.id }}
+                        className="rounded-lg px-2.5 py-1.5 text-xs bg-white/10 hover:bg-white/[0.15]"
+                        title="Edit draft"
+                      >
+                        Edit
+                      </Link>
+                    )}
                     {(p.status === "queued" || p.status === "draft") && (
                       <button
                         onClick={() => cancelMut.mutate(p.id)}
@@ -306,6 +316,7 @@ function SchedulerPage() {
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
+
                 </div>
               </div>
             );
