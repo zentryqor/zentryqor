@@ -755,6 +755,7 @@ export type Database = {
           created_at: string
           error: string | null
           id: string
+          options: Json
           scheduled_for: string
           status: Database["public"]["Enums"]["scheduled_post_status"]
           thumbnail_path: string | null
@@ -767,6 +768,7 @@ export type Database = {
           created_at?: string
           error?: string | null
           id?: string
+          options?: Json
           scheduled_for: string
           status?: Database["public"]["Enums"]["scheduled_post_status"]
           thumbnail_path?: string | null
@@ -779,6 +781,7 @@ export type Database = {
           created_at?: string
           error?: string | null
           id?: string
+          options?: Json
           scheduled_for?: string
           status?: Database["public"]["Enums"]["scheduled_post_status"]
           thumbnail_path?: string | null
