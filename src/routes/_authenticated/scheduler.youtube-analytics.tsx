@@ -187,7 +187,7 @@ function AnalyticsPage() {
               <section className="glass-strong rounded-2xl p-5 mb-6">
                 <div className="flex items-baseline justify-between">
                   <h2 className="font-semibold">Recent views</h2>
-                  <div className="text-xs text-muted-foreground">Last 7 days</div>
+                  <div className="text-xs text-muted-foreground">Last {data.rangeDays} days</div>
                 </div>
                 <div className="mt-2 text-3xl font-semibold tracking-tight">
                   {fmt(data.recentViews.last7Days)}
