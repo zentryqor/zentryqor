@@ -31,7 +31,7 @@ import { Trash2, X as XIcon } from "lucide-react";
 export const Route = createFileRoute("/_authenticated/poster/")({
   head: () => ({
     meta: [
-      { title: "Scheduler — Zentry Qor" },
+      { title: "Poster — Zentry Qor" },
       {
         name: "description",
         content:
@@ -109,7 +109,7 @@ function SchedulerPage() {
           </div>
           <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-              Native scheduler
+              Native Poster
             </h1>
             <p className="text-muted-foreground mt-1 max-w-xl">
               Connect your accounts, queue posts, and let Zentry Qor publish to
@@ -136,7 +136,7 @@ function SchedulerPage() {
         <div className="space-y-3 mb-10">
           {yt ? (
             <Link
-              to="/scheduler/youtube"
+              to="/poster/youtube"
               className="glass-strong rounded-2xl p-5 flex items-center gap-4 group hover:bg-white/[0.04] transition-colors"
             >
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 text-red-400">
@@ -217,7 +217,7 @@ function SchedulerPage() {
               No scheduled posts yet.{" "}
               {yt ? (
                 <Link
-                  to="/scheduler/youtube"
+                  to="/poster/youtube"
                   className="text-foreground underline"
                 >
                   Open your channel to schedule one
@@ -288,7 +288,7 @@ function SchedulerPage() {
                   <div className="flex gap-1 shrink-0">
                     {p.status === "draft" && (
                       <Link
-                        to="/scheduler/new"
+                        to="/poster/new"
                         search={{ id: p.id }}
                         className="rounded-lg px-2.5 py-1.5 text-xs bg-white/10 hover:bg-white/[0.15]"
                         title="Edit draft"

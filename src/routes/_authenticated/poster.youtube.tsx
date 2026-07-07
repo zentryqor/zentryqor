@@ -111,10 +111,10 @@ function YouTubeChannelPage() {
 
       <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-28 pb-40">
         <Link
-          to="/scheduler"
+          to="/poster"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to scheduler
+          <ArrowLeft className="w-4 h-4" /> Back to Poster
         </Link>
 
         {detailsQuery.isLoading && (
@@ -225,13 +225,13 @@ function YouTubeChannelPage() {
 
               <div className="mt-5 grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
                 <Link
-                  to="/scheduler/new"
+                  to="/poster/new"
                   className="rounded-xl bg-white text-black px-4 h-10 text-xs font-medium hover:bg-white/90 inline-flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1"
                 >
                   <Plus className="w-3.5 h-3.5" /> New post
                 </Link>
                 <Link
-                  to="/scheduler/youtube-analytics"
+                  to="/poster/youtube-analytics"
                   className="rounded-xl glass-strong px-4 h-10 text-xs font-medium hover:bg-white/[0.06] inline-flex items-center justify-center gap-1.5"
                 >
                   <BarChart3 className="w-3.5 h-3.5" /> Analytics

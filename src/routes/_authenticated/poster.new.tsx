@@ -185,7 +185,7 @@ function NewScheduledPost() {
   const mut = useMutation({
     mutationFn: async () => {
       if (!ytConnected)
-        throw new Error("Connect YouTube on the scheduler page first");
+        throw new Error("Connect YouTube on the Poster page first");
       const videoPath = await ensureVideoPath();
       if (!videoPath) throw new Error("Pick a video first");
 
@@ -202,7 +202,7 @@ function NewScheduledPost() {
     },
     onSuccess: () => {
       toast.success("Scheduled! It'll publish automatically at the set time.");
-      nav({ to: "/scheduler" });
+      nav({ to: "/poster" });
     },
     onError: (e: any) => {
       setUploading(false);
@@ -226,7 +226,7 @@ function NewScheduledPost() {
     },
     onSuccess: () => {
       toast.success("Draft saved.");
-      nav({ to: "/scheduler" });
+      nav({ to: "/poster" });
     },
     onError: (e: any) => {
       setUploading(false);
@@ -249,10 +249,10 @@ function NewScheduledPost() {
 
       <main className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 pt-28 pb-40">
         <Link
-          to="/scheduler"
+          to="/poster"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
-          <ArrowLeft className="w-4 h-4" /> Back to scheduler
+          <ArrowLeft className="w-4 h-4" /> Back to Poster
         </Link>
 
         <div className="flex items-start gap-4 mb-8">
@@ -626,7 +626,7 @@ function NewScheduledPost() {
                   <div className="text-xs text-muted-foreground">
                     {ytConnected
                       ? "Connected — will auto-publish"
-                      : "Not connected — connect on scheduler page"}
+                      : "Not connected — connect on Poster page"}
                   </div>
                 </div>
               </div>
@@ -648,7 +648,7 @@ function NewScheduledPost() {
 
           <div className="flex items-center justify-end gap-2 flex-wrap">
             <Link
-              to="/scheduler"
+              to="/poster"
               className="text-sm text-muted-foreground hover:text-foreground px-4 py-2"
             >
               Cancel

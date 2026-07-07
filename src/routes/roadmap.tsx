@@ -21,7 +21,7 @@ const items = [
   { status: "progress", title: "Team workspaces", body: "Shared vaults, roles, and seat-based billing. Private beta now." },
   { status: "progress", title: "Mobile app (iOS)", body: "Vault browsing, AI runs, and quick publish from your phone." },
   { status: "planned", title: "Brand kits", body: "Auto-apply your fonts, colors, and watermark across every export." },
-  { status: "planned", title: "Native scheduler", body: "Queue posts to TikTok, Reels, and Shorts from inside the workspace." },
+  { status: "planned", title: "Native Poster", body: "Queue posts to TikTok, Reels, and Shorts from inside the workspace." },
 ];
 
 const meta: Record<string, { label: string; icon: typeof CheckCircle2; cls: string }> = {
