@@ -538,6 +538,16 @@ const TREND_COLORS = [
   "#34d399", // emerald
   "#fbbf24", // amber
   "#a78bfa", // violet
+  "#f87171", // red
+  "#60a5fa", // blue
+  "#4ade80", // green
+  "#facc15", // yellow
+  "#c084fc", // purple
+  "#fb923c", // orange
+  "#22d3ee", // cyan
+  "#e879f9", // fuchsia
+  "#a3e635", // lime
+  "#94a3b8", // slate
 ];
 
 function CountriesTrendChart({
