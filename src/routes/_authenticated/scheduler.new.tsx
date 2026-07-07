@@ -261,14 +261,22 @@ function NewScheduledPost() {
           </div>
           <div className="flex-1">
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
-              Schedule a post
+              {draftId ? "Edit draft" : "Schedule a post"}
             </h1>
             <p className="text-muted-foreground mt-1">
-              Upload a video, set details, and Zentry Qor will publish it to
-              YouTube automatically.
+              {draftId
+                ? "Pick up where you left off. Save again as a draft, or schedule it."
+                : "Upload a video, set details, and Zentry Qor will publish it to YouTube automatically."}
             </p>
           </div>
         </div>
+
+        {draftId && draftQuery.isLoading && (
+          <div className="glass-strong rounded-2xl p-4 mb-5 text-sm text-muted-foreground flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" /> Loading draft…
+          </div>
+        )}
+
 
         <form
           onSubmit={(e) => {
