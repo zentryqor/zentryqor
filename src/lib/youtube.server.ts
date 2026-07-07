@@ -53,42 +53,6 @@ export async function refreshYouTubeToken(row: Row): Promise<string> {
   return json.access_token as string;
 }
 
-export async function publishYouTubeVideo(args: {
-  accessToken: string;
-  title: string;
-  description: string;
-  videoBytes: ArrayBuffer;
-  videoMime: string;
-  privacyStatus?: "public" | "unlisted" | "private";
-}): Promise<{ videoId: string }> {
-  const boundary = "zentry_" + Math.random().toString(36).slice(2);
-  const metadata = JSON.stringify({
-    snippet: {
-      title: (args.title || "Untitled").slice(0, 100),
-      description: args.description ?? "",
-      categoryId: "22", // People & Blogs
-    },
-    status: {
-      privacyStatus: args.privacyStatus ?? "public",
-      selfDeclaredMadeForKids: false,
-    },
-  });
-
-  const enc = new TextEncoder();
-  const preamble = enc.encode(
-    `--${boundary}\r\n` +
-      `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
-      metadata +
-      `\r\n--${boundary}\r\n` +
-      `Content-Type: ${args.videoMime}\r\n\r\n`,
-  );
-  const closer = enc.encode(`\r\n--${boundary}--\r\n`);
-  const body = new Uint8Array(
-    preamble.byteLength + args.videoBytes.byteLength + closer.byteLength,
-  );
-  body.set(preamble, 0);
-  body.set(new Uint8Array(args.videoBytes), preamble.byteLength);
-  body.set(closer, preamble.byteLength + args.videoBytes.byteLength);
 
 export type YouTubePublishOptions = {
   privacyStatus?: "public" | "unlisted" | "private";
