@@ -33,8 +33,12 @@ export const startSocialOAuth = createServerFn({ method: "POST" })
     const { providerCreds, callbackUrl } = await import(
       "@/lib/social-oauth.server"
     );
+    const { getRequest } = await import("@tanstack/react-start/server");
     const { signOAuthState } = await import("@/lib/oauth-state.server");
     const { clientId, cfg } = providerCreds(data.platform);
+    const request = getRequest();
+    const origin = request?.url ? new URL(request.url).origin : undefined;
+    const redirectUri = callbackUrl(data.platform, origin);
     const state = signOAuthState({
       userId: context.userId,
       platform: data.platform,
@@ -42,7 +46,7 @@ export const startSocialOAuth = createServerFn({ method: "POST" })
     const params = new URLSearchParams({
       client_id: clientId,
       response_type: "code",
-      redirect_uri: callbackUrl(data.platform),
+      redirect_uri: redirectUri,
       scope: cfg.scopes.join(" "),
       state,
       access_type: "offline",

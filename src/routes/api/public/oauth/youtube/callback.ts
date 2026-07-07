@@ -24,18 +24,19 @@ export const Route = createFileRoute("/api/public/oauth/youtube/callback")({
         if (!code || !state) return html("<h2>Missing code or state</h2>", 400);
         try {
           const { verifyOAuthState } = await import("@/lib/oauth-state.server");
-          const { providerCreds, callbackUrl, upsertAccount } = await import(
+          const { providerCreds, upsertAccount } = await import(
             "@/lib/social-oauth.server"
           );
           const st = verifyOAuthState(state);
           if (st.platform !== "youtube") throw new Error("Platform mismatch");
           const { clientId, clientSecret, cfg } = providerCreds("youtube");
+          const redirectUri = `${url.origin}${url.pathname}`;
 
           const body = new URLSearchParams({
             code,
             client_id: clientId,
             client_secret: clientSecret,
-            redirect_uri: callbackUrl("youtube"),
+            redirect_uri: redirectUri,
             grant_type: "authorization_code",
           });
 
