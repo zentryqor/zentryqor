@@ -92,7 +92,22 @@ function AnalyticsPage() {
             </div>
           </div>
           {data && (
-            <div className="flex gap-2 print:hidden">
+            <div className="flex gap-2 print:hidden flex-wrap">
+              <div className="inline-flex rounded-xl glass-strong p-0.5 h-10 items-stretch">
+                {([7, 14, 30] as const).map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDays(d)}
+                    className={`px-3 rounded-lg text-xs font-medium transition ${
+                      days === d
+                        ? "bg-white text-black"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {d}d
+                  </button>
+                ))}
+              </div>
               <button
                 onClick={() => exportCsv(data)}
                 className="rounded-xl glass-strong px-3 h-10 text-xs font-medium hover:bg-white/[0.06] inline-flex items-center gap-1.5"
@@ -106,6 +121,7 @@ function AnalyticsPage() {
                 <FileText className="w-3.5 h-3.5" /> PDF
               </button>
             </div>
+
           )}
         </div>
 
