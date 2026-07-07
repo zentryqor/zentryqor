@@ -215,39 +215,6 @@ function YouTubeChannelPage() {
                     </a>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2 shrink-0">
-                  <Link
-                    to="/scheduler/youtube-analytics"
-                    className="rounded-xl glass-strong px-3 py-2 text-xs hover:bg-white/[0.06] inline-flex items-center gap-1.5"
-                  >
-                    <BarChart3 className="w-3.5 h-3.5" /> Analytics
-                  </Link>
-                  <Link
-                    to="/scheduler/new"
-                    className="rounded-xl bg-white text-black px-4 py-2 text-xs font-medium hover:bg-white/90 inline-flex items-center gap-1.5"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> New post
-                  </Link>
-                  <button
-                    onClick={() => reconnectMut.mutate()}
-                    disabled={reconnectMut.isPending}
-                    className="rounded-xl glass-strong px-3 py-2 text-xs hover:bg-white/[0.06] inline-flex items-center gap-1.5"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" /> Reconnect
-                  </button>
-                  {ytAccount && (
-                    <button
-                      onClick={() => {
-                        if (confirm("Disconnect YouTube?"))
-                          disconnectMut.mutate(ytAccount.id);
-                      }}
-                      disabled={disconnectMut.isPending}
-                      className="rounded-xl px-3 py-2 text-xs text-muted-foreground hover:text-red-400 inline-flex items-center gap-1.5"
-                    >
-                      <Unlink className="w-3.5 h-3.5" /> Disconnect
-                    </button>
-                  )}
-                </div>
               </div>
 
               {data.description && (
@@ -255,7 +222,42 @@ function YouTubeChannelPage() {
                   {data.description}
                 </p>
               )}
+
+              <div className="mt-5 grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+                <Link
+                  to="/scheduler/new"
+                  className="rounded-xl bg-white text-black px-4 h-10 text-xs font-medium hover:bg-white/90 inline-flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1"
+                >
+                  <Plus className="w-3.5 h-3.5" /> New post
+                </Link>
+                <Link
+                  to="/scheduler/youtube-analytics"
+                  className="rounded-xl glass-strong px-4 h-10 text-xs font-medium hover:bg-white/[0.06] inline-flex items-center justify-center gap-1.5"
+                >
+                  <BarChart3 className="w-3.5 h-3.5" /> Analytics
+                </Link>
+                <button
+                  onClick={() => reconnectMut.mutate()}
+                  disabled={reconnectMut.isPending}
+                  className="rounded-xl glass-strong px-4 h-10 text-xs font-medium hover:bg-white/[0.06] inline-flex items-center justify-center gap-1.5"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" /> Reconnect
+                </button>
+                {ytAccount && (
+                  <button
+                    onClick={() => {
+                      if (confirm("Disconnect YouTube?"))
+                        disconnectMut.mutate(ytAccount.id);
+                    }}
+                    disabled={disconnectMut.isPending}
+                    className="rounded-xl px-4 h-10 text-xs font-medium text-muted-foreground hover:text-red-400 hover:bg-white/[0.03] inline-flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1"
+                  >
+                    <Unlink className="w-3.5 h-3.5" /> Disconnect
+                  </button>
+                )}
+              </div>
             </div>
+
 
             <div className="grid grid-cols-3 gap-3 mb-6">
               <StatCard
