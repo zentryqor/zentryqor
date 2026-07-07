@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import {
@@ -10,8 +10,11 @@ import {
   ChevronDown,
   FileText,
   Loader2,
+  Sparkles,
   Upload,
+  Wand2,
   Youtube,
+  Zap,
 } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
@@ -25,6 +28,14 @@ import {
 } from "@/lib/scheduler.functions";
 import { listSocialAccounts } from "@/lib/social.functions";
 import { getYouTubeUploadOptions } from "@/lib/youtube-upload-options.functions";
+import {
+  generateCaptionVariants,
+  type CaptionVariant,
+} from "@/lib/caption-studio.functions";
+import {
+  getBestPostingTimes,
+  type BestTimesReport,
+} from "@/lib/youtube-best-times.functions";
 
 const searchSchema = z.object({ id: z.string().uuid().optional() });
 
@@ -63,6 +74,8 @@ function NewScheduledPost() {
   const saveDraft = useServerFn(saveDraftPost);
   const getDraft = useServerFn(getScheduledPost);
   const ytOpts = useServerFn(getYouTubeUploadOptions);
+  const genCaptions = useServerFn(generateCaptionVariants);
+  const bestTimes = useServerFn(getBestPostingTimes);
 
   const accountsQuery = useQuery({
     queryKey: ["social-accounts"],
@@ -110,6 +123,90 @@ function NewScheduledPost() {
   const [playlistIds, setPlaylistIds] = useState<string[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [variants, setVariants] = useState<CaptionVariant[]>([]);
+  const [pickedVariant, setPickedVariant] = useState<number | null>(null);
+  const [showHeatmap, setShowHeatmap] = useState(false);
+
+  const captionMut = useMutation({
+    mutationFn: async () => {
+      const topic =
+        (title.trim() || caption.trim() || file?.name || existingVideoPath || "")
+          .toString()
+          .slice(0, 1500);
+      if (!topic) throw new Error("Add a title, caption, or video first");
+      return genCaptions({
+        data: {
+          topic,
+          platform: "youtube_shorts",
+          currentTitle: title || undefined,
+          currentDescription: caption || undefined,
+        },
+      });
+    },
+    onSuccess: (r) => {
+      setVariants(r.variants);
+      setPickedVariant(null);
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Couldn't generate captions"),
+  });
+
+  const heatmapQuery = useQuery({
+    queryKey: ["yt-best-times"],
+    queryFn: () =>
+      bestTimes({
+        data: { tzOffsetMinutes: -new Date().getTimezoneOffset() },
+      }),
+    enabled: ytConnected,
+    staleTime: 10 * 60_000,
+  });
+
+  function applyVariant(v: CaptionVariant, idx: number) {
+    setTitle(v.title.slice(0, 100));
+    const tagLine = v.hashtags.join(" ");
+    const desc = tagLine
+      ? `${v.description.trim()}\n\n${tagLine}`
+      : v.description.trim();
+    setCaption(desc);
+    // Also mirror hashtags into YT tags field.
+    setTagsText(v.hashtags.map((h) => h.replace(/^#/, "")).join(", "));
+    setPickedVariant(idx);
+    toast.success(`${v.style} variant applied.`);
+  }
+
+  function scheduleAtPeak() {
+    const rep = heatmapQuery.data;
+    if (!rep || rep.top.length === 0) {
+      toast.error("Not enough view history yet — post a few videos first.");
+      return;
+    }
+    const now = new Date();
+    // Try each top slot in order, pick the nearest upcoming date/time (>= now+15m).
+    const min = new Date(now.getTime() + 15 * 60_000);
+    let best: Date | null = null;
+    for (const slot of rep.top) {
+      for (let addDays = 0; addDays < 14; addDays++) {
+        const d = new Date(now);
+        d.setDate(now.getDate() + addDays);
+        const daysDiff = (slot.weekday - d.getDay() + 7) % 7;
+        d.setDate(d.getDate() + daysDiff);
+        d.setHours(slot.hour, 0, 0, 0);
+        if (d < min) continue;
+        if (!best || d < best) best = d;
+        break;
+      }
+    }
+    if (!best) {
+      toast.error("Couldn't find an upcoming peak slot");
+      return;
+    }
+    const pad = (n: number) => String(n).padStart(2, "0");
+    setWhen(
+      `${best.getFullYear()}-${pad(best.getMonth() + 1)}-${pad(best.getDate())}T${pad(best.getHours())}:${pad(best.getMinutes())}`,
+    );
+    toast.success(
+      `Scheduled at your peak (${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][best.getDay()]} ${pad(best.getHours())}:00).`,
+    );
+  }
 
   useEffect(() => {
     if (!draftQuery.data || hydrated) return;
@@ -372,14 +469,120 @@ function NewScheduledPost() {
             />
           </div>
 
+          {/* AI Caption Studio */}
+          <div className="glass-strong rounded-2xl p-5">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-start gap-2">
+                <Sparkles className="w-4 h-4 mt-0.5 text-fuchsia-300" />
+                <div>
+                  <div className="text-sm font-medium">AI Caption Studio</div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Generate 4 platform-tuned variants. Pick one to auto-fill
+                    title, description, and hashtags.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => captionMut.mutate()}
+                disabled={captionMut.isPending}
+                className="rounded-xl bg-white text-black px-3 py-2 text-xs font-medium hover:bg-white/90 inline-flex items-center gap-1.5 shrink-0 disabled:opacity-60"
+              >
+                {captionMut.isPending ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Wand2 className="w-3.5 h-3.5" />
+                )}
+                {variants.length > 0 ? "Regenerate" : "Generate variants"}
+              </button>
+            </div>
+
+            {variants.length === 0 && !captionMut.isPending && (
+              <div className="rounded-xl border border-dashed border-white/10 px-4 py-6 text-center text-xs text-muted-foreground">
+                No variants yet. We'll use your title, description, or filename
+                as the topic.
+              </div>
+            )}
+
+            {variants.length > 0 && (
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {variants.map((v, i) => (
+                  <li
+                    key={i}
+                    className={
+                      "rounded-xl border p-3 flex flex-col gap-2 " +
+                      (pickedVariant === i
+                        ? "border-white/50 bg-white/[0.06]"
+                        : "border-white/10 hover:bg-white/[0.03]")
+                    }
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] uppercase tracking-wider text-fuchsia-300">
+                        {v.style}
+                      </span>
+                      {pickedVariant === i && (
+                        <span className="text-[11px] rounded-full bg-emerald-500/15 text-emerald-300 px-2 py-0.5">
+                          Applied
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm font-medium leading-snug line-clamp-2">
+                      {v.title}
+                    </div>
+                    <div className="text-xs text-muted-foreground whitespace-pre-line line-clamp-4">
+                      {v.description}
+                    </div>
+                    {v.hashtags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {v.hashtags.map((h) => (
+                          <span
+                            key={h}
+                            className="text-[10px] rounded-full bg-white/10 px-1.5 py-0.5"
+                          >
+                            {h}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => applyVariant(v, i)}
+                      className="mt-auto rounded-lg bg-white/10 hover:bg-white/[0.18] px-3 py-1.5 text-xs font-medium"
+                    >
+                      Use this variant
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           {/* Publish time */}
           <div className="glass-strong rounded-2xl p-5">
-            <label htmlFor="when" className="text-sm font-medium">
-              Publish at
-            </label>
-            <p className="text-xs text-muted-foreground mt-1 mb-3">
-              Your local time. Runs within ~1 minute of the set time.
-            </p>
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <label htmlFor="when" className="text-sm font-medium">
+                  Publish at
+                </label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your local time. Runs within ~1 minute of the set time.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={scheduleAtPeak}
+                disabled={heatmapQuery.isLoading}
+                className="rounded-xl glass-strong border border-white/10 px-3 py-2 text-xs font-medium hover:bg-white/[0.06] inline-flex items-center gap-1.5 shrink-0 disabled:opacity-60"
+                title="Uses your channel's view-weighted best times."
+              >
+                {heatmapQuery.isLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Zap className="w-3.5 h-3.5 text-amber-300" />
+                )}
+                Schedule at peak
+              </button>
+            </div>
             <input
               id="when"
               type="datetime-local"
@@ -387,6 +590,33 @@ function NewScheduledPost() {
               onChange={(e) => setWhen(e.target.value)}
               className="w-full rounded-xl bg-black/30 border border-white/10 px-3 py-2 text-sm focus:outline-none focus:border-white/25"
             />
+            {heatmapQuery.data && heatmapQuery.data.sampleSize > 0 && (
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowHeatmap((s) => !s)}
+                  className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                >
+                  <ChevronDown
+                    className={
+                      "w-3 h-3 transition-transform " +
+                      (showHeatmap ? "rotate-180" : "-rotate-90")
+                    }
+                  />
+                  {showHeatmap ? "Hide" : "Show"} best-times heatmap ·{" "}
+                  {heatmapQuery.data.sampleSize} videos analyzed
+                </button>
+                {showHeatmap && (
+                  <BestTimesHeatmap report={heatmapQuery.data} />
+                )}
+              </div>
+            )}
+            {heatmapQuery.data && heatmapQuery.data.sampleSize === 0 && (
+              <div className="mt-2 text-[11px] text-muted-foreground">
+                Peak-time data will appear once your channel has a few videos
+                with views.
+              </div>
+            )}
           </div>
 
           {/* Visibility */}
@@ -729,6 +959,69 @@ function Toggle({
           }
         />
       </button>
+    </div>
+  );
+}
+
+function BestTimesHeatmap({ report }: { report: BestTimesReport }) {
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const hours = Array.from({ length: 24 }, (_, h) => h);
+  const topKey = new Set(
+    report.top.slice(0, 3).map((c) => `${c.weekday}-${c.hour}`),
+  );
+  return (
+    <div className="mt-3 overflow-x-auto">
+      <div className="inline-block min-w-full">
+        <div className="grid grid-cols-[36px_repeat(24,minmax(14px,1fr))] gap-[2px] text-[9px] text-muted-foreground">
+          <div />
+          {hours.map((h) => (
+            <div key={h} className="text-center">
+              {h % 3 === 0 ? h : ""}
+            </div>
+          ))}
+          {days.map((label, d) => (
+            <Fragment key={d}>
+              <div
+                key={`l-${d}`}
+                className="text-right pr-1 self-center text-muted-foreground"
+              >
+                {label}
+              </div>
+              {hours.map((h) => {
+                const v = report.grid[d]?.[h] ?? 0;
+                const isTop = topKey.has(`${d}-${h}`);
+                return (
+                  <div
+                    key={`${d}-${h}`}
+                    title={`${label} ${String(h).padStart(2, "0")}:00 · score ${(v * 100).toFixed(0)}%`}
+                    className={
+                      "h-4 rounded-sm " + (isTop ? "ring-1 ring-amber-300" : "")
+                    }
+                    style={{
+                      background:
+                        v > 0
+                          ? `rgba(217, 70, 239, ${0.15 + v * 0.75})`
+                          : "rgba(255,255,255,0.03)",
+                    }}
+                  />
+                );
+              })}
+            </Fragment>
+          ))}
+        </div>
+        <div className="mt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
+          <span>Lower</span>
+          <div
+            className="h-2 w-32 rounded-full"
+            style={{
+              background:
+                "linear-gradient(to right, rgba(217,70,239,0.15), rgba(217,70,239,0.9))",
+            }}
+          />
+          <span>Higher</span>
+          <span className="ml-3">◇ Ring = top 3 slots</span>
+        </div>
+      </div>
     </div>
   );
 }
