@@ -1,6 +1,6 @@
 // Runs due scheduled_posts and publishes each pending target.
 // Currently supports YouTube; TikTok/Instagram targets are left pending.
-import { refreshYouTubeToken, publishYouTubeVideo } from "@/lib/youtube.server";
+import { refreshYouTubeToken, publishYouTubeVideo, addVideoToPlaylist } from "@/lib/youtube.server";
 
 const MAX_POSTS_PER_TICK = 5;
 
