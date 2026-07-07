@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Eye,
   Film,
+  Layers,
   Loader2,
   MessageSquare,
   Plus,
@@ -234,9 +235,15 @@ function YouTubeChannelPage() {
               <div className="mt-5 grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
                 <Link
                   to="/poster/new"
-                  className="rounded-xl bg-white text-black px-4 h-10 text-xs font-medium hover:bg-white/90 inline-flex items-center justify-center gap-1.5 col-span-2 sm:col-span-1"
+                  className="rounded-xl bg-white text-black px-4 h-10 text-xs font-medium hover:bg-white/90 inline-flex items-center justify-center gap-1.5"
                 >
                   <Plus className="w-3.5 h-3.5" /> New post
+                </Link>
+                <Link
+                  to="/poster/series/new"
+                  className="rounded-xl glass-strong px-4 h-10 text-xs font-medium hover:bg-white/[0.06] inline-flex items-center justify-center gap-1.5"
+                >
+                  <Layers className="w-3.5 h-3.5" /> New series
                 </Link>
                 <Link
                   to="/poster/youtube-analytics"

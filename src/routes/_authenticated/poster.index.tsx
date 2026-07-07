@@ -251,12 +251,6 @@ function PosterPage() {
           <h2 className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
             Series
           </h2>
-          <Link
-            to="/poster/series/new"
-            className="rounded-xl bg-white text-black px-3 py-1.5 text-xs font-medium hover:bg-white/90 inline-flex items-center gap-1.5"
-          >
-            <Plus className="w-3.5 h-3.5" /> New series
-          </Link>
         </div>
 
         <div className="space-y-3 mb-10">
