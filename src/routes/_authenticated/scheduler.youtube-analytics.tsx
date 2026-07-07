@@ -4,10 +4,13 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   ArrowLeft,
   BarChart3,
+  Download,
   Eye,
+  FileText,
   Film,
   Loader2,
   MessageSquare,
+  Printer,
   RefreshCw,
   Share2,
   ThumbsUp,
