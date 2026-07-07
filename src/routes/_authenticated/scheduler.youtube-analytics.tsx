@@ -513,7 +513,155 @@ function exportCsv(data: YouTubeAnalyticsReport) {
       push(["", c.country, c.views, (c.share * 100).toFixed(1)]);
   }
 
+  if (data.audience?.countriesTrend) {
+    const t = data.audience.countriesTrend;
+    lines.push("");
+    push([
+      `Country views by day (last ${data.rangeDays}d)`,
+      "Country",
+      ...t.dates,
+      "Total",
+    ]);
+    for (const s of t.series) push(["", s.country, ...s.views, s.total]);
+  }
+
   const date = new Date().toISOString().slice(0, 10);
   downloadFile(`youtube-analytics-${date}.csv`, lines.join("\n"), "text/csv");
 }
+
+const TREND_COLORS = [
+  "#38bdf8", // sky
+  "#f472b6", // pink
+  "#34d399", // emerald
+  "#fbbf24", // amber
+  "#a78bfa", // violet
+];
+
+function CountriesTrendChart({
+  trend,
+  days,
+}: {
+  trend: NonNullable<
+    NonNullable<YouTubeAnalyticsReport["audience"]>["countriesTrend"]
+  >;
+  days: number;
+}) {
+  const { dates, series } = trend;
+  const width = 640;
+  const height = 220;
+  const padL = 36;
+  const padR = 12;
+  const padT = 12;
+  const padB = 22;
+  const innerW = width - padL - padR;
+  const innerH = height - padT - padB;
+  const max = Math.max(
+    1,
+    ...series.flatMap((s) => s.views),
+  );
+  const stepX = dates.length > 1 ? innerW / (dates.length - 1) : 0;
+  const y = (v: number) => padT + innerH - (v / max) * innerH;
+  const x = (i: number) => padL + i * stepX;
+
+  return (
+    <div className="glass-strong rounded-2xl p-5 mt-3">
+      <div className="flex items-baseline justify-between mb-3">
+        <div className="text-xs text-muted-foreground">
+          Country views · last {days} days
+        </div>
+        <div className="text-[10px] text-muted-foreground">Daily views</div>
+      </div>
+      <div className="w-full overflow-x-auto">
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="w-full h-56"
+          role="img"
+          aria-label="Country views over time"
+        >
+          {/* gridlines */}
+          {[0, 0.25, 0.5, 0.75, 1].map((f) => (
+            <line
+              key={f}
+              x1={padL}
+              x2={padL + innerW}
+              y1={padT + innerH * f}
+              y2={padT + innerH * f}
+              stroke="rgba(255,255,255,0.06)"
+            />
+          ))}
+          {/* y-axis labels */}
+          {[0, 0.5, 1].map((f) => (
+            <text
+              key={f}
+              x={padL - 6}
+              y={padT + innerH * (1 - f) + 3}
+              textAnchor="end"
+              fontSize="9"
+              fill="rgba(255,255,255,0.5)"
+            >
+              {Math.round(max * f)}
+            </text>
+          ))}
+          {/* series */}
+          {series.map((s, si) => {
+            const color = TREND_COLORS[si % TREND_COLORS.length];
+            const d = s.views
+              .map((v, i) => `${i === 0 ? "M" : "L"} ${x(i)} ${y(v)}`)
+              .join(" ");
+            return (
+              <g key={s.country}>
+                <path
+                  d={d}
+                  fill="none"
+                  stroke={color}
+                  strokeWidth={1.6}
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+                {s.views.map((v, i) => (
+                  <circle
+                    key={i}
+                    cx={x(i)}
+                    cy={y(v)}
+                    r={2}
+                    fill={color}
+                  >
+                    <title>{`${s.country} · ${dates[i]}: ${v} views`}</title>
+                  </circle>
+                ))}
+              </g>
+            );
+          })}
+          {/* x-axis labels: first, middle, last */}
+          {[0, Math.floor((dates.length - 1) / 2), dates.length - 1]
+            .filter((v, i, a) => a.indexOf(v) === i)
+            .map((i) => (
+              <text
+                key={i}
+                x={x(i)}
+                y={height - 6}
+                textAnchor="middle"
+                fontSize="9"
+                fill="rgba(255,255,255,0.5)"
+              >
+                {dates[i]?.slice(5)}
+              </text>
+            ))}
+        </svg>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-[11px] text-muted-foreground">
+        {series.map((s, si) => (
+          <span key={s.country} className="inline-flex items-center gap-1.5">
+            <span
+              className="w-2 h-2 rounded-full"
+              style={{ background: TREND_COLORS[si % TREND_COLORS.length] }}
+            />
+            {s.country} · {s.total.toLocaleString()}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 
