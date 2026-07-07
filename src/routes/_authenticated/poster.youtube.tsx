@@ -64,14 +64,15 @@ function parseIsoDuration(iso: string | null): string {
 
 function YouTubeChannelPage() {
   const qc = useQueryClient();
+  const { accountId } = Route.useSearch();
   const fetchDetails = useServerFn(getYouTubeChannelDetails);
   const listAccounts = useServerFn(listSocialAccounts);
   const start = useServerFn(startSocialOAuth);
   const disconnect = useServerFn(disconnectSocialAccount);
 
   const detailsQuery = useQuery({
-    queryKey: ["youtube-channel-details"],
-    queryFn: () => fetchDetails(),
+    queryKey: ["youtube-channel-details", accountId ?? "latest"],
+    queryFn: () => fetchDetails({ data: { accountId } }),
     retry: 1,
   });
 
@@ -79,9 +80,12 @@ function YouTubeChannelPage() {
     queryKey: ["social-accounts"],
     queryFn: () => listAccounts(),
   });
-  const ytAccount = (accountsQuery.data ?? []).find(
+  const ytAccounts = (accountsQuery.data ?? []).filter(
     (a) => a.platform === "youtube" && !a.revoked_at,
   );
+  const ytAccount =
+    (accountId && ytAccounts.find((a) => a.id === accountId)) ||
+    ytAccounts[0];
 
   const reconnectMut = useMutation({
     mutationFn: async () =>
