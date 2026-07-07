@@ -75,22 +75,41 @@ function AnalyticsPage() {
           <ArrowLeft className="w-4 h-4" /> Back to channel
         </Link>
 
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center">
-            <BarChart3 className="w-5 h-5" />
+        <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center">
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
+                Analytics
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                Views, engagement and audience insights.
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
-              Analytics
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Views, engagement and audience insights.
-            </p>
-          </div>
+          {data && (
+            <div className="flex gap-2 print:hidden">
+              <button
+                onClick={() => exportCsv(data)}
+                className="rounded-xl glass-strong px-3 h-10 text-xs font-medium hover:bg-white/[0.06] inline-flex items-center gap-1.5"
+              >
+                <Download className="w-3.5 h-3.5" /> CSV
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="rounded-xl bg-white text-black px-3 h-10 text-xs font-medium hover:bg-white/90 inline-flex items-center gap-1.5"
+              >
+                <FileText className="w-3.5 h-3.5" /> PDF
+              </button>
+            </div>
+          )}
         </div>
 
         {q.isLoading && (
           <div className="glass-strong rounded-2xl p-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+
             <Loader2 className="w-4 h-4 animate-spin" /> Loading analytics…
           </div>
         )}
