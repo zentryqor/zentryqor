@@ -56,10 +56,14 @@ function iso(d: Date) {
 
 export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { days?: number } | undefined) => {
+  .inputValidator((input: { days?: number; accountId?: string } | undefined) => {
     const d = Number(input?.days ?? 7);
     const days = [7, 14, 30].includes(d) ? d : 7;
-    return { days };
+    const accountId =
+      input?.accountId && typeof input.accountId === "string"
+        ? input.accountId
+        : undefined;
+    return { days, accountId };
   })
   .handler(async ({ data, context }): Promise<YouTubeAnalyticsReport> => {
     const { days } = data;
@@ -68,14 +72,16 @@ export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
     );
     const { refreshYouTubeToken } = await import("@/lib/youtube.server");
 
-    const { data: row, error } = await (supabaseAdmin as any)
+    let q = (supabaseAdmin as any)
       .from("social_accounts")
       .select(
         "id, user_id, access_token, refresh_token, expires_at, handle, scopes, connected_at, revoked_at",
       )
       .eq("user_id", context.userId)
       .eq("platform", "youtube")
-      .is("revoked_at", null)
+      .is("revoked_at", null);
+    if (data.accountId) q = q.eq("id", data.accountId);
+    const { data: row, error } = await q
       .order("connected_at", { ascending: false })
       .limit(1)
       .maybeSingle();

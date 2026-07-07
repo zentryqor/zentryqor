@@ -29,6 +29,10 @@ import {
 } from "@/lib/social.functions";
 
 export const Route = createFileRoute("/_authenticated/poster/youtube")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    accountId:
+      typeof search.accountId === "string" ? search.accountId : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "YouTube channel — Zentry Qor" },
@@ -60,14 +64,15 @@ function parseIsoDuration(iso: string | null): string {
 
 function YouTubeChannelPage() {
   const qc = useQueryClient();
+  const { accountId } = Route.useSearch();
   const fetchDetails = useServerFn(getYouTubeChannelDetails);
   const listAccounts = useServerFn(listSocialAccounts);
   const start = useServerFn(startSocialOAuth);
   const disconnect = useServerFn(disconnectSocialAccount);
 
   const detailsQuery = useQuery({
-    queryKey: ["youtube-channel-details"],
-    queryFn: () => fetchDetails(),
+    queryKey: ["youtube-channel-details", accountId ?? "latest"],
+    queryFn: () => fetchDetails({ data: { accountId } }),
     retry: 1,
   });
 
@@ -75,9 +80,12 @@ function YouTubeChannelPage() {
     queryKey: ["social-accounts"],
     queryFn: () => listAccounts(),
   });
-  const ytAccount = (accountsQuery.data ?? []).find(
+  const ytAccounts = (accountsQuery.data ?? []).filter(
     (a) => a.platform === "youtube" && !a.revoked_at,
   );
+  const ytAccount =
+    (accountId && ytAccounts.find((a) => a.id === accountId)) ||
+    ytAccounts[0];
 
   const reconnectMut = useMutation({
     mutationFn: async () =>
@@ -232,6 +240,7 @@ function YouTubeChannelPage() {
                 </Link>
                 <Link
                   to="/poster/youtube-analytics"
+                  search={ytAccount ? { accountId: ytAccount.id } : undefined}
                   className="rounded-xl glass-strong px-4 h-10 text-xs font-medium hover:bg-white/[0.06] inline-flex items-center justify-center gap-1.5"
                 >
                   <BarChart3 className="w-3.5 h-3.5" /> Analytics
