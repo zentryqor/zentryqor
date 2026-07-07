@@ -90,17 +90,79 @@ export async function publishYouTubeVideo(args: {
   body.set(new Uint8Array(args.videoBytes), preamble.byteLength);
   body.set(closer, preamble.byteLength + args.videoBytes.byteLength);
 
-  const res = await fetch(
-    "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=multipart&part=snippet,status",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${args.accessToken}`,
-        "Content-Type": `multipart/related; boundary=${boundary}`,
-      },
-      body,
-    },
+export type YouTubePublishOptions = {
+  privacyStatus?: "public" | "unlisted" | "private";
+  madeForKids?: boolean;
+  categoryId?: string;
+  tags?: string[];
+  license?: "youtube" | "creativeCommon";
+  embeddable?: boolean;
+  publicStatsViewable?: boolean;
+  notifySubscribers?: boolean;
+  locationDescription?: string;
+};
+
+export async function publishYouTubeVideo(args: {
+  accessToken: string;
+  title: string;
+  description: string;
+  videoBytes: ArrayBuffer;
+  videoMime: string;
+  options?: YouTubePublishOptions;
+}): Promise<{ videoId: string }> {
+  const opts = args.options ?? {};
+  const boundary = "zentry_" + Math.random().toString(36).slice(2);
+  const snippet: Record<string, unknown> = {
+    title: (args.title || "Untitled").slice(0, 100),
+    description: args.description ?? "",
+    categoryId: opts.categoryId ?? "22",
+  };
+  if (opts.tags && opts.tags.length > 0) snippet.tags = opts.tags;
+
+  const status: Record<string, unknown> = {
+    privacyStatus: opts.privacyStatus ?? "public",
+    selfDeclaredMadeForKids: !!opts.madeForKids,
+    license: opts.license ?? "youtube",
+    embeddable: opts.embeddable ?? true,
+    publicStatsViewable: opts.publicStatsViewable ?? true,
+  };
+
+  const body: Record<string, unknown> = { snippet, status };
+  if (opts.locationDescription) {
+    body.recordingDetails = { locationDescription: opts.locationDescription };
+  }
+
+  const metadata = JSON.stringify(body);
+
+  const enc = new TextEncoder();
+  const preamble = enc.encode(
+    `--${boundary}\r\n` +
+      `Content-Type: application/json; charset=UTF-8\r\n\r\n` +
+      metadata +
+      `\r\n--${boundary}\r\n` +
+      `Content-Type: ${args.videoMime}\r\n\r\n`,
   );
+  const closer = enc.encode(`\r\n--${boundary}--\r\n`);
+  const bodyBytes = new Uint8Array(
+    preamble.byteLength + args.videoBytes.byteLength + closer.byteLength,
+  );
+  bodyBytes.set(preamble, 0);
+  bodyBytes.set(new Uint8Array(args.videoBytes), preamble.byteLength);
+  bodyBytes.set(closer, preamble.byteLength + args.videoBytes.byteLength);
+
+  const parts = ["snippet", "status"];
+  if (body.recordingDetails) parts.push("recordingDetails");
+  const notify = opts.notifySubscribers === false ? "false" : "true";
+  const url = `https://www.googleapis.com/upload/youtube/v3/videos?uploadType=multipart&part=${parts.join(",")}&notifySubscribers=${notify}`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${args.accessToken}`,
+      "Content-Type": `multipart/related; boundary=${boundary}`,
+    },
+    body: bodyBytes,
+  });
   const json = await res.json();
   if (!res.ok || !json.id) {
     throw new Error(
@@ -108,4 +170,33 @@ export async function publishYouTubeVideo(args: {
     );
   }
   return { videoId: json.id as string };
+}
+
+export async function addVideoToPlaylist(args: {
+  accessToken: string;
+  playlistId: string;
+  videoId: string;
+}): Promise<void> {
+  const res = await fetch(
+    "https://www.googleapis.com/youtube/v3/playlistItems?part=snippet",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${args.accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        snippet: {
+          playlistId: args.playlistId,
+          resourceId: { kind: "youtube#video", videoId: args.videoId },
+        },
+      }),
+    },
+  );
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(
+      `Adding to playlist ${args.playlistId} failed (${res.status}): ${t.slice(0, 200)}`,
+    );
+  }
 }
