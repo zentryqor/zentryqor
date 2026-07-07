@@ -29,6 +29,10 @@ import {
 } from "@/lib/social.functions";
 
 export const Route = createFileRoute("/_authenticated/poster/youtube")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    accountId:
+      typeof search.accountId === "string" ? search.accountId : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "YouTube channel — Zentry Qor" },
