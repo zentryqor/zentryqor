@@ -962,3 +962,66 @@ function Toggle({
     </div>
   );
 }
+
+function BestTimesHeatmap({ report }: { report: BestTimesReport }) {
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const hours = Array.from({ length: 24 }, (_, h) => h);
+  const topKey = new Set(
+    report.top.slice(0, 3).map((c) => `${c.weekday}-${c.hour}`),
+  );
+  return (
+    <div className="mt-3 overflow-x-auto">
+      <div className="inline-block min-w-full">
+        <div className="grid grid-cols-[36px_repeat(24,minmax(14px,1fr))] gap-[2px] text-[9px] text-muted-foreground">
+          <div />
+          {hours.map((h) => (
+            <div key={h} className="text-center">
+              {h % 3 === 0 ? h : ""}
+            </div>
+          ))}
+          {days.map((label, d) => (
+            <>
+              <div
+                key={`l-${d}`}
+                className="text-right pr-1 self-center text-muted-foreground"
+              >
+                {label}
+              </div>
+              {hours.map((h) => {
+                const v = report.grid[d]?.[h] ?? 0;
+                const isTop = topKey.has(`${d}-${h}`);
+                return (
+                  <div
+                    key={`${d}-${h}`}
+                    title={`${label} ${String(h).padStart(2, "0")}:00 · score ${(v * 100).toFixed(0)}%`}
+                    className={
+                      "h-4 rounded-sm " + (isTop ? "ring-1 ring-amber-300" : "")
+                    }
+                    style={{
+                      background:
+                        v > 0
+                          ? `rgba(217, 70, 239, ${0.15 + v * 0.75})`
+                          : "rgba(255,255,255,0.03)",
+                    }}
+                  />
+                );
+              })}
+            </>
+          ))}
+        </div>
+        <div className="mt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
+          <span>Lower</span>
+          <div
+            className="h-2 w-32 rounded-full"
+            style={{
+              background:
+                "linear-gradient(to right, rgba(217,70,239,0.15), rgba(217,70,239,0.9))",
+            }}
+          />
+          <span>Higher</span>
+          <span className="ml-3">◇ Ring = top 3 slots</span>
+        </div>
+      </div>
+    </div>
+  );
+}
