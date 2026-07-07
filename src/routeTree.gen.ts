@@ -43,7 +43,9 @@ import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedApiDocsRouteImport } from './routes/_authenticated/api-docs'
 import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedSchedulerIndexRouteImport } from './routes/_authenticated/scheduler.index'
 import { Route as AuthenticatedAssetsIndexRouteImport } from './routes/_authenticated/assets.index'
+import { Route as AuthenticatedSchedulerYoutubeRouteImport } from './routes/_authenticated/scheduler.youtube'
 import { Route as AuthenticatedSchedulerNewRouteImport } from './routes/_authenticated/scheduler.new'
 import { Route as AuthenticatedLibraryIdRouteImport } from './routes/_authenticated/library.$id'
 import { Route as AuthenticatedAssetsIdRouteImport } from './routes/_authenticated/assets.$id'
@@ -227,11 +229,23 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSchedulerIndexRoute =
+  AuthenticatedSchedulerIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedSchedulerRoute,
+  } as any)
 const AuthenticatedAssetsIndexRoute =
   AuthenticatedAssetsIndexRouteImport.update({
     id: '/assets/',
     path: '/assets/',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSchedulerYoutubeRoute =
+  AuthenticatedSchedulerYoutubeRouteImport.update({
+    id: '/youtube',
+    path: '/youtube',
+    getParentRoute: () => AuthenticatedSchedulerRoute,
   } as any)
 const AuthenticatedSchedulerNewRoute =
   AuthenticatedSchedulerNewRouteImport.update({
@@ -342,7 +356,9 @@ export interface FileRoutesByFullPath {
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/library/$id': typeof AuthenticatedLibraryIdRoute
   '/scheduler/new': typeof AuthenticatedSchedulerNewRoute
+  '/scheduler/youtube': typeof AuthenticatedSchedulerYoutubeRoute
   '/assets/': typeof AuthenticatedAssetsIndexRoute
+  '/scheduler/': typeof AuthenticatedSchedulerIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
@@ -383,7 +399,6 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/refer': typeof AuthenticatedReferRoute
   '/saved': typeof AuthenticatedSavedRoute
-  '/scheduler': typeof AuthenticatedSchedulerRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
@@ -391,7 +406,9 @@ export interface FileRoutesByTo {
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/library/$id': typeof AuthenticatedLibraryIdRoute
   '/scheduler/new': typeof AuthenticatedSchedulerNewRoute
+  '/scheduler/youtube': typeof AuthenticatedSchedulerYoutubeRoute
   '/assets': typeof AuthenticatedAssetsIndexRoute
+  '/scheduler': typeof AuthenticatedSchedulerIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
@@ -442,7 +459,9 @@ export interface FileRoutesById {
   '/_authenticated/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/_authenticated/library/$id': typeof AuthenticatedLibraryIdRoute
   '/_authenticated/scheduler/new': typeof AuthenticatedSchedulerNewRoute
+  '/_authenticated/scheduler/youtube': typeof AuthenticatedSchedulerYoutubeRoute
   '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
+  '/_authenticated/scheduler/': typeof AuthenticatedSchedulerIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
@@ -493,7 +512,9 @@ export interface FileRouteTypes {
     | '/assets/$id'
     | '/library/$id'
     | '/scheduler/new'
+    | '/scheduler/youtube'
     | '/assets/'
+    | '/scheduler/'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
@@ -534,7 +555,6 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/refer'
     | '/saved'
-    | '/scheduler'
     | '/settings'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
@@ -542,7 +562,9 @@ export interface FileRouteTypes {
     | '/assets/$id'
     | '/library/$id'
     | '/scheduler/new'
+    | '/scheduler/youtube'
     | '/assets'
+    | '/scheduler'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
@@ -592,7 +614,9 @@ export interface FileRouteTypes {
     | '/_authenticated/assets/$id'
     | '/_authenticated/library/$id'
     | '/_authenticated/scheduler/new'
+    | '/_authenticated/scheduler/youtube'
     | '/_authenticated/assets/'
+    | '/_authenticated/scheduler/'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
@@ -875,12 +899,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/scheduler/': {
+      id: '/_authenticated/scheduler/'
+      path: '/'
+      fullPath: '/scheduler/'
+      preLoaderRoute: typeof AuthenticatedSchedulerIndexRouteImport
+      parentRoute: typeof AuthenticatedSchedulerRoute
+    }
     '/_authenticated/assets/': {
       id: '/_authenticated/assets/'
       path: '/assets'
       fullPath: '/assets/'
       preLoaderRoute: typeof AuthenticatedAssetsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/scheduler/youtube': {
+      id: '/_authenticated/scheduler/youtube'
+      path: '/youtube'
+      fullPath: '/scheduler/youtube'
+      preLoaderRoute: typeof AuthenticatedSchedulerYoutubeRouteImport
+      parentRoute: typeof AuthenticatedSchedulerRoute
     }
     '/_authenticated/scheduler/new': {
       id: '/_authenticated/scheduler/new'
@@ -989,11 +1027,15 @@ const AuthenticatedLibraryRouteWithChildren =
 
 interface AuthenticatedSchedulerRouteChildren {
   AuthenticatedSchedulerNewRoute: typeof AuthenticatedSchedulerNewRoute
+  AuthenticatedSchedulerYoutubeRoute: typeof AuthenticatedSchedulerYoutubeRoute
+  AuthenticatedSchedulerIndexRoute: typeof AuthenticatedSchedulerIndexRoute
 }
 
 const AuthenticatedSchedulerRouteChildren: AuthenticatedSchedulerRouteChildren =
   {
     AuthenticatedSchedulerNewRoute: AuthenticatedSchedulerNewRoute,
+    AuthenticatedSchedulerYoutubeRoute: AuthenticatedSchedulerYoutubeRoute,
+    AuthenticatedSchedulerIndexRoute: AuthenticatedSchedulerIndexRoute,
   }
 
 const AuthenticatedSchedulerRouteWithChildren =
