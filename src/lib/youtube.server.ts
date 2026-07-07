@@ -12,15 +12,25 @@ type Row = {
   expires_at: string | null;
 };
 
-export async function refreshYouTubeToken(row: Row): Promise<string> {
-  // If the token still has > 60s left, keep it.
+export async function refreshYouTubeToken(
+  row: Row,
+  opts: { force?: boolean } = {},
+): Promise<string> {
+  // Treat the connection as effectively never-expiring: as long as a
+  // refresh_token is on file we transparently mint a new access token
+  // whenever needed. We proactively refresh anything with < 5 minutes
+  // left so long-running server fns don't race the expiry.
   if (
+    !opts.force &&
     row.expires_at &&
-    new Date(row.expires_at).getTime() - Date.now() > 60_000
+    new Date(row.expires_at).getTime() - Date.now() > 5 * 60_000
   ) {
     return row.access_token;
   }
   if (!row.refresh_token) {
+    // No refresh_token — fall back to whatever access token we have and
+    // let the caller retry via forceRefresh on a 401.
+    if (row.access_token) return row.access_token;
     throw new Error("YouTube refresh token missing — reconnect the account.");
   }
   const { clientId, clientSecret, cfg } = providerCreds("youtube");
@@ -40,6 +50,8 @@ export async function refreshYouTubeToken(row: Row): Promise<string> {
       `YouTube token refresh failed: ${JSON.stringify(json).slice(0, 200)}`,
     );
   }
+  // Store a real expiry so we can proactively refresh next time, but the
+  // connection itself is treated as unlimited from the app's perspective.
   const expires_at = json.expires_in
     ? new Date(Date.now() + json.expires_in * 1000).toISOString()
     : null;
@@ -50,8 +62,11 @@ export async function refreshYouTubeToken(row: Row): Promise<string> {
     .update({ access_token: json.access_token, expires_at })
     .eq("id", row.id);
 
+  row.access_token = json.access_token;
+  row.expires_at = expires_at;
   return json.access_token as string;
 }
+
 
 
 export type YouTubePublishOptions = {
