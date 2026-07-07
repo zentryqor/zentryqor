@@ -39,12 +39,12 @@ export const Route = createFileRoute("/_authenticated/poster/")({
       },
     ],
   }),
-  component: SchedulerPage,
+  component: PosterPage,
 });
 
 type Platform = "youtube";
 
-function SchedulerPage() {
+function PosterPage() {
   const qc = useQueryClient();
   const list = useServerFn(listSocialAccounts);
   const start = useServerFn(startSocialOAuth);

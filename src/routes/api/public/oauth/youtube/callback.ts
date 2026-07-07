@@ -77,7 +77,7 @@ export const Route = createFileRoute("/api/public/oauth/youtube/callback")({
             },
           });
 
-          return html(`<h2>YouTube connected 🎉</h2><p>Taking you back to the scheduler…</p>`);
+          return html(`<h2>YouTube connected 🎉</h2><p>Taking you back to Poster…</p>`);
         } catch (e: any) {
           return html(
             `<h2>Couldn't connect YouTube</h2><p>${String(e?.message ?? e).slice(0, 200)}</p><a href="/poster">Back</a>`,
