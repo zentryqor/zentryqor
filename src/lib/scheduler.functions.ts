@@ -59,6 +59,24 @@ export const createSignedUploadUrl = createServerFn({ method: "POST" })
     return { path, token: signed.token, signedUrl: signed.signedUrl };
   });
 
+const youtubeOptionsSchema = z
+  .object({
+    title: z.string().max(100).optional(),
+    description: z.string().max(5000).optional(),
+    privacyStatus: z.enum(["public", "unlisted", "private"]).default("public"),
+    madeForKids: z.boolean().default(false),
+    categoryId: z.string().max(10).optional(),
+    tags: z.array(z.string().max(50)).max(50).optional(),
+    license: z.enum(["youtube", "creativeCommon"]).default("youtube"),
+    embeddable: z.boolean().default(true),
+    publicStatsViewable: z.boolean().default(true),
+    notifySubscribers: z.boolean().default(true),
+    playlistIds: z.array(z.string().max(64)).max(20).optional(),
+    locationDescription: z.string().max(120).optional(),
+  })
+  .partial()
+  .optional();
+
 export const createScheduledPost = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) =>
@@ -70,6 +88,7 @@ export const createScheduledPost = createServerFn({ method: "POST" })
         platforms: z
           .array(z.enum(["youtube"]))
           .min(1),
+        youtube: youtubeOptionsSchema,
       })
       .parse(i),
   )
@@ -100,6 +119,7 @@ export const createScheduledPost = createServerFn({ method: "POST" })
         video_path: data.videoPath,
         scheduled_for: when.toISOString(),
         status: "queued",
+        options: { youtube: data.youtube ?? {} },
       })
       .select("id")
       .single();
