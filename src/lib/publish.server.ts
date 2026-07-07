@@ -15,7 +15,7 @@ export async function runDueScheduledPosts(): Promise<{
   // Claim due posts atomically: queued + scheduled_for <= now -> publishing
   const { data: due, error } = await (supabaseAdmin as any)
     .from("scheduled_posts")
-    .select("id, user_id, caption, video_path, scheduled_for, status")
+    .select("id, user_id, caption, video_path, scheduled_for, status, options")
     .in("status", ["queued"])
     .lte("scheduled_for", nowIso)
     .order("scheduled_for", { ascending: true })
