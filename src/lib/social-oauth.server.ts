@@ -15,6 +15,7 @@ export const PROVIDERS = {
     scopes: [
       "https://www.googleapis.com/auth/youtube.upload",
       "https://www.googleapis.com/auth/youtube.readonly",
+      "https://www.googleapis.com/auth/yt-analytics.readonly",
     ],
     envClient: "GOOGLE_OAUTH_CLIENT_ID",
     envSecret: "GOOGLE_OAUTH_CLIENT_SECRET",
