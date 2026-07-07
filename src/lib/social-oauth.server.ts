@@ -35,8 +35,9 @@ export function providerCreds(p: Platform) {
   return { clientId, clientSecret, cfg };
 }
 
-export function callbackUrl(p: Platform) {
-  return `${PUBLIC_BASE_URL}${PROVIDERS[p].callbackPath}`;
+export function callbackUrl(p: Platform, origin = PUBLIC_BASE_URL) {
+  const safeOrigin = origin.replace(/\/$/, "");
+  return `${safeOrigin}${PROVIDERS[p].callbackPath}`;
 }
 
 export type StoredAccount = {

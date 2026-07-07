@@ -27,14 +27,48 @@ export const listSocialAccounts = createServerFn({ method: "GET" })
 export const startSocialOAuth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) =>
-    z.object({ platform: z.enum(["youtube"]) }).parse(i),
+    z
+      .object({
+        platform: z.enum(["youtube"]),
+        origin: z.string().url().optional(),
+      })
+      .parse(i),
   )
   .handler(async ({ data, context }) => {
     const { providerCreds, callbackUrl } = await import(
       "@/lib/social-oauth.server"
     );
+    const { getRequest } = await import("@tanstack/react-start/server");
     const { signOAuthState } = await import("@/lib/oauth-state.server");
     const { clientId, cfg } = providerCreds(data.platform);
+    const request = getRequest();
+    const headerOrigin = request?.headers.get("origin") ?? undefined;
+    const forwardedHost =
+      request?.headers.get("x-forwarded-host") ?? request?.headers.get("host");
+    const forwardedProto = request?.headers.get("x-forwarded-proto") ?? "https";
+    const allowedOrigin = (value?: string) => {
+      if (!value) return undefined;
+      try {
+        const parsed = new URL(value);
+        const isLocal = parsed.hostname === "localhost";
+        const isLovableHost =
+          parsed.hostname.endsWith(".lovable.app") ||
+          parsed.hostname.endsWith(".lovableproject.com");
+        if ((parsed.protocol === "https:" && isLovableHost) || isLocal) {
+          return parsed.origin;
+        }
+      } catch {}
+      return undefined;
+    };
+    const origin =
+      allowedOrigin(data.origin) ??
+      allowedOrigin(headerOrigin) ??
+      allowedOrigin(forwardedHost
+        ? `${forwardedProto}://${forwardedHost}`
+        : request?.url
+          ? new URL(request.url).origin
+          : undefined);
+    const redirectUri = callbackUrl(data.platform, origin);
     const state = signOAuthState({
       userId: context.userId,
       platform: data.platform,
@@ -42,7 +76,7 @@ export const startSocialOAuth = createServerFn({ method: "POST" })
     const params = new URLSearchParams({
       client_id: clientId,
       response_type: "code",
-      redirect_uri: callbackUrl(data.platform),
+      redirect_uri: redirectUri,
       scope: cfg.scopes.join(" "),
       state,
       access_type: "offline",
