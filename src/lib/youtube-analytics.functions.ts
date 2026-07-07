@@ -33,20 +33,28 @@ export type YouTubeChannelDetails = {
 
 export const getYouTubeChannelDetails = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<YouTubeChannelDetails> => {
+  .inputValidator((input: { accountId?: string } | undefined) => ({
+    accountId:
+      input?.accountId && typeof input.accountId === "string"
+        ? input.accountId
+        : undefined,
+  }))
+  .handler(async ({ data, context }): Promise<YouTubeChannelDetails> => {
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
     const { refreshYouTubeToken } = await import("@/lib/youtube.server");
 
-    const { data: row, error } = await (supabaseAdmin as any)
+    let q = (supabaseAdmin as any)
       .from("social_accounts")
       .select(
         "id, user_id, access_token, refresh_token, expires_at, handle, connected_at, revoked_at",
       )
       .eq("user_id", context.userId)
       .eq("platform", "youtube")
-      .is("revoked_at", null)
+      .is("revoked_at", null);
+    if (data.accountId) q = q.eq("id", data.accountId);
+    const { data: row, error } = await q
       .order("connected_at", { ascending: false })
       .limit(1)
       .maybeSingle();
