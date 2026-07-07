@@ -532,6 +532,36 @@ export type Database = {
           },
         ]
       }
+      post_series: {
+        Row: {
+          cadence: Json
+          clip_count: number
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+          youtube_options: Json
+        }
+        Insert: {
+          cadence?: Json
+          clip_count?: number
+          created_at?: string
+          id?: string
+          name?: string
+          user_id: string
+          youtube_options?: Json
+        }
+        Update: {
+          cadence?: Json
+          clip_count?: number
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+          youtube_options?: Json
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -757,6 +787,8 @@ export type Database = {
           id: string
           options: Json
           scheduled_for: string
+          series_id: string | null
+          series_position: number | null
           status: Database["public"]["Enums"]["scheduled_post_status"]
           thumbnail_path: string | null
           updated_at: string
@@ -770,6 +802,8 @@ export type Database = {
           id?: string
           options?: Json
           scheduled_for: string
+          series_id?: string | null
+          series_position?: number | null
           status?: Database["public"]["Enums"]["scheduled_post_status"]
           thumbnail_path?: string | null
           updated_at?: string
@@ -783,13 +817,23 @@ export type Database = {
           id?: string
           options?: Json
           scheduled_for?: string
+          series_id?: string | null
+          series_position?: number | null
           status?: Database["public"]["Enums"]["scheduled_post_status"]
           thumbnail_path?: string | null
           updated_at?: string
           user_id?: string
           video_path?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_posts_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "post_series"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       social_accounts: {
         Row: {
