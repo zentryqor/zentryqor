@@ -25,6 +25,10 @@ import { getYouTubeAnalyticsReport } from "@/lib/youtube-analytics-report.functi
 import { startSocialOAuth } from "@/lib/social.functions";
 
 export const Route = createFileRoute("/_authenticated/poster/youtube-analytics")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    accountId:
+      typeof search.accountId === "string" ? search.accountId : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "YouTube analytics — Zentry Qor" },
@@ -41,13 +45,14 @@ function fmt(n: number): string {
 }
 
 function AnalyticsPage() {
+  const { accountId } = Route.useSearch();
   const fetchReport = useServerFn(getYouTubeAnalyticsReport);
   const start = useServerFn(startSocialOAuth);
   const [days, setDays] = useState<7 | 14 | 30>(7);
   const [topN, setTopN] = useState<5 | 10 | 15>(5);
   const q = useQuery({
-    queryKey: ["youtube-analytics-report", days],
-    queryFn: () => fetchReport({ data: { days } }),
+    queryKey: ["youtube-analytics-report", days, accountId ?? "latest"],
+    queryFn: () => fetchReport({ data: { days, accountId } }),
     retry: 1,
   });
   const reconnectMut = useMutation({
