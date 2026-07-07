@@ -74,6 +74,8 @@ function NewScheduledPost() {
   const saveDraft = useServerFn(saveDraftPost);
   const getDraft = useServerFn(getScheduledPost);
   const ytOpts = useServerFn(getYouTubeUploadOptions);
+  const genCaptions = useServerFn(generateCaptionVariants);
+  const bestTimes = useServerFn(getBestPostingTimes);
 
   const accountsQuery = useQuery({
     queryKey: ["social-accounts"],
