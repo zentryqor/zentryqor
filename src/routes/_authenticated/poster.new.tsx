@@ -10,8 +10,11 @@ import {
   ChevronDown,
   FileText,
   Loader2,
+  Sparkles,
   Upload,
+  Wand2,
   Youtube,
+  Zap,
 } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
@@ -25,6 +28,14 @@ import {
 } from "@/lib/scheduler.functions";
 import { listSocialAccounts } from "@/lib/social.functions";
 import { getYouTubeUploadOptions } from "@/lib/youtube-upload-options.functions";
+import {
+  generateCaptionVariants,
+  type CaptionVariant,
+} from "@/lib/caption-studio.functions";
+import {
+  getBestPostingTimes,
+  type BestTimesReport,
+} from "@/lib/youtube-best-times.functions";
 
 const searchSchema = z.object({ id: z.string().uuid().optional() });
 
