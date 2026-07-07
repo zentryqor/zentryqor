@@ -266,7 +266,7 @@ export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
           dates.push(iso(d));
         }
         const dateIdx = new Map(dates.map((d, i) => [d, i]));
-        const topSet = new Set(countries.slice(0, 5).map((c) => c.country));
+        const topSet = new Set(countries.slice(0, 15).map((c) => c.country));
         const byCountry = new Map<string, number[]>();
         for (const c of topSet) byCountry.set(c, new Array(days).fill(0));
         for (const r of ctrTrend.json.rows as any[]) {
