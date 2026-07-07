@@ -583,11 +583,28 @@ function CountriesTrendChart({
 
   return (
     <div className="glass-strong rounded-2xl p-5 mt-3">
-      <div className="flex items-baseline justify-between mb-3">
+      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <div className="text-xs text-muted-foreground">
           Country views · last {days} days
         </div>
-        <div className="text-[10px] text-muted-foreground">Daily views</div>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-muted-foreground">Show top</span>
+          <div className="inline-flex rounded-lg glass-strong p-0.5 h-7 items-stretch">
+            {([5, 10, 15] as const).map((n) => (
+              <button
+                key={n}
+                onClick={() => onChangeTopN(n)}
+                className={`px-2 rounded-md text-[11px] font-medium transition ${
+                  topN === n
+                    ? "bg-white text-black"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
       <div className="w-full overflow-x-auto">
         <svg
