@@ -44,6 +44,7 @@ function AnalyticsPage() {
   const fetchReport = useServerFn(getYouTubeAnalyticsReport);
   const start = useServerFn(startSocialOAuth);
   const [days, setDays] = useState<7 | 14 | 30>(7);
+  const [topN, setTopN] = useState<5 | 10 | 15>(5);
   const q = useQuery({
     queryKey: ["youtube-analytics-report", days],
     queryFn: () => fetchReport({ data: { days } }),
