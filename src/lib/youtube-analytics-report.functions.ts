@@ -218,7 +218,7 @@ export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
         `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&metrics=viewerPercentage&dimensions=ageGroup,gender&startDate=${iso(audStart)}&endDate=${iso(end)}`,
       );
       const ctr = await ytFetch(
-        `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&metrics=views&dimensions=country&startDate=${iso(audStart)}&endDate=${iso(end)}&sort=-views&maxResults=6`,
+        `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&metrics=views&dimensions=country&startDate=${iso(audStart)}&endDate=${iso(end)}&sort=-views&maxResults=15`,
       );
       // Country time-series over the selected range (day x country).
       const ctrTrend = await ytFetch(
