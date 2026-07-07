@@ -543,13 +543,18 @@ const TREND_COLORS = [
 function CountriesTrendChart({
   trend,
   days,
+  topN,
+  onChangeTopN,
 }: {
   trend: NonNullable<
     NonNullable<YouTubeAnalyticsReport["audience"]>["countriesTrend"]
   >;
   days: number;
+  topN: 5 | 10 | 15;
+  onChangeTopN: (n: 5 | 10 | 15) => void;
 }) {
-  const { dates, series } = trend;
+  const { dates } = trend;
+  const series = trend.series.slice(0, topN);
   const width = 640;
   const height = 220;
   const padL = 36;
