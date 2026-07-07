@@ -980,7 +980,7 @@ function BestTimesHeatmap({ report }: { report: BestTimesReport }) {
             </div>
           ))}
           {days.map((label, d) => (
-            <>
+            <Fragment key={d}>
               <div
                 key={`l-${d}`}
                 className="text-right pr-1 self-center text-muted-foreground"
