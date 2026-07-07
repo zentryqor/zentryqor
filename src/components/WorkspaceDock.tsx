@@ -5,7 +5,7 @@ import { Boxes, Calendar, LayoutDashboard, WandSparkles } from "lucide-react";
 const destinations = [
   { to: "/dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
   { to: "/ai" as const, label: "AI Studio", icon: WandSparkles },
-  { to: "/scheduler" as const, label: "Scheduler", icon: Calendar },
+  { to: "/poster" as const, label: "Poster", icon: Calendar },
   { to: "/assets" as const, label: "Assets", icon: Boxes },
 ];
 

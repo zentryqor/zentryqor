@@ -7,7 +7,7 @@ function html(body: string, status = 200) {
 .card{max-width:420px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:28px}
 a{color:#fff;text-decoration:underline}</style>
 <div class="card">${body}</div>
-<script>setTimeout(()=>{location.href='/scheduler'},1800)</script>`,
+<script>setTimeout(()=>{location.href='/poster'},1800)</script>`,
     { status, headers: { "content-type": "text/html; charset=utf-8" } },
   );
 }
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/api/public/oauth/youtube/callback")({
         const code = url.searchParams.get("code");
         const state = url.searchParams.get("state");
         const err = url.searchParams.get("error");
-        if (err) return html(`<h2>YouTube cancelled</h2><p>${err}</p><a href="/scheduler">Back</a>`, 400);
+        if (err) return html(`<h2>YouTube cancelled</h2><p>${err}</p><a href="/poster">Back</a>`, 400);
         if (!code || !state) return html("<h2>Missing code or state</h2>", 400);
         try {
           const { verifyOAuthState } = await import("@/lib/oauth-state.server");
@@ -77,10 +77,10 @@ export const Route = createFileRoute("/api/public/oauth/youtube/callback")({
             },
           });
 
-          return html(`<h2>YouTube connected 🎉</h2><p>Taking you back to the scheduler…</p>`);
+          return html(`<h2>YouTube connected 🎉</h2><p>Taking you back to Poster…</p>`);
         } catch (e: any) {
           return html(
-            `<h2>Couldn't connect YouTube</h2><p>${String(e?.message ?? e).slice(0, 200)}</p><a href="/scheduler">Back</a>`,
+            `<h2>Couldn't connect YouTube</h2><p>${String(e?.message ?? e).slice(0, 200)}</p><a href="/poster">Back</a>`,
             500,
           );
         }
