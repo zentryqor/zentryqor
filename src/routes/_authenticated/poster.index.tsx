@@ -105,6 +105,16 @@ function PosterPage() {
     onError: (e: any) => toast.error(e?.message ?? "Couldn't delete"),
   });
 
+  const delSeriesMut = useMutation({
+    mutationFn: async (id: string) => delSeries({ data: { id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["post-series"] });
+      qc.invalidateQueries({ queryKey: ["scheduled-posts"] });
+      toast.success("Series deleted");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Couldn't delete series"),
+  });
+
   const active = (accountsQuery.data ?? []).filter(
     (a: SocialAccountRow) => !a.revoked_at,
   );
