@@ -289,7 +289,7 @@ function NewScheduledPost() {
           <div className="glass-strong rounded-2xl p-5">
             <label className="text-sm font-medium">Video file</label>
             <p className="text-xs text-muted-foreground mt-1 mb-3">
-              MP4 recommended. Vertical 9:16 up to 60s = YouTube Shorts.
+              MP4 recommended.
             </p>
             <input
               ref={fileRef}
