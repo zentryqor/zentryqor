@@ -416,3 +416,79 @@ function Stat({
     </div>
   );
 }
+
+function csvEscape(v: string | number): string {
+  const s = String(v ?? "");
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function downloadFile(name: string, content: string, mime: string) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function exportCsv(data: YouTubeAnalyticsReport) {
+  const lines: string[] = [];
+  const push = (row: (string | number)[]) =>
+    lines.push(row.map(csvEscape).join(","));
+
+  push(["Section", "Metric", "Value"]);
+  push(["Totals", "Subscribers", data.totals.hiddenSubs ? "Hidden" : data.totals.subscribers]);
+  push(["Totals", "Views", data.totals.views]);
+  push(["Totals", "Likes", data.totals.likes]);
+  push(["Totals", "Comments", data.totals.comments]);
+  push(["Totals", "Shares", data.totals.shares]);
+  push(["Totals", "Videos", data.totals.videos]);
+
+  if (data.recentViews) {
+    lines.push("");
+    push(["Recent views (last 7 days)", "Date", "Views"]);
+    for (const d of data.recentViews.daily) push(["", d.date, d.views]);
+    push(["", "Total", data.recentViews.last7Days]);
+  }
+
+  if (data.topShorts.length) {
+    lines.push("");
+    push(["Top Shorts", "Title", "Views", "URL"]);
+    for (const s of data.topShorts)
+      push(["", s.title, s.views, `https://youtube.com/shorts/${s.id}`]);
+  }
+
+  if (data.topVideos.length) {
+    lines.push("");
+    push(["Top videos", "Title", "Views", "Published", "URL"]);
+    for (const v of data.topVideos)
+      push([
+        "",
+        v.title,
+        v.views,
+        v.publishedAt.slice(0, 10),
+        `https://youtu.be/${v.id}`,
+      ]);
+  }
+
+  if (data.audience?.ageGender.length) {
+    lines.push("");
+    push(["Audience age/gender (last 90d, %)", "Age", "Male", "Female", "Other"]);
+    for (const r of data.audience.ageGender)
+      push(["", r.bucket, r.male.toFixed(1), r.female.toFixed(1), r.other.toFixed(1)]);
+  }
+
+  if (data.audience?.countries.length) {
+    lines.push("");
+    push(["Top countries (last 90d)", "Country", "Views", "Share %"]);
+    for (const c of data.audience.countries)
+      push(["", c.country, c.views, (c.share * 100).toFixed(1)]);
+  }
+
+  const date = new Date().toISOString().slice(0, 10);
+  downloadFile(`youtube-analytics-${date}.csv`, lines.join("\n"), "text/csv");
+}
+
