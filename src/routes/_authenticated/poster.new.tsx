@@ -1006,7 +1006,7 @@ function BestTimesHeatmap({ report }: { report: BestTimesReport }) {
                   />
                 );
               })}
-            </>
+            </Fragment>
           ))}
         </div>
         <div className="mt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
