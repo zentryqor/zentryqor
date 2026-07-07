@@ -20,7 +20,7 @@ import { ProfileMenu } from "@/components/ProfileMenu";
 import { getYouTubeAnalyticsReport } from "@/lib/youtube-analytics-report.functions";
 import { startSocialOAuth } from "@/lib/social.functions";
 
-export const Route = createFileRoute("/_authenticated/scheduler/youtube/analytics")({
+export const Route = createFileRoute("/_authenticated/scheduler/youtube-analytics")({
   head: () => ({
     meta: [
       { title: "YouTube analytics — Zentry Qor" },

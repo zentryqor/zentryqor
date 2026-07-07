@@ -217,7 +217,7 @@ function YouTubeChannelPage() {
                 </div>
                 <div className="flex flex-wrap gap-2 shrink-0">
                   <Link
-                    to="/scheduler/youtube/analytics"
+                    to="/scheduler/youtube-analytics"
                     className="rounded-xl glass-strong px-3 py-2 text-xs hover:bg-white/[0.06] inline-flex items-center gap-1.5"
                   >
                     <BarChart3 className="w-3.5 h-3.5" /> Analytics
