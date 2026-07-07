@@ -240,6 +240,7 @@ function YouTubeChannelPage() {
                 </Link>
                 <Link
                   to="/poster/youtube-analytics"
+                  search={ytAccount ? { accountId: ytAccount.id } : undefined}
                   className="rounded-xl glass-strong px-4 h-10 text-xs font-medium hover:bg-white/[0.06] inline-flex items-center justify-center gap-1.5"
                 >
                   <BarChart3 className="w-3.5 h-3.5" /> Analytics
