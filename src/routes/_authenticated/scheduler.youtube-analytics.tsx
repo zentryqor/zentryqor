@@ -11,7 +11,6 @@ import {
   Film,
   Loader2,
   MessageSquare,
-  Printer,
   RefreshCw,
   Share2,
   ThumbsUp,
