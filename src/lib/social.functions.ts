@@ -37,7 +37,17 @@ export const startSocialOAuth = createServerFn({ method: "POST" })
     const { signOAuthState } = await import("@/lib/oauth-state.server");
     const { clientId, cfg } = providerCreds(data.platform);
     const request = getRequest();
-    const origin = request?.url ? new URL(request.url).origin : undefined;
+    const headerOrigin = request?.headers.get("origin") ?? undefined;
+    const forwardedHost =
+      request?.headers.get("x-forwarded-host") ?? request?.headers.get("host");
+    const forwardedProto = request?.headers.get("x-forwarded-proto") ?? "https";
+    const origin =
+      headerOrigin ??
+      (forwardedHost
+        ? `${forwardedProto}://${forwardedHost}`
+        : request?.url
+          ? new URL(request.url).origin
+          : undefined);
     const redirectUri = callbackUrl(data.platform, origin);
     const state = signOAuthState({
       userId: context.userId,
