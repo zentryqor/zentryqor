@@ -28,7 +28,7 @@ import {
   startSocialOAuth,
 } from "@/lib/social.functions";
 
-export const Route = createFileRoute("/_authenticated/scheduler/youtube")({
+export const Route = createFileRoute("/_authenticated/poster/youtube")({
   head: () => ({
     meta: [
       { title: "YouTube channel — Zentry Qor" },

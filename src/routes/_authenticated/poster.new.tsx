@@ -28,7 +28,7 @@ import { getYouTubeUploadOptions } from "@/lib/youtube-upload-options.functions"
 
 const searchSchema = z.object({ id: z.string().uuid().optional() });
 
-export const Route = createFileRoute("/_authenticated/scheduler/new")({
+export const Route = createFileRoute("/_authenticated/poster/new")({
   validateSearch: (s) => searchSchema.parse(s),
   head: () => ({
     meta: [{ title: "Schedule a post — Zentry Qor" }],

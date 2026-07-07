@@ -28,7 +28,7 @@ import {
 } from "@/lib/scheduler.functions";
 import { Trash2, X as XIcon } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/scheduler/")({
+export const Route = createFileRoute("/_authenticated/poster/")({
   head: () => ({
     meta: [
       { title: "Scheduler — Zentry Qor" },

@@ -29,9 +29,9 @@ import { Route as TemplatesSlugRouteImport } from './routes/templates.$slug'
 import { Route as GuidesUgcEssentialsRouteImport } from './routes/guides/ugc-essentials'
 import { Route as GalleryIdRouteImport } from './routes/gallery.$id'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedSchedulerRouteImport } from './routes/_authenticated/scheduler'
 import { Route as AuthenticatedSavedRouteImport } from './routes/_authenticated/saved'
 import { Route as AuthenticatedReferRouteImport } from './routes/_authenticated/refer'
+import { Route as AuthenticatedPosterRouteImport } from './routes/_authenticated/poster'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedLibraryRouteImport } from './routes/_authenticated/library'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -43,11 +43,11 @@ import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedApiDocsRouteImport } from './routes/_authenticated/api-docs'
 import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
-import { Route as AuthenticatedSchedulerIndexRouteImport } from './routes/_authenticated/scheduler.index'
+import { Route as AuthenticatedPosterIndexRouteImport } from './routes/_authenticated/poster.index'
 import { Route as AuthenticatedAssetsIndexRouteImport } from './routes/_authenticated/assets.index'
-import { Route as AuthenticatedSchedulerYoutubeAnalyticsRouteImport } from './routes/_authenticated/scheduler.youtube-analytics'
-import { Route as AuthenticatedSchedulerYoutubeRouteImport } from './routes/_authenticated/scheduler.youtube'
-import { Route as AuthenticatedSchedulerNewRouteImport } from './routes/_authenticated/scheduler.new'
+import { Route as AuthenticatedPosterYoutubeAnalyticsRouteImport } from './routes/_authenticated/poster.youtube-analytics'
+import { Route as AuthenticatedPosterYoutubeRouteImport } from './routes/_authenticated/poster.youtube'
+import { Route as AuthenticatedPosterNewRouteImport } from './routes/_authenticated/poster.new'
 import { Route as AuthenticatedLibraryIdRouteImport } from './routes/_authenticated/library.$id'
 import { Route as AuthenticatedAssetsIdRouteImport } from './routes/_authenticated/assets.$id'
 import { Route as ApiPublicV1TextRouteImport } from './routes/api/public/v1/text'
@@ -160,11 +160,6 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedSchedulerRoute = AuthenticatedSchedulerRouteImport.update({
-  id: '/scheduler',
-  path: '/scheduler',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedSavedRoute = AuthenticatedSavedRouteImport.update({
   id: '/saved',
   path: '/saved',
@@ -173,6 +168,11 @@ const AuthenticatedSavedRoute = AuthenticatedSavedRouteImport.update({
 const AuthenticatedReferRoute = AuthenticatedReferRouteImport.update({
   id: '/refer',
   path: '/refer',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPosterRoute = AuthenticatedPosterRouteImport.update({
+  id: '/poster',
+  path: '/poster',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
@@ -230,11 +230,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedSchedulerIndexRoute =
-  AuthenticatedSchedulerIndexRouteImport.update({
+const AuthenticatedPosterIndexRoute =
+  AuthenticatedPosterIndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => AuthenticatedSchedulerRoute,
+    getParentRoute: () => AuthenticatedPosterRoute,
   } as any)
 const AuthenticatedAssetsIndexRoute =
   AuthenticatedAssetsIndexRouteImport.update({
@@ -242,24 +242,23 @@ const AuthenticatedAssetsIndexRoute =
     path: '/assets/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedSchedulerYoutubeAnalyticsRoute =
-  AuthenticatedSchedulerYoutubeAnalyticsRouteImport.update({
+const AuthenticatedPosterYoutubeAnalyticsRoute =
+  AuthenticatedPosterYoutubeAnalyticsRouteImport.update({
     id: '/youtube-analytics',
     path: '/youtube-analytics',
-    getParentRoute: () => AuthenticatedSchedulerRoute,
+    getParentRoute: () => AuthenticatedPosterRoute,
   } as any)
-const AuthenticatedSchedulerYoutubeRoute =
-  AuthenticatedSchedulerYoutubeRouteImport.update({
+const AuthenticatedPosterYoutubeRoute =
+  AuthenticatedPosterYoutubeRouteImport.update({
     id: '/youtube',
     path: '/youtube',
-    getParentRoute: () => AuthenticatedSchedulerRoute,
+    getParentRoute: () => AuthenticatedPosterRoute,
   } as any)
-const AuthenticatedSchedulerNewRoute =
-  AuthenticatedSchedulerNewRouteImport.update({
-    id: '/new',
-    path: '/new',
-    getParentRoute: () => AuthenticatedSchedulerRoute,
-  } as any)
+const AuthenticatedPosterNewRoute = AuthenticatedPosterNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AuthenticatedPosterRoute,
+} as any)
 const AuthenticatedLibraryIdRoute = AuthenticatedLibraryIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -353,20 +352,20 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/library': typeof AuthenticatedLibraryRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/poster': typeof AuthenticatedPosterRouteWithChildren
   '/refer': typeof AuthenticatedReferRoute
   '/saved': typeof AuthenticatedSavedRoute
-  '/scheduler': typeof AuthenticatedSchedulerRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/templates/$slug': typeof TemplatesSlugRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/library/$id': typeof AuthenticatedLibraryIdRoute
-  '/scheduler/new': typeof AuthenticatedSchedulerNewRoute
-  '/scheduler/youtube': typeof AuthenticatedSchedulerYoutubeRoute
-  '/scheduler/youtube-analytics': typeof AuthenticatedSchedulerYoutubeAnalyticsRoute
+  '/poster/new': typeof AuthenticatedPosterNewRoute
+  '/poster/youtube': typeof AuthenticatedPosterYoutubeRoute
+  '/poster/youtube-analytics': typeof AuthenticatedPosterYoutubeAnalyticsRoute
   '/assets/': typeof AuthenticatedAssetsIndexRoute
-  '/scheduler/': typeof AuthenticatedSchedulerIndexRoute
+  '/poster/': typeof AuthenticatedPosterIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
@@ -413,11 +412,11 @@ export interface FileRoutesByTo {
   '/templates/$slug': typeof TemplatesSlugRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/library/$id': typeof AuthenticatedLibraryIdRoute
-  '/scheduler/new': typeof AuthenticatedSchedulerNewRoute
-  '/scheduler/youtube': typeof AuthenticatedSchedulerYoutubeRoute
-  '/scheduler/youtube-analytics': typeof AuthenticatedSchedulerYoutubeAnalyticsRoute
+  '/poster/new': typeof AuthenticatedPosterNewRoute
+  '/poster/youtube': typeof AuthenticatedPosterYoutubeRoute
+  '/poster/youtube-analytics': typeof AuthenticatedPosterYoutubeAnalyticsRoute
   '/assets': typeof AuthenticatedAssetsIndexRoute
-  '/scheduler': typeof AuthenticatedSchedulerIndexRoute
+  '/poster': typeof AuthenticatedPosterIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
@@ -458,20 +457,20 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/library': typeof AuthenticatedLibraryRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/poster': typeof AuthenticatedPosterRouteWithChildren
   '/_authenticated/refer': typeof AuthenticatedReferRoute
   '/_authenticated/saved': typeof AuthenticatedSavedRoute
-  '/_authenticated/scheduler': typeof AuthenticatedSchedulerRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/templates/$slug': typeof TemplatesSlugRoute
   '/_authenticated/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/_authenticated/library/$id': typeof AuthenticatedLibraryIdRoute
-  '/_authenticated/scheduler/new': typeof AuthenticatedSchedulerNewRoute
-  '/_authenticated/scheduler/youtube': typeof AuthenticatedSchedulerYoutubeRoute
-  '/_authenticated/scheduler/youtube-analytics': typeof AuthenticatedSchedulerYoutubeAnalyticsRoute
+  '/_authenticated/poster/new': typeof AuthenticatedPosterNewRoute
+  '/_authenticated/poster/youtube': typeof AuthenticatedPosterYoutubeRoute
+  '/_authenticated/poster/youtube-analytics': typeof AuthenticatedPosterYoutubeAnalyticsRoute
   '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
-  '/_authenticated/scheduler/': typeof AuthenticatedSchedulerIndexRoute
+  '/_authenticated/poster/': typeof AuthenticatedPosterIndexRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
@@ -512,20 +511,20 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/library'
     | '/onboarding'
+    | '/poster'
     | '/refer'
     | '/saved'
-    | '/scheduler'
     | '/settings'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
     | '/templates/$slug'
     | '/assets/$id'
     | '/library/$id'
-    | '/scheduler/new'
-    | '/scheduler/youtube'
-    | '/scheduler/youtube-analytics'
+    | '/poster/new'
+    | '/poster/youtube'
+    | '/poster/youtube-analytics'
     | '/assets/'
-    | '/scheduler/'
+    | '/poster/'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
@@ -572,11 +571,11 @@ export interface FileRouteTypes {
     | '/templates/$slug'
     | '/assets/$id'
     | '/library/$id'
-    | '/scheduler/new'
-    | '/scheduler/youtube'
-    | '/scheduler/youtube-analytics'
+    | '/poster/new'
+    | '/poster/youtube'
+    | '/poster/youtube-analytics'
     | '/assets'
-    | '/scheduler'
+    | '/poster'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
@@ -616,20 +615,20 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/library'
     | '/_authenticated/onboarding'
+    | '/_authenticated/poster'
     | '/_authenticated/refer'
     | '/_authenticated/saved'
-    | '/_authenticated/scheduler'
     | '/_authenticated/settings'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
     | '/templates/$slug'
     | '/_authenticated/assets/$id'
     | '/_authenticated/library/$id'
-    | '/_authenticated/scheduler/new'
-    | '/_authenticated/scheduler/youtube'
-    | '/_authenticated/scheduler/youtube-analytics'
+    | '/_authenticated/poster/new'
+    | '/_authenticated/poster/youtube'
+    | '/_authenticated/poster/youtube-analytics'
     | '/_authenticated/assets/'
-    | '/_authenticated/scheduler/'
+    | '/_authenticated/poster/'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
@@ -814,13 +813,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/scheduler': {
-      id: '/_authenticated/scheduler'
-      path: '/scheduler'
-      fullPath: '/scheduler'
-      preLoaderRoute: typeof AuthenticatedSchedulerRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/saved': {
       id: '/_authenticated/saved'
       path: '/saved'
@@ -833,6 +825,13 @@ declare module '@tanstack/react-router' {
       path: '/refer'
       fullPath: '/refer'
       preLoaderRoute: typeof AuthenticatedReferRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/poster': {
+      id: '/_authenticated/poster'
+      path: '/poster'
+      fullPath: '/poster'
+      preLoaderRoute: typeof AuthenticatedPosterRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/onboarding': {
@@ -912,12 +911,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/scheduler/': {
-      id: '/_authenticated/scheduler/'
+    '/_authenticated/poster/': {
+      id: '/_authenticated/poster/'
       path: '/'
-      fullPath: '/scheduler/'
-      preLoaderRoute: typeof AuthenticatedSchedulerIndexRouteImport
-      parentRoute: typeof AuthenticatedSchedulerRoute
+      fullPath: '/poster/'
+      preLoaderRoute: typeof AuthenticatedPosterIndexRouteImport
+      parentRoute: typeof AuthenticatedPosterRoute
     }
     '/_authenticated/assets/': {
       id: '/_authenticated/assets/'
@@ -926,26 +925,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssetsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/scheduler/youtube-analytics': {
-      id: '/_authenticated/scheduler/youtube-analytics'
+    '/_authenticated/poster/youtube-analytics': {
+      id: '/_authenticated/poster/youtube-analytics'
       path: '/youtube-analytics'
-      fullPath: '/scheduler/youtube-analytics'
-      preLoaderRoute: typeof AuthenticatedSchedulerYoutubeAnalyticsRouteImport
-      parentRoute: typeof AuthenticatedSchedulerRoute
+      fullPath: '/poster/youtube-analytics'
+      preLoaderRoute: typeof AuthenticatedPosterYoutubeAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedPosterRoute
     }
-    '/_authenticated/scheduler/youtube': {
-      id: '/_authenticated/scheduler/youtube'
+    '/_authenticated/poster/youtube': {
+      id: '/_authenticated/poster/youtube'
       path: '/youtube'
-      fullPath: '/scheduler/youtube'
-      preLoaderRoute: typeof AuthenticatedSchedulerYoutubeRouteImport
-      parentRoute: typeof AuthenticatedSchedulerRoute
+      fullPath: '/poster/youtube'
+      preLoaderRoute: typeof AuthenticatedPosterYoutubeRouteImport
+      parentRoute: typeof AuthenticatedPosterRoute
     }
-    '/_authenticated/scheduler/new': {
-      id: '/_authenticated/scheduler/new'
+    '/_authenticated/poster/new': {
+      id: '/_authenticated/poster/new'
       path: '/new'
-      fullPath: '/scheduler/new'
-      preLoaderRoute: typeof AuthenticatedSchedulerNewRouteImport
-      parentRoute: typeof AuthenticatedSchedulerRoute
+      fullPath: '/poster/new'
+      preLoaderRoute: typeof AuthenticatedPosterNewRouteImport
+      parentRoute: typeof AuthenticatedPosterRoute
     }
     '/_authenticated/library/$id': {
       id: '/_authenticated/library/$id'
@@ -1045,26 +1044,23 @@ const AuthenticatedLibraryRouteChildren: AuthenticatedLibraryRouteChildren = {
 const AuthenticatedLibraryRouteWithChildren =
   AuthenticatedLibraryRoute._addFileChildren(AuthenticatedLibraryRouteChildren)
 
-interface AuthenticatedSchedulerRouteChildren {
-  AuthenticatedSchedulerNewRoute: typeof AuthenticatedSchedulerNewRoute
-  AuthenticatedSchedulerYoutubeRoute: typeof AuthenticatedSchedulerYoutubeRoute
-  AuthenticatedSchedulerYoutubeAnalyticsRoute: typeof AuthenticatedSchedulerYoutubeAnalyticsRoute
-  AuthenticatedSchedulerIndexRoute: typeof AuthenticatedSchedulerIndexRoute
+interface AuthenticatedPosterRouteChildren {
+  AuthenticatedPosterNewRoute: typeof AuthenticatedPosterNewRoute
+  AuthenticatedPosterYoutubeRoute: typeof AuthenticatedPosterYoutubeRoute
+  AuthenticatedPosterYoutubeAnalyticsRoute: typeof AuthenticatedPosterYoutubeAnalyticsRoute
+  AuthenticatedPosterIndexRoute: typeof AuthenticatedPosterIndexRoute
 }
 
-const AuthenticatedSchedulerRouteChildren: AuthenticatedSchedulerRouteChildren =
-  {
-    AuthenticatedSchedulerNewRoute: AuthenticatedSchedulerNewRoute,
-    AuthenticatedSchedulerYoutubeRoute: AuthenticatedSchedulerYoutubeRoute,
-    AuthenticatedSchedulerYoutubeAnalyticsRoute:
-      AuthenticatedSchedulerYoutubeAnalyticsRoute,
-    AuthenticatedSchedulerIndexRoute: AuthenticatedSchedulerIndexRoute,
-  }
+const AuthenticatedPosterRouteChildren: AuthenticatedPosterRouteChildren = {
+  AuthenticatedPosterNewRoute: AuthenticatedPosterNewRoute,
+  AuthenticatedPosterYoutubeRoute: AuthenticatedPosterYoutubeRoute,
+  AuthenticatedPosterYoutubeAnalyticsRoute:
+    AuthenticatedPosterYoutubeAnalyticsRoute,
+  AuthenticatedPosterIndexRoute: AuthenticatedPosterIndexRoute,
+}
 
-const AuthenticatedSchedulerRouteWithChildren =
-  AuthenticatedSchedulerRoute._addFileChildren(
-    AuthenticatedSchedulerRouteChildren,
-  )
+const AuthenticatedPosterRouteWithChildren =
+  AuthenticatedPosterRoute._addFileChildren(AuthenticatedPosterRouteChildren)
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
@@ -1078,9 +1074,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRouteWithChildren
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedPosterRoute: typeof AuthenticatedPosterRouteWithChildren
   AuthenticatedReferRoute: typeof AuthenticatedReferRoute
   AuthenticatedSavedRoute: typeof AuthenticatedSavedRoute
-  AuthenticatedSchedulerRoute: typeof AuthenticatedSchedulerRouteWithChildren
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedAssetsIdRoute: typeof AuthenticatedAssetsIdRoute
   AuthenticatedAssetsIndexRoute: typeof AuthenticatedAssetsIndexRoute
@@ -1098,9 +1094,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLibraryRoute: AuthenticatedLibraryRouteWithChildren,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedPosterRoute: AuthenticatedPosterRouteWithChildren,
   AuthenticatedReferRoute: AuthenticatedReferRoute,
   AuthenticatedSavedRoute: AuthenticatedSavedRoute,
-  AuthenticatedSchedulerRoute: AuthenticatedSchedulerRouteWithChildren,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedAssetsIdRoute: AuthenticatedAssetsIdRoute,
   AuthenticatedAssetsIndexRoute: AuthenticatedAssetsIndexRoute,
