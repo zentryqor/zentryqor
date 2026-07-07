@@ -11,6 +11,8 @@ import {
   Youtube,
   Clock,
   AlertTriangle,
+  Layers,
+  Plus,
 } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
@@ -26,6 +28,11 @@ import {
   listScheduledPosts,
   type ScheduledPostRow,
 } from "@/lib/scheduler.functions";
+import {
+  listPostSeries,
+  deletePostSeries,
+  type PostSeriesRow,
+} from "@/lib/post-series.functions";
 import { Trash2, X as XIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/poster/")({
