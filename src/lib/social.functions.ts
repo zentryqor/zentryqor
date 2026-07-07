@@ -80,7 +80,7 @@ export const startSocialOAuth = createServerFn({ method: "POST" })
       scope: cfg.scopes.join(" "),
       state,
       access_type: "offline",
-      prompt: "consent",
+      prompt: "select_account consent",
       include_granted_scopes: "true",
     });
     return { url: `${cfg.authorizeUrl}?${params.toString()}` };
