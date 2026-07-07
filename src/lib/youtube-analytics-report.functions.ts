@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export type YouTubeAnalyticsReport = {
+  rangeDays: number;
   totals: {
     subscribers: number;
     hiddenSubs: boolean;
@@ -41,6 +42,10 @@ export type YouTubeAnalyticsReport = {
   audience: {
     ageGender: { bucket: string; male: number; female: number; other: number }[];
     countries: { country: string; views: number; share: number }[];
+    countriesTrend: {
+      dates: string[];
+      series: { country: string; views: number[]; total: number }[];
+    } | null;
   } | null;
   scopeMissing: boolean;
 };
@@ -49,15 +54,15 @@ function iso(d: Date) {
   return d.toISOString().slice(0, 10);
 }
 
-async function ytFetch(url: string, token: string) {
-  const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-  const j: any = await r.json().catch(() => ({}));
-  return { ok: r.ok, status: r.status, json: j };
-}
-
 export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<YouTubeAnalyticsReport> => {
+  .inputValidator((input: { days?: number } | undefined) => {
+    const d = Number(input?.days ?? 7);
+    const days = [7, 14, 30].includes(d) ? d : 7;
+    return { days };
+  })
+  .handler(async ({ data, context }): Promise<YouTubeAnalyticsReport> => {
+    const { days } = data;
     const { supabaseAdmin } = await import(
       "@/integrations/supabase/client.server"
     );
@@ -77,12 +82,24 @@ export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!row) throw new Error("YouTube isn't connected yet.");
 
-    const token = await refreshYouTubeToken(row);
+    let token = await refreshYouTubeToken(row);
+
+    // Fetch helper that auto-refreshes the access token on 401 and retries
+    // once. Combined with refreshYouTubeToken this makes the connection
+    // effectively never-expiring.
+    const ytFetch = async (url: string) => {
+      let r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (r.status === 401) {
+        token = await refreshYouTubeToken(row, { force: true });
+        r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      }
+      const j: any = await r.json().catch(() => ({}));
+      return { ok: r.ok, status: r.status, json: j };
+    };
 
     // Channel + uploads playlist
     const ch = await ytFetch(
       "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics,contentDetails&mine=true",
-      token,
     );
     if (!ch.ok) {
       throw new Error(
@@ -94,12 +111,10 @@ export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
     const uploads =
       channel.contentDetails?.relatedPlaylists?.uploads ?? null;
 
-    // Pull up to 50 recent uploads for top-video buckets
     let videoIds: string[] = [];
     if (uploads) {
       const p = await ytFetch(
         `https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&maxResults=50&playlistId=${uploads}`,
-        token,
       );
       videoIds = (p.json.items ?? [])
         .map((i: any) => i.contentDetails?.videoId)
@@ -110,7 +125,6 @@ export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
     if (videoIds.length > 0) {
       const v = await ytFetch(
         `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics,contentDetails&id=${videoIds.join(",")}`,
-        token,
       );
       videos = v.json.items ?? [];
     }
@@ -161,7 +175,6 @@ export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
           new Date(a.publishedAt).getTime(),
       )[0];
 
-    // Analytics API — requires yt-analytics.readonly. Degrade gracefully.
     let recentViews: YouTubeAnalyticsReport["recentViews"] = null;
     let audience: YouTubeAnalyticsReport["audience"] = null;
     let shares = 0;
@@ -169,11 +182,10 @@ export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
 
     const end = new Date();
     const start = new Date();
-    start.setDate(end.getDate() - 6);
+    start.setDate(end.getDate() - (days - 1));
 
     const daily = await ytFetch(
       `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&metrics=views,shares&dimensions=day&startDate=${iso(start)}&endDate=${iso(end)}&sort=day`,
-      token,
     );
     if (daily.ok && Array.isArray(daily.json.rows)) {
       const rows: any[] = daily.json.rows;
@@ -185,34 +197,32 @@ export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
         return { date: String(r[0]), views: Number(r[1] ?? 0) };
       });
       recentViews = { last7Days: total, daily: dailyArr };
-      // Lifetime shares in a separate call below; keep as fallback
       shares = sharesSum;
     } else if (daily.status === 403 || daily.status === 401) {
       scopeMissing = true;
     }
 
-    // Lifetime shares (best-effort)
     if (!scopeMissing) {
       const lifetime = await ytFetch(
         `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&metrics=shares&startDate=2005-01-01&endDate=${iso(end)}`,
-        token,
       );
       if (lifetime.ok && lifetime.json.rows?.[0]?.[0] != null) {
         shares = Number(lifetime.json.rows[0][0]);
       }
     }
 
-    // Audience — age/gender + countries (last 90d)
     if (!scopeMissing) {
       const audStart = new Date();
       audStart.setDate(end.getDate() - 90);
       const ag = await ytFetch(
         `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&metrics=viewerPercentage&dimensions=ageGroup,gender&startDate=${iso(audStart)}&endDate=${iso(end)}`,
-        token,
       );
       const ctr = await ytFetch(
         `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&metrics=views&dimensions=country&startDate=${iso(audStart)}&endDate=${iso(end)}&sort=-views&maxResults=6`,
-        token,
+      );
+      // Country time-series over the selected range (day x country).
+      const ctrTrend = await ytFetch(
+        `https://youtubeanalytics.googleapis.com/v2/reports?ids=channel==MINE&metrics=views&dimensions=day,country&startDate=${iso(start)}&endDate=${iso(end)}&maxResults=2000`,
       );
 
       let ageGender: { bucket: string; male: number; female: number; other: number }[] = [];
@@ -245,8 +255,40 @@ export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
         }));
       }
 
+      let countriesTrend:
+        | { dates: string[]; series: { country: string; views: number[]; total: number }[] }
+        | null = null;
+      if (ctrTrend.ok && Array.isArray(ctrTrend.json.rows) && countries.length) {
+        const dates: string[] = [];
+        for (let i = 0; i < days; i++) {
+          const d = new Date(start);
+          d.setDate(start.getDate() + i);
+          dates.push(iso(d));
+        }
+        const dateIdx = new Map(dates.map((d, i) => [d, i]));
+        const topSet = new Set(countries.slice(0, 5).map((c) => c.country));
+        const byCountry = new Map<string, number[]>();
+        for (const c of topSet) byCountry.set(c, new Array(days).fill(0));
+        for (const r of ctrTrend.json.rows as any[]) {
+          const d = String(r[0]);
+          const c = String(r[1]);
+          const v = Number(r[2] ?? 0);
+          const idx = dateIdx.get(d);
+          if (idx == null || !byCountry.has(c)) continue;
+          byCountry.get(c)![idx] += v;
+        }
+        const series = Array.from(byCountry.entries())
+          .map(([country, views]) => ({
+            country,
+            views,
+            total: views.reduce((s, v) => s + v, 0),
+          }))
+          .sort((a, b) => b.total - a.total);
+        countriesTrend = { dates, series };
+      }
+
       if (ageGender.length || countries.length) {
-        audience = { ageGender, countries };
+        audience = { ageGender, countries, countriesTrend };
       }
     }
 
@@ -254,6 +296,7 @@ export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
     const totalComments = mapped.reduce((s, m) => s + m.comments, 0);
 
     return {
+      rangeDays: days,
       totals: {
         subscribers: Number(channel.statistics?.subscriberCount ?? 0),
         hiddenSubs: !!channel.statistics?.hiddenSubscriberCount,
