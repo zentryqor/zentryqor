@@ -93,9 +93,7 @@ function PosterPage() {
   const active = (accountsQuery.data ?? []).filter(
     (a: SocialAccountRow) => !a.revoked_at,
   );
-  const yt = active.find((a) => a.platform === "youtube");
-  const ytExpired =
-    yt?.expires_at && new Date(yt.expires_at).getTime() < Date.now();
+  const ytAccounts = active.filter((a) => a.platform === "youtube");
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
@@ -129,51 +127,28 @@ function PosterPage() {
           </div>
         </div>
 
-        <h2 className="text-sm uppercase tracking-[0.2em] text-muted-foreground mb-3">
-          Connected accounts
-        </h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
+            Connected accounts
+          </h2>
+          {ytAccounts.length > 0 && (
+            <button
+              onClick={() => startMut.mutate("youtube")}
+              disabled={startMut.isPending}
+              className="rounded-xl glass-strong px-3 py-1.5 text-xs font-medium hover:bg-white/[0.06] inline-flex items-center gap-1.5"
+            >
+              {startMut.isPending ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Plug className="w-3.5 h-3.5" />
+              )}
+              Add YouTube channel
+            </button>
+          )}
+        </div>
 
         <div className="space-y-3 mb-10">
-          {yt ? (
-            <Link
-              to="/poster/youtube"
-              className="glass-strong rounded-2xl p-5 flex items-center gap-4 group hover:bg-white/[0.04] transition-colors"
-            >
-              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 text-red-400">
-                <Youtube className="w-5 h-5" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <div className="font-medium">YouTube</div>
-                  {!ytExpired ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] rounded-full bg-emerald-500/15 text-emerald-300 px-2 py-0.5">
-                      <CheckCircle2 className="w-3 h-3" /> Connected
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] rounded-full bg-amber-500/15 text-amber-300 px-2 py-0.5">
-                      <Clock className="w-3 h-3" /> Token expired
-                    </span>
-                  )}
-                </div>
-                <div className="text-sm text-muted-foreground mt-1 flex items-center gap-2 min-w-0">
-                  {yt.meta?.thumbnail && (
-                    <img
-                      src={yt.meta.thumbnail}
-                      alt=""
-                      className="w-5 h-5 rounded-full shrink-0"
-                    />
-                  )}
-                  <span className="text-foreground/90 font-medium truncate">
-                    {yt.meta?.channel_title ?? yt.handle ?? "Connected"}
-                  </span>
-                  <span className="text-xs text-muted-foreground shrink-0">
-                    · View channel & analytics
-                  </span>
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground shrink-0" />
-            </Link>
-          ) : (
+          {ytAccounts.length === 0 ? (
             <div className="glass-strong rounded-2xl p-5 flex items-start gap-4">
               <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 text-red-400">
                 <Youtube className="w-5 h-5" />
@@ -197,8 +172,56 @@ function PosterPage() {
                 Connect
               </button>
             </div>
+          ) : (
+            ytAccounts.map((yt) => {
+              const ytExpired =
+                yt.expires_at && new Date(yt.expires_at).getTime() < Date.now();
+              return (
+                <Link
+                  key={yt.id}
+                  to="/poster/youtube"
+                  search={{ accountId: yt.id }}
+                  className="glass-strong rounded-2xl p-5 flex items-center gap-4 group hover:bg-white/[0.04] transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0 text-red-400">
+                    <Youtube className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="font-medium">YouTube</div>
+                      {!ytExpired ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] rounded-full bg-emerald-500/15 text-emerald-300 px-2 py-0.5">
+                          <CheckCircle2 className="w-3 h-3" /> Connected
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[11px] rounded-full bg-amber-500/15 text-amber-300 px-2 py-0.5">
+                          <Clock className="w-3 h-3" /> Token expired
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-muted-foreground mt-1 flex items-center gap-2 min-w-0">
+                      {yt.meta?.thumbnail && (
+                        <img
+                          src={yt.meta.thumbnail}
+                          alt=""
+                          className="w-5 h-5 rounded-full shrink-0"
+                        />
+                      )}
+                      <span className="text-foreground/90 font-medium truncate">
+                        {yt.meta?.channel_title ?? yt.handle ?? "Connected"}
+                      </span>
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        · View channel & analytics
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground shrink-0" />
+                </Link>
+              );
+            })
           )}
         </div>
+
 
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
