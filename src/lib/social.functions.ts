@@ -46,10 +46,24 @@ export const startSocialOAuth = createServerFn({ method: "POST" })
     const forwardedHost =
       request?.headers.get("x-forwarded-host") ?? request?.headers.get("host");
     const forwardedProto = request?.headers.get("x-forwarded-proto") ?? "https";
+    const allowedOrigin = (value?: string) => {
+      if (!value) return undefined;
+      try {
+        const parsed = new URL(value);
+        const isLocal = parsed.hostname === "localhost";
+        const isLovableHost =
+          parsed.hostname.endsWith(".lovable.app") ||
+          parsed.hostname.endsWith(".lovableproject.com");
+        if ((parsed.protocol === "https:" && isLovableHost) || isLocal) {
+          return parsed.origin;
+        }
+      } catch {}
+      return undefined;
+    };
     const origin =
-      data.origin ??
-      headerOrigin ??
-      (forwardedHost
+      allowedOrigin(data.origin) ??
+      allowedOrigin(headerOrigin) ??
+      allowedOrigin(forwardedHost
         ? `${forwardedProto}://${forwardedHost}`
         : request?.url
           ? new URL(request.url).origin
