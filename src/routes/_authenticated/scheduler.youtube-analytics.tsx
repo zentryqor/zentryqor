@@ -406,6 +406,14 @@ function AnalyticsPage() {
                     </div>
                   </div>
                 )}
+
+                {data.audience.countriesTrend &&
+                  data.audience.countriesTrend.series.length > 0 && (
+                    <CountriesTrendChart
+                      trend={data.audience.countriesTrend}
+                      days={data.rangeDays}
+                    />
+                  )}
               </section>
             )}
           </>
