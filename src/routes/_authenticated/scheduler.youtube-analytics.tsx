@@ -413,6 +413,8 @@ function AnalyticsPage() {
                     <CountriesTrendChart
                       trend={data.audience.countriesTrend}
                       days={data.rangeDays}
+                      topN={topN}
+                      onChangeTopN={setTopN}
                     />
                   )}
               </section>
