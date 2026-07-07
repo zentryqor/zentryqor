@@ -247,12 +247,98 @@ function PosterPage() {
           )}
         </div>
 
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
+            Series
+          </h2>
+          <Link
+            to="/poster/series/new"
+            className="rounded-xl bg-white text-black px-3 py-1.5 text-xs font-medium hover:bg-white/90 inline-flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" /> New series
+          </Link>
+        </div>
+
+        <div className="space-y-3 mb-10">
+          {seriesQuery.isLoading && (
+            <div className="glass-strong rounded-2xl p-5 text-sm text-muted-foreground flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin" /> Loading…
+            </div>
+          )}
+          {seriesQuery.data && seriesQuery.data.length === 0 && (
+            <div className="glass-strong rounded-2xl p-6 text-sm text-muted-foreground text-center">
+              No series yet. Upload a batch of clips and drip-post them on any
+              cadence.
+            </div>
+          )}
+          {(seriesQuery.data ?? []).map((s: PostSeriesRow) => {
+            const cad = s.cadence ?? {};
+            const label =
+              cad.type === "daily"
+                ? "Daily"
+                : cad.type === "weekdays"
+                  ? "Mon–Fri"
+                  : cad.type === "every_n_days"
+                    ? `Every ${cad.intervalDays ?? 1} days`
+                    : "Custom days";
+            return (
+              <div key={s.id} className="glass-strong rounded-2xl p-5">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
+                    <Layers className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{s.name}</div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {label} at {cad.timeOfDay ?? "—"} · {s.counts.published}/
+                      {s.counts.total} published
+                      {s.counts.failed > 0 && (
+                        <span className="text-red-300">
+                          {" "}
+                          · {s.counts.failed} failed
+                        </span>
+                      )}
+                    </div>
+                    {s.nextRun && (
+                      <div className="text-[11px] text-muted-foreground mt-1">
+                        Next: {new Date(s.nextRun).toLocaleString()}
+                      </div>
+                    )}
+                    <div className="mt-2 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                      <div
+                        className="h-full bg-white/70"
+                        style={{
+                          width: `${s.counts.total ? (s.counts.published / s.counts.total) * 100 : 0}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (
+                        confirm(
+                          "Delete this series? Queued posts in it will be canceled.",
+                        )
+                      )
+                        delSeriesMut.mutate(s.id);
+                    }}
+                    className="rounded-lg p-2 text-muted-foreground hover:text-red-400 hover:bg-white/[0.06] shrink-0"
+                    title="Delete series"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm uppercase tracking-[0.2em] text-muted-foreground">
             Scheduled posts
           </h2>
         </div>
+
 
         <div className="space-y-3 mb-10">
           {postsQuery.isLoading && (
