@@ -1,12 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { z } from "zod";
 import { toast } from "sonner";
 import {
   ArrowLeft,
   Calendar,
   ChevronDown,
+  FileText,
   Loader2,
   Upload,
   Youtube,
@@ -18,16 +20,29 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   createScheduledPost,
   createSignedUploadUrl,
+  getScheduledPost,
+  saveDraftPost,
 } from "@/lib/scheduler.functions";
 import { listSocialAccounts } from "@/lib/social.functions";
 import { getYouTubeUploadOptions } from "@/lib/youtube-upload-options.functions";
 
+const searchSchema = z.object({ id: z.string().uuid().optional() });
+
 export const Route = createFileRoute("/_authenticated/scheduler/new")({
+  validateSearch: (s) => searchSchema.parse(s),
   head: () => ({
     meta: [{ title: "Schedule a post — Zentry Qor" }],
   }),
   component: NewScheduledPost,
 });
+
+function toLocalInput(iso: string) {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return defaultWhen();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 
 function defaultWhen() {
   const d = new Date(Date.now() + 15 * 60_000);
