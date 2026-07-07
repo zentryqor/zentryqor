@@ -83,7 +83,8 @@ function SchedulerPage() {
   });
 
   const startMut = useMutation({
-    mutationFn: async (platform: Platform) => start({ data: { platform } }),
+    mutationFn: async (platform: Platform) =>
+      start({ data: { platform, origin: window.location.origin } }),
     onSuccess: (res) => {
       window.location.href = res.url;
     },
