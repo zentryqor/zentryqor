@@ -646,13 +646,30 @@ function NewScheduledPost() {
             </p>
           </div>
 
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-end gap-2 flex-wrap">
             <Link
               to="/scheduler"
               className="text-sm text-muted-foreground hover:text-foreground px-4 py-2"
             >
               Cancel
             </Link>
+            <button
+              type="button"
+              onClick={() => draftMut.mutate()}
+              disabled={!canSaveDraft}
+              className="rounded-xl glass-strong border border-white/10 px-4 py-2.5 text-sm font-medium hover:bg-white/[0.06] inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {draftMut.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <FileText className="w-4 h-4" />
+              )}
+              {draftMut.isPending
+                ? "Saving…"
+                : draftId
+                  ? "Update draft"
+                  : "Save as draft"}
+            </button>
             <button
               type="submit"
               disabled={!readyToSubmit || !ytConnected}
@@ -665,9 +682,12 @@ function NewScheduledPost() {
                 ? "Uploading video…"
                 : mut.isPending
                   ? "Scheduling…"
-                  : "Schedule post"}
+                  : draftId
+                    ? "Schedule now"
+                    : "Schedule post"}
             </button>
           </div>
+
         </form>
       </main>
     </div>
