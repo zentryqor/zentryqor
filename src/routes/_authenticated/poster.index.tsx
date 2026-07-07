@@ -58,6 +58,8 @@ function PosterPage() {
   const listPosts = useServerFn(listScheduledPosts);
   const cancelPost = useServerFn(cancelScheduledPost);
   const delPost = useServerFn(deleteScheduledPost);
+  const listSeries = useServerFn(listPostSeries);
+  const delSeries = useServerFn(deletePostSeries);
 
   const accountsQuery = useQuery({
     queryKey: ["social-accounts"],
@@ -68,6 +70,12 @@ function PosterPage() {
     queryKey: ["scheduled-posts"],
     queryFn: () => listPosts(),
     refetchInterval: 15_000,
+  });
+
+  const seriesQuery = useQuery({
+    queryKey: ["post-series"],
+    queryFn: () => listSeries(),
+    refetchInterval: 30_000,
   });
 
   const startMut = useMutation({
