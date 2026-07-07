@@ -58,6 +58,7 @@ import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/publi
 import { Route as ApiPublicHooksRunScheduledPostsRouteImport } from './routes/api/public/hooks/run-scheduled-posts'
 import { Route as ApiPublicHooksRunScheduledJobsRouteImport } from './routes/api/public/hooks/run-scheduled-jobs'
 import { Route as ApiPublicAuthSigninRouteImport } from './routes/api/public/auth/signin'
+import { Route as AuthenticatedPosterSeriesNewRouteImport } from './routes/_authenticated/poster.series.new'
 import { Route as ApiPublicOauthYoutubeCallbackRouteImport } from './routes/api/public/oauth/youtube/callback'
 import { Route as ApiPublicAssetsDownloadIdRouteImport } from './routes/api/public/assets/download.$id'
 
@@ -312,6 +313,12 @@ const ApiPublicAuthSigninRoute = ApiPublicAuthSigninRouteImport.update({
   path: '/api/public/auth/signin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPosterSeriesNewRoute =
+  AuthenticatedPosterSeriesNewRouteImport.update({
+    id: '/series/new',
+    path: '/series/new',
+    getParentRoute: () => AuthenticatedPosterRoute,
+  } as any)
 const ApiPublicOauthYoutubeCallbackRoute =
   ApiPublicOauthYoutubeCallbackRouteImport.update({
     id: '/api/public/oauth/youtube/callback',
@@ -366,6 +373,7 @@ export interface FileRoutesByFullPath {
   '/poster/youtube-analytics': typeof AuthenticatedPosterYoutubeAnalyticsRoute
   '/assets/': typeof AuthenticatedAssetsIndexRoute
   '/poster/': typeof AuthenticatedPosterIndexRoute
+  '/poster/series/new': typeof AuthenticatedPosterSeriesNewRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
@@ -417,6 +425,7 @@ export interface FileRoutesByTo {
   '/poster/youtube-analytics': typeof AuthenticatedPosterYoutubeAnalyticsRoute
   '/assets': typeof AuthenticatedAssetsIndexRoute
   '/poster': typeof AuthenticatedPosterIndexRoute
+  '/poster/series/new': typeof AuthenticatedPosterSeriesNewRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
@@ -471,6 +480,7 @@ export interface FileRoutesById {
   '/_authenticated/poster/youtube-analytics': typeof AuthenticatedPosterYoutubeAnalyticsRoute
   '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
   '/_authenticated/poster/': typeof AuthenticatedPosterIndexRoute
+  '/_authenticated/poster/series/new': typeof AuthenticatedPosterSeriesNewRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
@@ -525,6 +535,7 @@ export interface FileRouteTypes {
     | '/poster/youtube-analytics'
     | '/assets/'
     | '/poster/'
+    | '/poster/series/new'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
@@ -576,6 +587,7 @@ export interface FileRouteTypes {
     | '/poster/youtube-analytics'
     | '/assets'
     | '/poster'
+    | '/poster/series/new'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
@@ -629,6 +641,7 @@ export interface FileRouteTypes {
     | '/_authenticated/poster/youtube-analytics'
     | '/_authenticated/assets/'
     | '/_authenticated/poster/'
+    | '/_authenticated/poster/series/new'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
@@ -1016,6 +1029,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAuthSigninRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/poster/series/new': {
+      id: '/_authenticated/poster/series/new'
+      path: '/series/new'
+      fullPath: '/poster/series/new'
+      preLoaderRoute: typeof AuthenticatedPosterSeriesNewRouteImport
+      parentRoute: typeof AuthenticatedPosterRoute
+    }
     '/api/public/oauth/youtube/callback': {
       id: '/api/public/oauth/youtube/callback'
       path: '/api/public/oauth/youtube/callback'
@@ -1049,6 +1069,7 @@ interface AuthenticatedPosterRouteChildren {
   AuthenticatedPosterYoutubeRoute: typeof AuthenticatedPosterYoutubeRoute
   AuthenticatedPosterYoutubeAnalyticsRoute: typeof AuthenticatedPosterYoutubeAnalyticsRoute
   AuthenticatedPosterIndexRoute: typeof AuthenticatedPosterIndexRoute
+  AuthenticatedPosterSeriesNewRoute: typeof AuthenticatedPosterSeriesNewRoute
 }
 
 const AuthenticatedPosterRouteChildren: AuthenticatedPosterRouteChildren = {
@@ -1057,6 +1078,7 @@ const AuthenticatedPosterRouteChildren: AuthenticatedPosterRouteChildren = {
   AuthenticatedPosterYoutubeAnalyticsRoute:
     AuthenticatedPosterYoutubeAnalyticsRoute,
   AuthenticatedPosterIndexRoute: AuthenticatedPosterIndexRoute,
+  AuthenticatedPosterSeriesNewRoute: AuthenticatedPosterSeriesNewRoute,
 }
 
 const AuthenticatedPosterRouteWithChildren =
@@ -1160,13 +1182,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
