@@ -123,6 +123,90 @@ function NewScheduledPost() {
   const [playlistIds, setPlaylistIds] = useState<string[]>([]);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [variants, setVariants] = useState<CaptionVariant[]>([]);
+  const [pickedVariant, setPickedVariant] = useState<number | null>(null);
+  const [showHeatmap, setShowHeatmap] = useState(false);
+
+  const captionMut = useMutation({
+    mutationFn: async () => {
+      const topic =
+        (title.trim() || caption.trim() || file?.name || existingVideoPath || "")
+          .toString()
+          .slice(0, 1500);
+      if (!topic) throw new Error("Add a title, caption, or video first");
+      return genCaptions({
+        data: {
+          topic,
+          platform: "youtube_shorts",
+          currentTitle: title || undefined,
+          currentDescription: caption || undefined,
+        },
+      });
+    },
+    onSuccess: (r) => {
+      setVariants(r.variants);
+      setPickedVariant(null);
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Couldn't generate captions"),
+  });
+
+  const heatmapQuery = useQuery({
+    queryKey: ["yt-best-times"],
+    queryFn: () =>
+      bestTimes({
+        data: { tzOffsetMinutes: -new Date().getTimezoneOffset() },
+      }),
+    enabled: ytConnected,
+    staleTime: 10 * 60_000,
+  });
+
+  function applyVariant(v: CaptionVariant, idx: number) {
+    setTitle(v.title.slice(0, 100));
+    const tagLine = v.hashtags.join(" ");
+    const desc = tagLine
+      ? `${v.description.trim()}\n\n${tagLine}`
+      : v.description.trim();
+    setCaption(desc);
+    // Also mirror hashtags into YT tags field.
+    setTagsText(v.hashtags.map((h) => h.replace(/^#/, "")).join(", "));
+    setPickedVariant(idx);
+    toast.success(`${v.style} variant applied.`);
+  }
+
+  function scheduleAtPeak() {
+    const rep = heatmapQuery.data;
+    if (!rep || rep.top.length === 0) {
+      toast.error("Not enough view history yet — post a few videos first.");
+      return;
+    }
+    const now = new Date();
+    // Try each top slot in order, pick the nearest upcoming date/time (>= now+15m).
+    const min = new Date(now.getTime() + 15 * 60_000);
+    let best: Date | null = null;
+    for (const slot of rep.top) {
+      for (let addDays = 0; addDays < 14; addDays++) {
+        const d = new Date(now);
+        d.setDate(now.getDate() + addDays);
+        const daysDiff = (slot.weekday - d.getDay() + 7) % 7;
+        d.setDate(d.getDate() + daysDiff);
+        d.setHours(slot.hour, 0, 0, 0);
+        if (d < min) continue;
+        if (!best || d < best) best = d;
+        break;
+      }
+    }
+    if (!best) {
+      toast.error("Couldn't find an upcoming peak slot");
+      return;
+    }
+    const pad = (n: number) => String(n).padStart(2, "0");
+    setWhen(
+      `${best.getFullYear()}-${pad(best.getMonth() + 1)}-${pad(best.getDate())}T${pad(best.getHours())}:${pad(best.getMinutes())}`,
+    );
+    toast.success(
+      `Scheduled at your peak (${["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][best.getDay()]} ${pad(best.getHours())}:00).`,
+    );
+  }
 
   useEffect(() => {
     if (!draftQuery.data || hydrated) return;
