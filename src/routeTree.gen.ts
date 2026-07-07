@@ -45,6 +45,7 @@ import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedSchedulerIndexRouteImport } from './routes/_authenticated/scheduler.index'
 import { Route as AuthenticatedAssetsIndexRouteImport } from './routes/_authenticated/assets.index'
+import { Route as AuthenticatedSchedulerYoutubeAnalyticsRouteImport } from './routes/_authenticated/scheduler.youtube-analytics'
 import { Route as AuthenticatedSchedulerYoutubeRouteImport } from './routes/_authenticated/scheduler.youtube'
 import { Route as AuthenticatedSchedulerNewRouteImport } from './routes/_authenticated/scheduler.new'
 import { Route as AuthenticatedLibraryIdRouteImport } from './routes/_authenticated/library.$id'
@@ -57,7 +58,6 @@ import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/publi
 import { Route as ApiPublicHooksRunScheduledPostsRouteImport } from './routes/api/public/hooks/run-scheduled-posts'
 import { Route as ApiPublicHooksRunScheduledJobsRouteImport } from './routes/api/public/hooks/run-scheduled-jobs'
 import { Route as ApiPublicAuthSigninRouteImport } from './routes/api/public/auth/signin'
-import { Route as AuthenticatedSchedulerYoutubeAnalyticsRouteImport } from './routes/_authenticated/scheduler.youtube.analytics'
 import { Route as ApiPublicOauthYoutubeCallbackRouteImport } from './routes/api/public/oauth/youtube/callback'
 import { Route as ApiPublicAssetsDownloadIdRouteImport } from './routes/api/public/assets/download.$id'
 
@@ -242,6 +242,12 @@ const AuthenticatedAssetsIndexRoute =
     path: '/assets/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSchedulerYoutubeAnalyticsRoute =
+  AuthenticatedSchedulerYoutubeAnalyticsRouteImport.update({
+    id: '/youtube-analytics',
+    path: '/youtube-analytics',
+    getParentRoute: () => AuthenticatedSchedulerRoute,
+  } as any)
 const AuthenticatedSchedulerYoutubeRoute =
   AuthenticatedSchedulerYoutubeRouteImport.update({
     id: '/youtube',
@@ -307,12 +313,6 @@ const ApiPublicAuthSigninRoute = ApiPublicAuthSigninRouteImport.update({
   path: '/api/public/auth/signin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedSchedulerYoutubeAnalyticsRoute =
-  AuthenticatedSchedulerYoutubeAnalyticsRouteImport.update({
-    id: '/analytics',
-    path: '/analytics',
-    getParentRoute: () => AuthenticatedSchedulerYoutubeRoute,
-  } as any)
 const ApiPublicOauthYoutubeCallbackRoute =
   ApiPublicOauthYoutubeCallbackRouteImport.update({
     id: '/api/public/oauth/youtube/callback',
@@ -363,10 +363,10 @@ export interface FileRoutesByFullPath {
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/library/$id': typeof AuthenticatedLibraryIdRoute
   '/scheduler/new': typeof AuthenticatedSchedulerNewRoute
-  '/scheduler/youtube': typeof AuthenticatedSchedulerYoutubeRouteWithChildren
+  '/scheduler/youtube': typeof AuthenticatedSchedulerYoutubeRoute
+  '/scheduler/youtube-analytics': typeof AuthenticatedSchedulerYoutubeAnalyticsRoute
   '/assets/': typeof AuthenticatedAssetsIndexRoute
   '/scheduler/': typeof AuthenticatedSchedulerIndexRoute
-  '/scheduler/youtube/analytics': typeof AuthenticatedSchedulerYoutubeAnalyticsRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
@@ -414,10 +414,10 @@ export interface FileRoutesByTo {
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/library/$id': typeof AuthenticatedLibraryIdRoute
   '/scheduler/new': typeof AuthenticatedSchedulerNewRoute
-  '/scheduler/youtube': typeof AuthenticatedSchedulerYoutubeRouteWithChildren
+  '/scheduler/youtube': typeof AuthenticatedSchedulerYoutubeRoute
+  '/scheduler/youtube-analytics': typeof AuthenticatedSchedulerYoutubeAnalyticsRoute
   '/assets': typeof AuthenticatedAssetsIndexRoute
   '/scheduler': typeof AuthenticatedSchedulerIndexRoute
-  '/scheduler/youtube/analytics': typeof AuthenticatedSchedulerYoutubeAnalyticsRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
@@ -468,10 +468,10 @@ export interface FileRoutesById {
   '/_authenticated/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/_authenticated/library/$id': typeof AuthenticatedLibraryIdRoute
   '/_authenticated/scheduler/new': typeof AuthenticatedSchedulerNewRoute
-  '/_authenticated/scheduler/youtube': typeof AuthenticatedSchedulerYoutubeRouteWithChildren
+  '/_authenticated/scheduler/youtube': typeof AuthenticatedSchedulerYoutubeRoute
+  '/_authenticated/scheduler/youtube-analytics': typeof AuthenticatedSchedulerYoutubeAnalyticsRoute
   '/_authenticated/assets/': typeof AuthenticatedAssetsIndexRoute
   '/_authenticated/scheduler/': typeof AuthenticatedSchedulerIndexRoute
-  '/_authenticated/scheduler/youtube/analytics': typeof AuthenticatedSchedulerYoutubeAnalyticsRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
@@ -523,9 +523,9 @@ export interface FileRouteTypes {
     | '/library/$id'
     | '/scheduler/new'
     | '/scheduler/youtube'
+    | '/scheduler/youtube-analytics'
     | '/assets/'
     | '/scheduler/'
-    | '/scheduler/youtube/analytics'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
@@ -574,9 +574,9 @@ export interface FileRouteTypes {
     | '/library/$id'
     | '/scheduler/new'
     | '/scheduler/youtube'
+    | '/scheduler/youtube-analytics'
     | '/assets'
     | '/scheduler'
-    | '/scheduler/youtube/analytics'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
@@ -627,9 +627,9 @@ export interface FileRouteTypes {
     | '/_authenticated/library/$id'
     | '/_authenticated/scheduler/new'
     | '/_authenticated/scheduler/youtube'
+    | '/_authenticated/scheduler/youtube-analytics'
     | '/_authenticated/assets/'
     | '/_authenticated/scheduler/'
-    | '/_authenticated/scheduler/youtube/analytics'
     | '/api/public/auth/signin'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
@@ -926,6 +926,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssetsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/scheduler/youtube-analytics': {
+      id: '/_authenticated/scheduler/youtube-analytics'
+      path: '/youtube-analytics'
+      fullPath: '/scheduler/youtube-analytics'
+      preLoaderRoute: typeof AuthenticatedSchedulerYoutubeAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedSchedulerRoute
+    }
     '/_authenticated/scheduler/youtube': {
       id: '/_authenticated/scheduler/youtube'
       path: '/youtube'
@@ -1010,13 +1017,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAuthSigninRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/scheduler/youtube/analytics': {
-      id: '/_authenticated/scheduler/youtube/analytics'
-      path: '/analytics'
-      fullPath: '/scheduler/youtube/analytics'
-      preLoaderRoute: typeof AuthenticatedSchedulerYoutubeAnalyticsRouteImport
-      parentRoute: typeof AuthenticatedSchedulerYoutubeRoute
-    }
     '/api/public/oauth/youtube/callback': {
       id: '/api/public/oauth/youtube/callback'
       path: '/api/public/oauth/youtube/callback'
@@ -1045,32 +1045,19 @@ const AuthenticatedLibraryRouteChildren: AuthenticatedLibraryRouteChildren = {
 const AuthenticatedLibraryRouteWithChildren =
   AuthenticatedLibraryRoute._addFileChildren(AuthenticatedLibraryRouteChildren)
 
-interface AuthenticatedSchedulerYoutubeRouteChildren {
-  AuthenticatedSchedulerYoutubeAnalyticsRoute: typeof AuthenticatedSchedulerYoutubeAnalyticsRoute
-}
-
-const AuthenticatedSchedulerYoutubeRouteChildren: AuthenticatedSchedulerYoutubeRouteChildren =
-  {
-    AuthenticatedSchedulerYoutubeAnalyticsRoute:
-      AuthenticatedSchedulerYoutubeAnalyticsRoute,
-  }
-
-const AuthenticatedSchedulerYoutubeRouteWithChildren =
-  AuthenticatedSchedulerYoutubeRoute._addFileChildren(
-    AuthenticatedSchedulerYoutubeRouteChildren,
-  )
-
 interface AuthenticatedSchedulerRouteChildren {
   AuthenticatedSchedulerNewRoute: typeof AuthenticatedSchedulerNewRoute
-  AuthenticatedSchedulerYoutubeRoute: typeof AuthenticatedSchedulerYoutubeRouteWithChildren
+  AuthenticatedSchedulerYoutubeRoute: typeof AuthenticatedSchedulerYoutubeRoute
+  AuthenticatedSchedulerYoutubeAnalyticsRoute: typeof AuthenticatedSchedulerYoutubeAnalyticsRoute
   AuthenticatedSchedulerIndexRoute: typeof AuthenticatedSchedulerIndexRoute
 }
 
 const AuthenticatedSchedulerRouteChildren: AuthenticatedSchedulerRouteChildren =
   {
     AuthenticatedSchedulerNewRoute: AuthenticatedSchedulerNewRoute,
-    AuthenticatedSchedulerYoutubeRoute:
-      AuthenticatedSchedulerYoutubeRouteWithChildren,
+    AuthenticatedSchedulerYoutubeRoute: AuthenticatedSchedulerYoutubeRoute,
+    AuthenticatedSchedulerYoutubeAnalyticsRoute:
+      AuthenticatedSchedulerYoutubeAnalyticsRoute,
     AuthenticatedSchedulerIndexRoute: AuthenticatedSchedulerIndexRoute,
   }
 

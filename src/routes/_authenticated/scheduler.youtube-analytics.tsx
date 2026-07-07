@@ -1,10 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import type { YouTubeAnalyticsReport } from "@/lib/youtube-analytics-report.functions";
 import {
   ArrowLeft,
   BarChart3,
+  Download,
   Eye,
+  FileText,
   Film,
   Loader2,
   MessageSquare,
@@ -20,7 +23,7 @@ import { ProfileMenu } from "@/components/ProfileMenu";
 import { getYouTubeAnalyticsReport } from "@/lib/youtube-analytics-report.functions";
 import { startSocialOAuth } from "@/lib/social.functions";
 
-export const Route = createFileRoute("/_authenticated/scheduler/youtube/analytics")({
+export const Route = createFileRoute("/_authenticated/scheduler/youtube-analytics")({
   head: () => ({
     meta: [
       { title: "YouTube analytics — Zentry Qor" },
@@ -72,22 +75,41 @@ function AnalyticsPage() {
           <ArrowLeft className="w-4 h-4" /> Back to channel
         </Link>
 
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center">
-            <BarChart3 className="w-5 h-5" />
+        <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center">
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
+                Analytics
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                Views, engagement and audience insights.
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight">
-              Analytics
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Views, engagement and audience insights.
-            </p>
-          </div>
+          {data && (
+            <div className="flex gap-2 print:hidden">
+              <button
+                onClick={() => exportCsv(data)}
+                className="rounded-xl glass-strong px-3 h-10 text-xs font-medium hover:bg-white/[0.06] inline-flex items-center gap-1.5"
+              >
+                <Download className="w-3.5 h-3.5" /> CSV
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="rounded-xl bg-white text-black px-3 h-10 text-xs font-medium hover:bg-white/90 inline-flex items-center gap-1.5"
+              >
+                <FileText className="w-3.5 h-3.5" /> PDF
+              </button>
+            </div>
+          )}
         </div>
 
         {q.isLoading && (
           <div className="glass-strong rounded-2xl p-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+
             <Loader2 className="w-4 h-4 animate-spin" /> Loading analytics…
           </div>
         )}
@@ -393,3 +415,79 @@ function Stat({
     </div>
   );
 }
+
+function csvEscape(v: string | number): string {
+  const s = String(v ?? "");
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function downloadFile(name: string, content: string, mime: string) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function exportCsv(data: YouTubeAnalyticsReport) {
+  const lines: string[] = [];
+  const push = (row: (string | number)[]) =>
+    lines.push(row.map(csvEscape).join(","));
+
+  push(["Section", "Metric", "Value"]);
+  push(["Totals", "Subscribers", data.totals.hiddenSubs ? "Hidden" : data.totals.subscribers]);
+  push(["Totals", "Views", data.totals.views]);
+  push(["Totals", "Likes", data.totals.likes]);
+  push(["Totals", "Comments", data.totals.comments]);
+  push(["Totals", "Shares", data.totals.shares]);
+  push(["Totals", "Videos", data.totals.videos]);
+
+  if (data.recentViews) {
+    lines.push("");
+    push(["Recent views (last 7 days)", "Date", "Views"]);
+    for (const d of data.recentViews.daily) push(["", d.date, d.views]);
+    push(["", "Total", data.recentViews.last7Days]);
+  }
+
+  if (data.topShorts.length) {
+    lines.push("");
+    push(["Top Shorts", "Title", "Views", "URL"]);
+    for (const s of data.topShorts)
+      push(["", s.title, s.views, `https://youtube.com/shorts/${s.id}`]);
+  }
+
+  if (data.topVideos.length) {
+    lines.push("");
+    push(["Top videos", "Title", "Views", "Published", "URL"]);
+    for (const v of data.topVideos)
+      push([
+        "",
+        v.title,
+        v.views,
+        v.publishedAt.slice(0, 10),
+        `https://youtu.be/${v.id}`,
+      ]);
+  }
+
+  if (data.audience?.ageGender.length) {
+    lines.push("");
+    push(["Audience age/gender (last 90d, %)", "Age", "Male", "Female", "Other"]);
+    for (const r of data.audience.ageGender)
+      push(["", r.bucket, r.male.toFixed(1), r.female.toFixed(1), r.other.toFixed(1)]);
+  }
+
+  if (data.audience?.countries.length) {
+    lines.push("");
+    push(["Top countries (last 90d)", "Country", "Views", "Share %"]);
+    for (const c of data.audience.countries)
+      push(["", c.country, c.views, (c.share * 100).toFixed(1)]);
+  }
+
+  const date = new Date().toISOString().slice(0, 10);
+  downloadFile(`youtube-analytics-${date}.csv`, lines.join("\n"), "text/csv");
+}
+
