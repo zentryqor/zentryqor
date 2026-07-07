@@ -82,16 +82,40 @@ export async function runDueScheduledPosts(): Promise<{
         const videoBytes = await videoRes.arrayBuffer();
         const videoMime = videoRes.headers.get("content-type") ?? "video/mp4";
 
+        const yt = (post.options?.youtube ?? {}) as any;
         const first = (post.caption ?? "").split("\n")[0]?.trim() || "New video";
-        const title = first.length > 100 ? first.slice(0, 97) + "..." : first;
+        const rawTitle = (yt.title as string | undefined) || first;
+        const title = rawTitle.length > 100 ? rawTitle.slice(0, 97) + "..." : rawTitle;
+        const description =
+          (yt.description as string | undefined) ?? post.caption ?? "";
 
         const { videoId } = await publishYouTubeVideo({
           accessToken,
           title,
-          description: post.caption ?? "",
+          description,
           videoBytes,
           videoMime,
+          options: {
+            privacyStatus: yt.privacyStatus,
+            madeForKids: yt.madeForKids,
+            categoryId: yt.categoryId,
+            tags: yt.tags,
+            license: yt.license,
+            embeddable: yt.embeddable,
+            publicStatsViewable: yt.publicStatsViewable,
+            notifySubscribers: yt.notifySubscribers,
+            locationDescription: yt.locationDescription,
+          },
         });
+
+        // Fan out to any selected playlists — non-fatal if a single add fails.
+        for (const pid of (yt.playlistIds as string[] | undefined) ?? []) {
+          try {
+            await addVideoToPlaylist({ accessToken, playlistId: pid, videoId });
+          } catch (err) {
+            console.warn("[youtube] add-to-playlist failed", pid, err);
+          }
+        }
 
         await (supabaseAdmin as any)
           .from("scheduled_post_targets")
