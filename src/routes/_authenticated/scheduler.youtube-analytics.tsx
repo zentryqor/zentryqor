@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -42,9 +43,10 @@ function fmt(n: number): string {
 function AnalyticsPage() {
   const fetchReport = useServerFn(getYouTubeAnalyticsReport);
   const start = useServerFn(startSocialOAuth);
+  const [days, setDays] = useState<7 | 14 | 30>(7);
   const q = useQuery({
-    queryKey: ["youtube-analytics-report"],
-    queryFn: () => fetchReport(),
+    queryKey: ["youtube-analytics-report", days],
+    queryFn: () => fetchReport({ data: { days } }),
     retry: 1,
   });
   const reconnectMut = useMutation({
