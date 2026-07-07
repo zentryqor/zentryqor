@@ -313,11 +313,20 @@ function NewScheduledPost() {
                     {(file.size / 1024 / 1024).toFixed(1)} MB · click to change
                   </span>
                 </>
+              ) : existingVideoPath ? (
+                <>
+                  <span className="text-foreground truncate max-w-full">
+                    {existingVideoPath.split("/").pop()}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Saved with your draft · click to replace
+                  </span>
+                </>
               ) : (
                 <>
                   <span>Click to select a video</span>
                   <span className="text-xs text-muted-foreground">
-                    Stored privately in your workspace
+                    Optional for drafts · required to schedule
                   </span>
                 </>
               )}
