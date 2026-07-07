@@ -27,7 +27,12 @@ export const listSocialAccounts = createServerFn({ method: "GET" })
 export const startSocialOAuth = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((i) =>
-    z.object({ platform: z.enum(["youtube"]) }).parse(i),
+    z
+      .object({
+        platform: z.enum(["youtube"]),
+        origin: z.string().url().optional(),
+      })
+      .parse(i),
   )
   .handler(async ({ data, context }) => {
     const { providerCreds, callbackUrl } = await import(
@@ -42,6 +47,7 @@ export const startSocialOAuth = createServerFn({ method: "POST" })
       request?.headers.get("x-forwarded-host") ?? request?.headers.get("host");
     const forwardedProto = request?.headers.get("x-forwarded-proto") ?? "https";
     const origin =
+      data.origin ??
       headerOrigin ??
       (forwardedHost
         ? `${forwardedProto}://${forwardedHost}`
