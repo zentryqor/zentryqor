@@ -442,7 +442,7 @@
   --btn-bg-1: hsla(194 100% 69% / 1);
   --btn-bg-2: hsla(217 100% 56% / 1);
   --btn-bg-color: hsla(360 100% 100% / 1);
-  --radii: 0.75rem;
+  --radii: 9999px;
   cursor: pointer;
   padding: 0.9em 1.4em;
   min-width: 120px;
