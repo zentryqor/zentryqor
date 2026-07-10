@@ -81,6 +81,7 @@ function LibraryDetail() {
             aspectRatio: (selected.aspect_ratio as any) ?? "16:9",
           },
         });
+        if (!r.image) throw new Error(r.error ?? "Image generation failed");
         return { kind: "image" as const, image: r.image, input: newInput };
       }
       const r = await runText({

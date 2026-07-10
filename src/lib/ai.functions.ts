@@ -187,52 +187,19 @@ export const generateAiImage = createServerFn({ method: "POST" })
     await enforceRateLimit(`ai-image:${context.userId}`, 10, 60, "Too many AI image requests");
     const usage = await spendCredits(context.userId, IMAGE_COST);
 
-    const apiKey = process.env.GOOGLE_AI_STUDIO_API_KEY;
-    if (!apiKey) throw new Error("GOOGLE_AI_STUDIO_API_KEY is not configured");
-
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [{ text: `${data.prompt}\n\nGenerate the image with aspect ratio ${data.aspectRatio}.` }],
-            },
-          ],
-          generationConfig: {
-            responseModalities: ["IMAGE", "TEXT"],
-          },
-        }),
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        if (res.status === 429) throw new Error(`Rate limit / quota: ${text.slice(0, 300)}`);
-        throw new Error(`Image gen ${res.status}: ${text.slice(0, 300)}`);
-      }
-
-      const json = await res.json();
-      const parts = json?.candidates?.[0]?.content?.parts ?? [];
-      const imgPart = parts.find((p: any) => p?.inlineData?.data);
-      const b64: string | undefined = imgPart?.inlineData?.data;
-      const mime: string = imgPart?.inlineData?.mimeType ?? "image/png";
-      if (!b64) {
-        const reason = json?.promptFeedback?.blockReason || json?.candidates?.[0]?.finishReason || "No image returned";
-        throw new Error(`Image generation failed: ${reason}`);
-      }
+      const { generateGoogleImageDataUrl } = await import("@/lib/google-image.server");
+      const image = await generateGoogleImageDataUrl({ prompt: data.prompt, aspectRatio: data.aspectRatio });
 
       try { await supabaseAdmin.rpc("award_referral_bonus", { _referee: context.userId }); } catch {}
-      return { image: `data:${mime};base64,${b64}`, usage };
-    } catch (e) {
+      return { image, usage };
+    } catch (e: any) {
       await supabaseAdmin
         .from("ai_credit_usage")
         .update({ used: Math.max(0, usage.used - IMAGE_COST) })
         .eq("user_id", context.userId)
         .eq("day", todayUtc());
-      throw e;
+      return { image: null, error: e?.message ?? "Image generation failed", usage };
     }
   });
 

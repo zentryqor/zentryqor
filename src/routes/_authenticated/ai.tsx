@@ -227,6 +227,7 @@ function AiStudio() {
       setLastPromptUsed(builtPrompt);
       if (tool.id === "thumbnail") {
         const r = await runImage({ data: { prompt: builtPrompt, aspectRatio } });
+        if (!r.image) throw new Error(r.error ?? "Image generation failed");
         return { kind: "image" as const, image: r.image, tool, builtPrompt, value };
       }
       const r = await runText({ data: { prompt: builtPrompt, system: tool.system } });
