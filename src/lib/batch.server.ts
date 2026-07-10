@@ -121,10 +121,14 @@ async function runImage(prompt: string, aspect: string): Promise<string> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: `${prompt}\n\nGenerate the image with aspect ratio ${aspectRatio}.` }],
+        },
+      ],
       generationConfig: {
-        responseModalities: ["IMAGE"],
-        imageConfig: { aspectRatio },
+        responseModalities: ["IMAGE", "TEXT"],
       },
     }),
   });
