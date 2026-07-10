@@ -130,33 +130,35 @@ export async function callOpenRouterText(prompt: string, system: string | undefi
 }
 
 export async function callImageGen(prompt: string, aspectRatio: "16:9" | "9:16" | "4:3" | "3:4") {
-  const apiKey = process.env.LOVABLE_API_KEY;
-  if (!apiKey) throw new Error("LOVABLE_API_KEY not configured");
-  const sizeMap: Record<string, string> = {
-    "16:9": "1536x1024",
-    "9:16": "1024x1536",
-    "4:3": "1536x1024",
-    "3:4": "1024x1536",
-  };
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/images/generations", {
+  const apiKey = process.env.GOOGLE_AI_STUDIO_API_KEY;
+  if (!apiKey) throw new Error("GOOGLE_AI_STUDIO_API_KEY not configured");
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const res = await fetch(url, {
     method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "openai/gpt-image-1-mini",
-      prompt,
-      size: sizeMap[aspectRatio],
-      quality: "low",
-      n: 1,
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseModalities: ["IMAGE"],
+        imageConfig: { aspectRatio },
+      },
     }),
   });
   if (!res.ok) {
     const t = await res.text();
-    const err: any = new Error(`Image ${res.status}: ${t.slice(0, 200)}`);
+    const err: any = new Error(`Image ${res.status}: ${t.slice(0, 300)}`);
     err.status = res.status === 429 ? 429 : 502;
     throw err;
   }
   const json = await res.json();
-  const b64 = json.data?.[0]?.b64_json;
-  if (!b64) throw new Error("No image returned");
-  return `data:image/png;base64,${b64}` as string;
+  const parts = json?.candidates?.[0]?.content?.parts ?? [];
+  const imgPart = parts.find((p: any) => p?.inlineData?.data);
+  const b64 = imgPart?.inlineData?.data;
+  const mime = imgPart?.inlineData?.mimeType ?? "image/png";
+  if (!b64) {
+    const reason = json?.promptFeedback?.blockReason || json?.candidates?.[0]?.finishReason || "No image returned";
+    throw new Error(`Image generation failed: ${reason}`);
+  }
+  return `data:${mime};base64,${b64}` as string;
 }
