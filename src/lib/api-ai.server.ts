@@ -1,4 +1,5 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { generateGoogleImageDataUrl } from "@/lib/google-image.server";
 
 const NVIDIA_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
 
@@ -130,39 +131,11 @@ export async function callOpenRouterText(prompt: string, system: string | undefi
 }
 
 export async function callImageGen(prompt: string, aspectRatio: "16:9" | "9:16" | "4:3" | "3:4") {
-  const apiKey = process.env.GOOGLE_AI_STUDIO_API_KEY;
-  if (!apiKey) throw new Error("GOOGLE_AI_STUDIO_API_KEY not configured");
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: `${prompt}\n\nGenerate the image with aspect ratio ${aspectRatio}.` }],
-        },
-      ],
-      generationConfig: {
-        responseModalities: ["IMAGE", "TEXT"],
-      },
-    }),
-  });
-  if (!res.ok) {
-    const t = await res.text();
-    const err: any = new Error(`Image ${res.status}: ${t.slice(0, 300)}`);
-    err.status = res.status === 429 ? 429 : 502;
+  try {
+    return await generateGoogleImageDataUrl({ prompt, aspectRatio });
+  } catch (e: any) {
+    const err: any = new Error(e?.message ?? "Image generation failed");
+    err.status = e?.status === 429 ? 429 : 502;
     throw err;
   }
-  const json = await res.json();
-  const parts = json?.candidates?.[0]?.content?.parts ?? [];
-  const imgPart = parts.find((p: any) => p?.inlineData?.data);
-  const b64 = imgPart?.inlineData?.data;
-  const mime = imgPart?.inlineData?.mimeType ?? "image/png";
-  if (!b64) {
-    const reason = json?.promptFeedback?.blockReason || json?.candidates?.[0]?.finishReason || "No image returned";
-    throw new Error(`Image generation failed: ${reason}`);
-  }
-  return `data:${mime};base64,${b64}` as string;
 }

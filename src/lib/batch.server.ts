@@ -2,6 +2,7 @@
 // Called from server functions (user-triggered ticks) and the /api/public/hooks
 // scheduled-jobs endpoint (pg_cron). Never import from client modules.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { generateGoogleImageDataUrl } from "@/lib/google-image.server";
 
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const FREE_DAILY_CREDITS = 150;
@@ -113,39 +114,8 @@ async function runText(prompt: string, system?: string | null): Promise<string> 
 }
 
 async function runImage(prompt: string, aspect: string): Promise<string> {
-  const apiKey = process.env.GOOGLE_AI_STUDIO_API_KEY;
-  if (!apiKey) throw new Error("GOOGLE_AI_STUDIO_API_KEY missing");
   const aspectRatio = (["16:9", "9:16", "4:3", "3:4"].includes(aspect) ? aspect : "16:9");
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: `${prompt}\n\nGenerate the image with aspect ratio ${aspectRatio}.` }],
-        },
-      ],
-      generationConfig: {
-        responseModalities: ["IMAGE", "TEXT"],
-      },
-    }),
-  });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`Image ${res.status}: ${t.slice(0, 300)}`);
-  }
-  const json = await res.json();
-  const parts = json?.candidates?.[0]?.content?.parts ?? [];
-  const imgPart = parts.find((p: any) => p?.inlineData?.data);
-  const b64: string | undefined = imgPart?.inlineData?.data;
-  const mime: string = imgPart?.inlineData?.mimeType ?? "image/png";
-  if (!b64) {
-    const reason = json?.promptFeedback?.blockReason || json?.candidates?.[0]?.finishReason || "No image returned";
-    throw new Error(`Image generation failed: ${reason}`);
-  }
-  return `data:${mime};base64,${b64}`;
+  return generateGoogleImageDataUrl({ prompt, aspectRatio: aspectRatio as "16:9" | "9:16" | "4:3" | "3:4" });
 }
 
 /**
