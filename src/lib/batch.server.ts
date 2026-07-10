@@ -89,8 +89,28 @@ async function refundCredits(userId: string, amount: number) {
 }
 
 async function runText(prompt: string, system?: string | null): Promise<string> {
-  const { generateGoogleText } = await import("@/lib/google-text.server");
-  return generateGoogleText({ prompt, system });
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error("OPENROUTER_API_KEY missing");
+  const messages = [
+    ...(system ? [{ role: "system", content: system }] : []),
+    { role: "user", content: prompt },
+  ];
+  const res = await fetch(OPENROUTER_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://zentryqor.lovable.app",
+      "X-Title": "Zentry Qor",
+    },
+    body: JSON.stringify({ model: "openai/gpt-oss-120b:free", messages }),
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`OpenRouter ${res.status}: ${t.slice(0, 200)}`);
+  }
+  const json = await res.json();
+  return json.choices?.[0]?.message?.content ?? "";
 }
 
 async function runImage(prompt: string, aspect: string): Promise<string> {
