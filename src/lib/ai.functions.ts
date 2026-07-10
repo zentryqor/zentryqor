@@ -187,46 +187,41 @@ export const generateAiImage = createServerFn({ method: "POST" })
     await enforceRateLimit(`ai-image:${context.userId}`, 10, 60, "Too many AI image requests");
     const usage = await spendCredits(context.userId, IMAGE_COST);
 
-    const apiKey = process.env.LOVABLE_API_KEY;
-    if (!apiKey) throw new Error("LOVABLE_API_KEY is not configured");
-
-    const sizeMap: Record<string, string> = {
-      "16:9": "1536x1024",
-      "9:16": "1024x1536",
-      "4:3": "1536x1024",
-      "3:4": "1024x1536",
-    };
-    const size = sizeMap[data.aspectRatio];
+    const apiKey = process.env.GOOGLE_AI_STUDIO_API_KEY;
+    if (!apiKey) throw new Error("GOOGLE_AI_STUDIO_API_KEY is not configured");
 
     try {
-      const res = await fetch("https://ai.gateway.lovable.dev/v1/images/generations", {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const res = await fetch(url, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "openai/gpt-image-1-mini",
-          prompt: data.prompt,
-          size,
-          quality: "low",
-          n: 1,
+          contents: [{ role: "user", parts: [{ text: data.prompt }] }],
+          generationConfig: {
+            responseModalities: ["IMAGE"],
+            imageConfig: { aspectRatio: data.aspectRatio },
+          },
         }),
       });
 
       if (!res.ok) {
         const text = await res.text();
         if (res.status === 429) throw new Error("Rate limit exceeded. Please try again shortly.");
-        if (res.status === 402) throw new Error("AI credits exhausted. Please add credits to your workspace.");
         throw new Error(`Image gen ${res.status}: ${text.slice(0, 300)}`);
       }
 
       const json = await res.json();
-      const b64: string | undefined = json.data?.[0]?.b64_json;
-      if (!b64) throw new Error("No image returned");
+      const parts = json?.candidates?.[0]?.content?.parts ?? [];
+      const imgPart = parts.find((p: any) => p?.inlineData?.data);
+      const b64: string | undefined = imgPart?.inlineData?.data;
+      const mime: string = imgPart?.inlineData?.mimeType ?? "image/png";
+      if (!b64) {
+        const reason = json?.promptFeedback?.blockReason || json?.candidates?.[0]?.finishReason || "No image returned";
+        throw new Error(`Image generation failed: ${reason}`);
+      }
 
       try { await supabaseAdmin.rpc("award_referral_bonus", { _referee: context.userId }); } catch {}
-      return { image: `data:image/png;base64,${b64}`, usage };
+      return { image: `data:${mime};base64,${b64}`, usage };
     } catch (e) {
       await supabaseAdmin
         .from("ai_credit_usage")
