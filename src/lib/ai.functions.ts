@@ -191,7 +191,7 @@ export const generateAiImage = createServerFn({ method: "POST" })
     if (!apiKey) throw new Error("GOOGLE_AI_STUDIO_API_KEY is not configured");
 
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

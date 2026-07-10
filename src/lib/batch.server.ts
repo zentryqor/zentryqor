@@ -116,7 +116,7 @@ async function runImage(prompt: string, aspect: string): Promise<string> {
   const apiKey = process.env.GOOGLE_AI_STUDIO_API_KEY;
   if (!apiKey) throw new Error("GOOGLE_AI_STUDIO_API_KEY missing");
   const aspectRatio = (["16:9", "9:16", "4:3", "3:4"].includes(aspect) ? aspect : "16:9");
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
