@@ -98,35 +98,13 @@ export async function refundCredits(userId: string, cost: number) {
 }
 
 export async function callOpenRouterText(prompt: string, system: string | undefined) {
-  const apiKey = process.env.NVIDIA_API_KEY;
-  if (!apiKey) throw new Error("NVIDIA_API_KEY not configured");
-  const messages = [
-    ...(system ? [{ role: "system", content: system }] : []),
-    { role: "user", content: prompt },
-  ];
-  const res = await fetch(NVIDIA_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "deepseek-ai/deepseek-v4-flash",
-      messages,
-      max_tokens: 1024,
-      temperature: 0.7,
-      top_p: 0.9,
-      stream: false,
-    }),
-  });
-  if (!res.ok) {
-    const t = await res.text();
-    const err: any = new Error(`Upstream ${res.status}: ${t.slice(0, 200)}`);
-    err.status = res.status === 429 ? 429 : 502;
+  try {
+    return await generateGoogleText({ prompt, system });
+  } catch (e: any) {
+    const err: any = new Error(e?.message ?? "Text generation failed");
+    err.status = e?.status === 429 ? 429 : 502;
     throw err;
   }
-  const json = await res.json();
-  return (json.choices?.[0]?.message?.content ?? "") as string;
 }
 
 export async function callImageGen(prompt: string, aspectRatio: "16:9" | "9:16" | "4:3" | "3:4") {
