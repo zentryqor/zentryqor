@@ -477,27 +477,3 @@
   .btn-donate { transition: linear; }
 }
 
-/* ===== Global override: turn all white/foreground pills into the donate gradient ===== */
-.bg-foreground.text-background,
-.bg-white.text-black {
-  background-image: linear-gradient(
-    325deg,
-    hsl(217 100% 56%) 0%,
-    hsl(194 100% 69%) 55%,
-    hsl(217 100% 56%) 90%
-  ) !important;
-  background-size: 280% auto !important;
-  background-color: transparent !important;
-  color: #fff !important;
-  border-color: transparent !important;
-  box-shadow:
-    0 0 20px rgba(71, 184, 255, 0.5),
-    0 5px 5px -1px rgba(58, 125, 233, 0.25),
-    inset 4px 4px 8px rgba(175, 230, 255, 0.5),
-    inset -4px -4px 8px rgba(19, 95, 216, 0.35) !important;
-  transition: background-position 0.7s ease !important;
-}
-.bg-foreground.text-background:hover,
-.bg-white.text-black:hover {
-  background-position: right top !important;
-}
