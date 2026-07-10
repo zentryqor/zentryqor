@@ -486,7 +486,7 @@ function NewScheduledPost() {
                 type="button"
                 onClick={() => captionMut.mutate()}
                 disabled={captionMut.isPending}
-                className="rounded-xl bg-white text-black px-3 py-2 text-xs font-medium hover:bg-white/90 inline-flex items-center gap-1.5 shrink-0 disabled:opacity-60"
+                className="pb-ai-button shrink-0 !py-2 !px-4 !text-xs"
               >
                 {captionMut.isPending ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
