@@ -568,7 +568,7 @@ function AiStudio() {
                   input.trim() && mut.mutate({ tool: active, value: input.trim() })
                 }
                 disabled={mut.isPending || !input.trim() || insufficient}
-                className="h-11 px-6 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="pb-ai-button disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {mut.isPending ? (
                   <>
