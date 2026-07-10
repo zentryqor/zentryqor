@@ -372,21 +372,16 @@ function Toggle({
         <div className="text-sm font-medium">{label}</div>
         <div className="text-xs text-muted-foreground mt-0.5">{description}</div>
       </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition shrink-0 ${
-          checked ? "bg-gradient-to-r from-primary to-accent" : "bg-foreground/15"
-        }`}
-      >
-        <span
-          className={`inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
-            checked ? "translate-x-[22px]" : "translate-x-0.5"
-          }`}
+      <label className="switch" aria-label={label}>
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
         />
-      </button>
+        <span className="slider">
+          <span className="glow" />
+        </span>
+      </label>
     </div>
   );
 }
