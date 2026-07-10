@@ -191,7 +191,7 @@ export const generateAiImage = createServerFn({ method: "POST" })
     if (!apiKey) throw new Error("GOOGLE_AI_STUDIO_API_KEY is not configured");
 
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${encodeURIComponent(apiKey)}`;
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -210,7 +210,7 @@ export const generateAiImage = createServerFn({ method: "POST" })
 
       if (!res.ok) {
         const text = await res.text();
-        if (res.status === 429) throw new Error("Rate limit exceeded. Please try again shortly.");
+        if (res.status === 429) throw new Error(`Rate limit / quota: ${text.slice(0, 300)}`);
         throw new Error(`Image gen ${res.status}: ${text.slice(0, 300)}`);
       }
 
