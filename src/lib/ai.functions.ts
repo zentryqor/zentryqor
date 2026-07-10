@@ -196,10 +196,14 @@ export const generateAiImage = createServerFn({ method: "POST" })
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: data.prompt }] }],
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: `${data.prompt}\n\nGenerate the image with aspect ratio ${data.aspectRatio}.` }],
+            },
+          ],
           generationConfig: {
-            responseModalities: ["IMAGE"],
-            imageConfig: { aspectRatio: data.aspectRatio },
+            responseModalities: ["IMAGE", "TEXT"],
           },
         }),
       });

@@ -138,10 +138,14 @@ export async function callImageGen(prompt: string, aspectRatio: "16:9" | "9:16" 
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: `${prompt}\n\nGenerate the image with aspect ratio ${aspectRatio}.` }],
+        },
+      ],
       generationConfig: {
-        responseModalities: ["IMAGE"],
-        imageConfig: { aspectRatio },
+        responseModalities: ["IMAGE", "TEXT"],
       },
     }),
   });
