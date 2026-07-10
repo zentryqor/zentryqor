@@ -210,7 +210,7 @@ export const generateAiImage = createServerFn({ method: "POST" })
 
       if (!res.ok) {
         const text = await res.text();
-        if (res.status === 429) throw new Error("Rate limit exceeded. Please try again shortly.");
+        if (res.status === 429) throw new Error(`Rate limit / quota: ${text.slice(0, 300)}`);
         throw new Error(`Image gen ${res.status}: ${text.slice(0, 300)}`);
       }
 
