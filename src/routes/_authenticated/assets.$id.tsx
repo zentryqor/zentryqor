@@ -243,21 +243,20 @@ function AssetDetailsPage() {
                   </>
                 )}
               </button>
-              <button
-                onClick={onSaveToggle}
-                className={`h-14 w-14 rounded-2xl flex items-center justify-center transition-colors ${
-                  saved
-                    ? "bg-accent/20 text-accent"
-                    : "glass-strong text-muted-foreground hover:text-foreground"
-                }`}
+              <label
+                className="ui-bookmark h-14 w-14 rounded-2xl glass-strong"
+                style={{ ["--icon-size" as string]: "28px" }}
                 aria-label={saved ? "Unsave" : "Save"}
               >
-                {saved ? (
-                  <BookmarkCheck className="h-5 w-5" />
-                ) : (
-                  <Bookmark className="h-5 w-5" />
-                )}
-              </button>
+                <input
+                  type="checkbox"
+                  checked={saved}
+                  onChange={onSaveToggle}
+                />
+                <svg className="bookmark" viewBox="0 0 32 32">
+                  <path d="M27 4v27a1 1 0 0 1-1.625.781L16 24.281l-9.375 7.5A1 1 0 0 1 5 31V4a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4z" />
+                </svg>
+              </label>
               <button
                 onClick={onShare}
                 className="h-14 w-14 rounded-2xl glass-strong flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
