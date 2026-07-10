@@ -125,12 +125,8 @@ export const generateAiText = createServerFn({ method: "POST" })
     await enforceRateLimit(`ai-text:${context.userId}`, 20, 60, "Too many AI text requests");
     const usage = await spendCredits(context.userId, TEXT_COST);
     try {
-      const messages = [
-        ...(data.system ? [{ role: "system", content: data.system }] : []),
-        { role: "user", content: data.prompt },
-      ];
-      const json = await callLovableAiText(messages);
-      const text: string = json.choices?.[0]?.message?.content ?? "";
+      const { generateGoogleText } = await import("@/lib/google-text.server");
+      const text = await generateGoogleText({ prompt: data.prompt, system: data.system });
       try { await supabaseAdmin.rpc("award_referral_bonus", { _referee: context.userId }); } catch {}
       return { text, usage };
     } catch (e) {
