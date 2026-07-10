@@ -343,15 +343,20 @@ function AssetsPage() {
                             </div>
                           </>
                         )}
-                        <button
-                          onClick={(e) => toggleSaved(e, a)}
-                          className={`absolute top-2 left-2 h-8 w-8 rounded-full glass-strong flex items-center justify-center transition-colors ${
-                            savedSet.has(a.id) ? "text-accent" : "text-muted-foreground hover:text-foreground"
-                          }`}
+                        <label
+                          className="ui-bookmark absolute top-2 left-2 h-8 w-8 rounded-full glass-strong"
+                          onClick={(e) => e.stopPropagation()}
                           aria-label={savedSet.has(a.id) ? "Unsave" : "Save"}
                         >
-                          {savedSet.has(a.id) ? <BookmarkCheck className="h-3.5 w-3.5" /> : <Bookmark className="h-3.5 w-3.5" />}
-                        </button>
+                          <input
+                            type="checkbox"
+                            checked={savedSet.has(a.id)}
+                            onChange={(e) => toggleSaved(e as unknown as React.MouseEvent, a)}
+                          />
+                          <svg className="bookmark" viewBox="0 0 32 32">
+                            <path d="M27 4v27a1 1 0 0 1-1.625.781L16 24.281l-9.375 7.5A1 1 0 0 1 5 31V4a4 4 0 0 1 4-4h14a4 4 0 0 1 4 4z" />
+                          </svg>
+                        </label>
                         {a.premium_only && (
                           <div className="absolute top-2 right-2 glass-strong rounded-full px-2 py-0.5 text-[10px] flex items-center gap-1">
                             {locked && <Lock className="h-2.5 w-2.5 icon-fx" />}
