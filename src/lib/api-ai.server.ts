@@ -1,7 +1,6 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { generateGoogleImageDataUrl } from "@/lib/google-image.server";
-
-const NVIDIA_URL = "https://integrate.api.nvidia.com/v1/chat/completions";
+import { generateGoogleText } from "@/lib/google-text.server";
 
 export const TEXT_COST = 10;
 export const IMAGE_COST = 30;
