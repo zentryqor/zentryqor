@@ -48,9 +48,9 @@ export function Nav() {
                 Log in
               </Link>
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-              <Link to="/auth" className="btn-donate inline-flex whitespace-nowrap items-center justify-center" style={{ ["--size" as any]: "0.75rem", minHeight: 0, minWidth: 0, padding: "0.4em 1em" }}>
-                Get started
-              </Link>
+                <Link to="/auth" className="btn-fancy-get-started inline-flex whitespace-nowrap items-center justify-center">
+                  <span>Get started</span>
+                </Link>
               </motion.div>
             </>
           )}
