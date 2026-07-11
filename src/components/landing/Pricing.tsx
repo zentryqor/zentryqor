@@ -104,7 +104,7 @@ export function Pricing() {
             <p className="text-sm text-muted-foreground mt-3">For exploring the ecosystem.</p>
 
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-              <Link to="/auth" className="mt-7 h-11 rounded-xl glass-strong text-sm font-medium magnetic flex items-center justify-center">
+              <Link to="/auth" className="btn-liquid-glass mt-7 h-11 px-5 text-sm font-medium magnetic flex items-center justify-center">
                 Start free
               </Link>
             </motion.div>
