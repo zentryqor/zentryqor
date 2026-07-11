@@ -881,3 +881,47 @@
   40%  { opacity: 1; }
   to   { transform: scale(0.8); opacity: 0; }
 }
+
+/* Liquid glass button — applied to shadcn Button default variant */
+.btn-liquid-glass {
+  position: relative;
+  isolation: isolate;
+  color: oklch(0.98 0 0);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px) saturate(140%);
+  box-shadow:
+    inset 2px -2px 1px -1px rgba(255, 255, 255, 0.55),
+    inset -2px 2px 1px -1px rgba(255, 255, 255, 0.55),
+    inset 6px -6px 1px -6px rgba(255, 255, 255, 0.28),
+    inset -6px 6px 1px -6px rgba(255, 255, 255, 0.28),
+    inset 0 0 2px rgba(0, 0, 0, 0.7),
+    0 4px 10px rgba(0, 0, 0, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.btn-liquid-glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  filter: blur(6px);
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    transparent 25%,
+    transparent 75%,
+    rgba(255, 255, 255, 0.55) 100%
+  );
+  opacity: 0.6;
+  mix-blend-mode: overlay;
+  z-index: -1;
+}
+.btn-liquid-glass:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.08);
+}
+.btn-liquid-glass:active {
+  transform: scale(0.97);
+}
