@@ -9,7 +9,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "btn-liquid-glass",
+        default:
+          "text-white font-semibold border-0 [background-size:280%_auto] [background-image:linear-gradient(325deg,hsl(217_100%_56%)_0%,hsl(194_100%_69%)_55%,hsl(217_100%_56%)_90%)] shadow-[0_0_20px_rgba(71,184,255,0.5),0_5px_5px_-1px_rgba(58,125,233,0.25),inset_4px_4px_8px_rgba(175,230,255,0.5),inset_-4px_-4px_8px_rgba(19,95,216,0.35)] transition-[background-position] duration-700 hover:[background-position:right_top]",
         destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
           "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",

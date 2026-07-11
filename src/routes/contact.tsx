@@ -69,20 +69,20 @@ function ContactPage() {
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="text-xs text-muted-foreground mb-1.5 block">Name</label>
-            <input required name="name" className="w-full h-11 px-4 rounded-xl bg-white/[0.03] border border-white/10 focus:border-white/20 outline-none text-sm transition-colors placeholder:text-muted-foreground" />
+            <input required name="name" className="w-full h-11 px-4 rounded-xl bg-elevated/60 border border-border focus:border-accent outline-none text-sm transition-colors" />
           </div>
           <div>
             <label className="text-xs text-muted-foreground mb-1.5 block">Email</label>
-            <input required type="email" name="email" className="w-full h-11 px-4 rounded-xl bg-white/[0.03] border border-white/10 focus:border-white/20 outline-none text-sm transition-colors placeholder:text-muted-foreground" />
+            <input required type="email" name="email" className="w-full h-11 px-4 rounded-xl bg-elevated/60 border border-border focus:border-accent outline-none text-sm transition-colors" />
           </div>
         </div>
         <div>
           <label className="text-xs text-muted-foreground mb-1.5 block">Subject</label>
-          <input required name="subject" className="w-full h-11 px-4 rounded-xl bg-white/[0.03] border border-white/10 focus:border-white/20 outline-none text-sm transition-colors placeholder:text-muted-foreground" />
+          <input required name="subject" className="w-full h-11 px-4 rounded-xl bg-elevated/60 border border-border focus:border-accent outline-none text-sm transition-colors" />
         </div>
         <div>
           <label className="text-xs text-muted-foreground mb-1.5 block">Message</label>
-          <textarea required name="message" rows={5} className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 focus:border-white/20 outline-none text-sm resize-none transition-colors placeholder:text-muted-foreground" />
+          <textarea required name="message" rows={5} className="w-full px-4 py-3 rounded-xl bg-elevated/60 border border-border focus:border-accent outline-none text-sm resize-none transition-colors" />
         </div>
         <button
           type="submit"
