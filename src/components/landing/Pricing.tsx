@@ -14,7 +14,7 @@ const premium = [
   "Unlimited asset downloads — no daily cap",
   "Full vault — every premium pack unlocked",
   "1,000 AI credits per day (resets at midnight UTC)",
-  "Thumbnail image generation (30 credits each)",
+  "Thumbnail image generation",
   "Priority email support",
   "Cancel anytime in Billing",
 ];
