@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const free = [
   "3 asset downloads per day",
-  "3 AI text runs per day",
+  "150 AI credits per day",
   "Access to every free asset in the vault",
   "Saved library, dashboard, and stats",
 ];
