@@ -1029,6 +1029,97 @@
   transform: scale(0.97);
 }
 
+/* Tinted liquid glass variants — same glass structure, different hues */
+.btn-liquid-glass-violet,
+.btn-liquid-glass-cyan,
+.btn-liquid-glass-emerald,
+.btn-liquid-glass-rose,
+.btn-liquid-glass-amber {
+  position: relative;
+  isolation: isolate;
+  color: oklch(0.98 0 0);
+  border-radius: 9999px;
+  backdrop-filter: blur(10px) saturate(160%);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, filter 0.25s ease;
+}
+.btn-liquid-glass-violet::after,
+.btn-liquid-glass-cyan::after,
+.btn-liquid-glass-emerald::after,
+.btn-liquid-glass-rose::after,
+.btn-liquid-glass-amber::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  filter: blur(6px);
+  background: linear-gradient(45deg, rgba(255,255,255,0.4) 0%, transparent 25%, transparent 75%, rgba(255,255,255,0.4) 100%);
+  opacity: 0.45;
+  mix-blend-mode: overlay;
+  z-index: -1;
+}
+.btn-liquid-glass-violet:hover,
+.btn-liquid-glass-cyan:hover,
+.btn-liquid-glass-emerald:hover,
+.btn-liquid-glass-rose:hover,
+.btn-liquid-glass-amber:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+.btn-liquid-glass-violet:active,
+.btn-liquid-glass-cyan:active,
+.btn-liquid-glass-emerald:active,
+.btn-liquid-glass-rose:active,
+.btn-liquid-glass-amber:active {
+  transform: scale(0.97);
+}
+
+.btn-liquid-glass-violet {
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.55), rgba(99, 102, 241, 0.45));
+  box-shadow:
+    inset 2px -2px 1px -1px rgba(196, 181, 253, 0.5),
+    inset -2px 2px 1px -1px rgba(196, 181, 253, 0.5),
+    inset 0 0 2px rgba(0, 0, 0, 0.5),
+    0 6px 20px rgba(139, 92, 246, 0.35);
+}
+.btn-liquid-glass-cyan {
+  border: 1px solid rgba(103, 232, 249, 0.45);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.55), rgba(14, 165, 233, 0.45));
+  box-shadow:
+    inset 2px -2px 1px -1px rgba(165, 243, 252, 0.5),
+    inset -2px 2px 1px -1px rgba(165, 243, 252, 0.5),
+    inset 0 0 2px rgba(0, 0, 0, 0.5),
+    0 6px 20px rgba(6, 182, 212, 0.35);
+}
+.btn-liquid-glass-emerald {
+  border: 1px solid rgba(110, 231, 183, 0.45);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.55), rgba(5, 150, 105, 0.45));
+  box-shadow:
+    inset 2px -2px 1px -1px rgba(167, 243, 208, 0.5),
+    inset -2px 2px 1px -1px rgba(167, 243, 208, 0.5),
+    inset 0 0 2px rgba(0, 0, 0, 0.5),
+    0 6px 20px rgba(16, 185, 129, 0.35);
+}
+.btn-liquid-glass-rose {
+  border: 1px solid rgba(253, 164, 175, 0.45);
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.55), rgba(236, 72, 153, 0.45));
+  box-shadow:
+    inset 2px -2px 1px -1px rgba(254, 205, 211, 0.5),
+    inset -2px 2px 1px -1px rgba(254, 205, 211, 0.5),
+    inset 0 0 2px rgba(0, 0, 0, 0.5),
+    0 6px 20px rgba(244, 63, 94, 0.35);
+}
+.btn-liquid-glass-amber {
+  border: 1px solid rgba(252, 211, 77, 0.45);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.6), rgba(234, 88, 12, 0.5));
+  box-shadow:
+    inset 2px -2px 1px -1px rgba(253, 230, 138, 0.55),
+    inset -2px 2px 1px -1px rgba(253, 230, 138, 0.55),
+    inset 0 0 2px rgba(0, 0, 0, 0.5),
+    0 6px 20px rgba(245, 158, 11, 0.35);
+}
+
 /* Auto-apply liquid-glass to primary CTAs (button/link elements using the
    bg-foreground + text-background utility combo) across every page. */
 button[class*="bg-foreground"][class*="text-background"],
