@@ -104,7 +104,7 @@ export function Pricing() {
             <p className="text-sm text-muted-foreground mt-3">For exploring the ecosystem.</p>
 
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-              <Link to="/auth" className="btn-liquid-glass-white mt-7 h-11 px-5 text-sm font-medium magnetic flex items-center justify-center">
+              <Link to="/auth" className="btn-liquid-glass-cyan mt-7 h-11 px-5 text-sm font-medium magnetic flex items-center justify-center">
                 Start free
               </Link>
             </motion.div>
@@ -189,7 +189,7 @@ export function Pricing() {
                 <Link
                   to="/auth"
                   search={{ redirect: "/billing" }}
-                  className="btn-liquid-glass-white mt-7 w-full h-11 px-5 text-sm font-medium magnetic flex items-center justify-center"
+                  className="btn-liquid-glass-violet mt-7 w-full h-11 px-5 text-sm font-medium magnetic flex items-center justify-center"
                 >
                   Upgrade to Premium
                 </Link>

@@ -46,7 +46,7 @@ export function CtaFooter() {
               <MagneticButton
                 as={Link as any}
                 to="/auth"
-                className="btn-liquid-glass-white group inline-flex items-center gap-2 h-12 px-6 text-sm font-semibold"
+                className="btn-liquid-glass-violet group inline-flex items-center gap-2 h-12 px-6 text-sm font-semibold"
               >
                 Start free
                 <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 icon-fx" />
@@ -56,7 +56,7 @@ export function CtaFooter() {
               as="a"
               href="#pricing"
               strength={10}
-              className="btn-liquid-glass h-12 px-6 text-sm font-medium flex items-center"
+              className="btn-liquid-glass-amber h-12 px-6 text-sm font-medium flex items-center"
             >
               View pricing
             </MagneticButton>

@@ -127,7 +127,7 @@ export function Hero() {
                 as="a"
                 href="#pricing"
                 strength={10}
-                className="btn-liquid-glass inline-flex items-center justify-center gap-2 h-12 px-5 text-sm font-medium w-full sm:w-auto"
+                className="btn-liquid-glass-cyan inline-flex items-center justify-center gap-2 h-12 px-5 text-sm font-medium w-full sm:w-auto"
               >
                 <Sparkles className="h-3.5 w-3.5 text-accent icon-fx" />
                 See pricing
