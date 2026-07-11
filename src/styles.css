@@ -946,10 +946,10 @@
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(10px) saturate(140%);
   box-shadow:
-    inset 2px -2px 1px -1px rgba(255, 255, 255, 0.55),
-    inset -2px 2px 1px -1px rgba(255, 255, 255, 0.55),
-    inset 6px -6px 1px -6px rgba(255, 255, 255, 0.28),
-    inset -6px 6px 1px -6px rgba(255, 255, 255, 0.28),
+    inset 2px -2px 1px -1px rgba(255, 255, 255, 0.35),
+    inset -2px 2px 1px -1px rgba(255, 255, 255, 0.35),
+    inset 6px -6px 1px -6px rgba(255, 255, 255, 0.18),
+    inset -6px 6px 1px -6px rgba(255, 255, 255, 0.18),
     inset 0 0 2px rgba(0, 0, 0, 0.7),
     0 4px 10px rgba(0, 0, 0, 0.35);
   transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
@@ -963,12 +963,12 @@
   filter: blur(6px);
   background: linear-gradient(
     45deg,
-    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.35) 0%,
     transparent 25%,
     transparent 75%,
-    rgba(255, 255, 255, 0.55) 100%
+    rgba(255, 255, 255, 0.35) 100%
   );
-  opacity: 0.6;
+  opacity: 0.45;
   mix-blend-mode: overlay;
   z-index: -1;
 }
@@ -990,10 +990,10 @@
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(10px) saturate(140%);
   box-shadow:
-    inset 2px -2px 1px -1px rgba(255, 255, 255, 0.85),
-    inset -2px 2px 1px -1px rgba(255, 255, 255, 0.85),
-    inset 6px -6px 1px -6px rgba(255, 255, 255, 0.55),
-    inset -6px 6px 1px -6px rgba(255, 255, 255, 0.55),
+    inset 2px -2px 1px -1px rgba(255, 255, 255, 0.55),
+    inset -2px 2px 1px -1px rgba(255, 255, 255, 0.55),
+    inset 6px -6px 1px -6px rgba(255, 255, 255, 0.30),
+    inset -6px 6px 1px -6px rgba(255, 255, 255, 0.30),
     inset 0 0 2px rgba(0, 0, 0, 0.12),
     0 4px 14px rgba(0, 0, 0, 0.25);
   transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
@@ -1007,12 +1007,12 @@
   filter: blur(6px);
   background: linear-gradient(
     45deg,
-    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.6) 0%,
     transparent 25%,
     transparent 75%,
-    rgba(255, 255, 255, 0.75) 100%
+    rgba(255, 255, 255, 0.5) 100%
   );
-  opacity: 0.45;
+  opacity: 0.35;
   mix-blend-mode: overlay;
   z-index: -1;
 }
@@ -1020,10 +1020,10 @@
   transform: translateY(-1px);
   background: rgba(255, 255, 255, 1);
   box-shadow:
-    inset 2px -2px 1px -1px rgba(255, 255, 255, 0.95),
-    inset -2px 2px 1px -1px rgba(255, 255, 255, 0.95),
-    inset 6px -6px 1px -6px rgba(255, 255, 255, 0.65),
-    inset -6px 6px 1px -6px rgba(255, 255, 255, 0.65),
+    inset 2px -2px 1px -1px rgba(255, 255, 255, 0.65),
+    inset -2px 2px 1px -1px rgba(255, 255, 255, 0.65),
+    inset 6px -6px 1px -6px rgba(255, 255, 255, 0.38),
+    inset -6px 6px 1px -6px rgba(255, 255, 255, 0.38),
     inset 0 0 2px rgba(0, 0, 0, 0.12),
     0 6px 18px rgba(0, 0, 0, 0.28);
 }
@@ -1042,10 +1042,10 @@ a[class*="bg-foreground"][class*="text-background"] {
   background: rgba(255, 255, 255, 0.04) !important;
   backdrop-filter: blur(10px) saturate(140%);
   box-shadow:
-    inset 2px -2px 1px -1px rgba(255, 255, 255, 0.55),
-    inset -2px 2px 1px -1px rgba(255, 255, 255, 0.55),
-    inset 6px -6px 1px -6px rgba(255, 255, 255, 0.28),
-    inset -6px 6px 1px -6px rgba(255, 255, 255, 0.28),
+    inset 2px -2px 1px -1px rgba(255, 255, 255, 0.35),
+    inset -2px 2px 1px -1px rgba(255, 255, 255, 0.35),
+    inset 6px -6px 1px -6px rgba(255, 255, 255, 0.18),
+    inset -6px 6px 1px -6px rgba(255, 255, 255, 0.18),
     inset 0 0 2px rgba(0, 0, 0, 0.7),
     0 4px 10px rgba(0, 0, 0, 0.35);
   transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
@@ -1060,12 +1060,12 @@ a[class*="bg-foreground"][class*="text-background"]::after {
   filter: blur(6px);
   background: linear-gradient(
     45deg,
-    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.35) 0%,
     transparent 25%,
     transparent 75%,
-    rgba(255, 255, 255, 0.55) 100%
+    rgba(255, 255, 255, 0.35) 100%
   );
-  opacity: 0.6;
+  opacity: 0.45;
   mix-blend-mode: overlay;
   z-index: -1;
 }
