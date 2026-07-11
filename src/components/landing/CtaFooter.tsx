@@ -56,7 +56,7 @@ export function CtaFooter() {
               as="a"
               href="#pricing"
               strength={10}
-              className="btn-liquid-glass h-12 px-6 text-sm font-medium flex items-center"
+              className="btn-liquid-glass-amber h-12 px-6 text-sm font-medium flex items-center"
             >
               View pricing
             </MagneticButton>
