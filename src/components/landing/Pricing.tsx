@@ -189,7 +189,7 @@ export function Pricing() {
                 <Link
                   to="/auth"
                   search={{ redirect: "/billing" }}
-                  className="btn-liquid-glass-white mt-7 w-full h-11 px-5 text-sm font-medium magnetic flex items-center justify-center"
+                  className="btn-liquid-glass-violet mt-7 w-full h-11 px-5 text-sm font-medium magnetic flex items-center justify-center"
                 >
                   Upgrade to Premium
                 </Link>
