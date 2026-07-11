@@ -26,7 +26,7 @@ export function MobileStickyCTA() {
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
           <Link
             to={user ? "/dashboard" : "/auth"}
-            className="btn-liquid-glass inline-flex items-center gap-1 h-10 px-4 text-sm font-medium"
+            className="btn-liquid-glass-violet inline-flex items-center gap-1 h-10 px-4 text-sm font-medium"
           >
             {user ? "Dashboard" : "Start free"}
             <ArrowUpRight className="h-3.5 w-3.5 icon-fx" />
