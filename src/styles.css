@@ -926,6 +926,57 @@
   transform: scale(0.97);
 }
 
+/* White liquid glass button — solid white fill with dark text */
+.btn-liquid-glass-white {
+  position: relative;
+  isolation: isolate;
+  color: oklch(0.18 0.01 60);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px) saturate(140%);
+  box-shadow:
+    inset 2px -2px 1px -1px rgba(255, 255, 255, 0.85),
+    inset -2px 2px 1px -1px rgba(255, 255, 255, 0.85),
+    inset 6px -6px 1px -6px rgba(255, 255, 255, 0.55),
+    inset -6px 6px 1px -6px rgba(255, 255, 255, 0.55),
+    inset 0 0 2px rgba(0, 0, 0, 0.12),
+    0 4px 14px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.btn-liquid-glass-white::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  filter: blur(6px);
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    transparent 25%,
+    transparent 75%,
+    rgba(255, 255, 255, 0.75) 100%
+  );
+  opacity: 0.45;
+  mix-blend-mode: overlay;
+  z-index: -1;
+}
+.btn-liquid-glass-white:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 1);
+  box-shadow:
+    inset 2px -2px 1px -1px rgba(255, 255, 255, 0.95),
+    inset -2px 2px 1px -1px rgba(255, 255, 255, 0.95),
+    inset 6px -6px 1px -6px rgba(255, 255, 255, 0.65),
+    inset -6px 6px 1px -6px rgba(255, 255, 255, 0.65),
+    inset 0 0 2px rgba(0, 0, 0, 0.12),
+    0 6px 18px rgba(0, 0, 0, 0.28);
+}
+.btn-liquid-glass-white:active {
+  transform: scale(0.97);
+}
+
 /* Auto-apply liquid-glass to primary CTAs (button/link elements using the
    bg-foreground + text-background utility combo) across every page. */
 button[class*="bg-foreground"][class*="text-background"],
