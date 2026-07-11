@@ -108,7 +108,7 @@ export function Hero() {
                 <MagneticButton
                   as={Link as any}
                   to="/dashboard"
-                  className="btn-donate group inline-flex items-center justify-center gap-2 w-full sm:w-auto"
+                  className="btn-liquid-glass group inline-flex items-center justify-center gap-2 h-12 px-5 text-sm font-medium w-full sm:w-auto"
                 >
                   Browse dashboard
                   <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -117,7 +117,7 @@ export function Hero() {
                 <MagneticButton
                   as={Link as any}
                   to="/auth"
-                  className="btn-donate group inline-flex items-center justify-center gap-2 w-full sm:w-auto"
+                  className="btn-liquid-glass group inline-flex items-center justify-center gap-2 h-12 px-5 text-sm font-medium w-full sm:w-auto"
                 >
                   Get started
                   <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -127,7 +127,7 @@ export function Hero() {
                 as="a"
                 href="#pricing"
                 strength={10}
-                className="inline-flex items-center justify-center gap-2 h-12 px-5 rounded-xl glass text-sm font-medium w-full sm:w-auto"
+                className="btn-liquid-glass inline-flex items-center justify-center gap-2 h-12 px-5 text-sm font-medium w-full sm:w-auto"
               >
                 <Sparkles className="h-3.5 w-3.5 text-accent icon-fx" />
                 See pricing
