@@ -143,12 +143,12 @@
 /* ===== Hero gradient CTA button (under "Download. Generate. Post. Repeat.") ===== */
 .hero-gradient-cta {
   --rad: 32px;
-  --color-wrapper-border: rgba(255, 255, 255, 0.85);
+  --color-wrapper-border: rgba(255, 255, 255, 0.9);
   --color-btn-text: #fff;
   --color-btn-text-shadow: rgba(0, 0, 0, 0.45);
-  --color-btn-inset-shadow: rgba(60, 30, 90, 0.45);
+  --color-btn-inset-shadow: rgba(80, 20, 60, 0.45);
   --color-layer-a: #fff;
-  --color-layer-b: oklch(0.65 0.2 255);
+  --color-layer-b: #2979ff;
   --color-overlay-text: #fff;
   --color-overlay-glow: #fff;
   --color-overlay-shadow: #0004;
@@ -168,7 +168,7 @@
   font-size: 1rem;
   font-weight: 600;
 
-  filter: saturate(1.1);
+  filter: saturate(0.95) brightness(1.15);
 }
 
 .hero-gradient-cta-inner {
