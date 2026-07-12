@@ -113,7 +113,7 @@ export function Hero() {
                   <span className="hero-gradient-cta-light" aria-hidden />
                 </Link>
               ) : (
-                <Link to="/auth" className="hero-gradient-cta group w-full sm:w-auto">
+                <Link to="/auth" search={{}} className="hero-gradient-cta group w-full sm:w-auto">
                   <span className="hero-gradient-cta-inner">Get started</span>
                   <span className="hero-gradient-cta-layer" aria-hidden />
                   <span className="hero-gradient-cta-layer" aria-hidden />
