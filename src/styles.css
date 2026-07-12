@@ -140,6 +140,193 @@
   }
 }
 
+/* ===== Hero gradient CTA button (under "Download. Generate. Post. Repeat.") ===== */
+.hero-gradient-cta {
+  --rad: 32px;
+  --color-wrapper-border: rgba(255, 255, 255, 0.85);
+  --color-btn-text: #fff;
+  --color-btn-text-shadow: rgba(0, 0, 0, 0.45);
+  --color-btn-inset-shadow: rgba(60, 30, 90, 0.45);
+  --color-layer-a: #fff;
+  --color-layer-b: oklch(0.65 0.2 255);
+  --color-overlay-text: #fff;
+  --color-overlay-glow: #fff;
+  --color-overlay-shadow: #0004;
+  --color-overlay-highlight: #fff5;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: clip;
+  overflow-clip-margin: 4px;
+
+  border: 2px solid var(--color-wrapper-border);
+  border-radius: var(--rad);
+
+  font-family: "Inter", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+
+  filter: saturate(1.1);
+}
+
+.hero-gradient-cta-inner {
+  position: relative;
+  z-index: 1;
+
+  padding: 12px 32px;
+  border: none;
+  border-radius: var(--rad);
+
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: 0.15rem;
+
+  color: var(--color-btn-text);
+  background: linear-gradient(135deg, oklch(0.55 0.24 260), oklch(0.6 0.22 300));
+  background-size: 200% 200%;
+  box-shadow:
+    inset 0 0 10px 9px var(--color-btn-inset-shadow),
+    0 0 20px -5px oklch(0.55 0.24 260 / 0.5);
+  text-shadow: 0 1px 3px var(--color-btn-text-shadow);
+
+  cursor: pointer;
+  transition:
+    color 0.3s ease,
+    text-shadow 0.3s ease,
+    transform 0.3s ease;
+}
+
+.hero-gradient-cta-layer {
+  position: absolute;
+  pointer-events: none;
+
+  left: -160px;
+  width: 500%;
+  aspect-ratio: 1;
+
+  background: radial-gradient(
+    ellipse at 65% 180%,
+    var(--color-layer-a),
+    var(--color-layer-b),
+    var(--color-layer-a),
+    var(--color-layer-b),
+    var(--color-layer-a),
+    var(--color-layer-b),
+    var(--color-layer-a),
+    var(--color-layer-b),
+    var(--color-layer-a),
+    var(--color-layer-b),
+    var(--color-layer-a)
+  );
+
+  mix-blend-mode: overlay;
+  opacity: 0.7;
+  animation: hero-gradient-rotate 8s linear infinite;
+}
+
+.hero-gradient-cta-layer:last-child {
+  mix-blend-mode: color-dodge;
+  opacity: 0.5;
+}
+
+@keyframes hero-gradient-rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.hero-gradient-cta-overlay {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+
+  padding: 12px 32px;
+  border-radius: var(--rad);
+
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: 0.15rem;
+
+  color: var(--color-overlay-text);
+  text-shadow: 0 0 4px var(--color-overlay-glow);
+  box-shadow:
+    inset 0 -4px 4px 0 var(--color-overlay-shadow),
+    inset 0 4px 4px 0 var(--color-overlay-highlight);
+
+  transition: transform 0.3s ease;
+  animation: hero-gradient-opacity-pulse 5s ease infinite;
+}
+
+.hero-gradient-cta:hover .hero-gradient-cta-overlay,
+.hero-gradient-cta:focus-visible .hero-gradient-cta-overlay {
+  transform: scale(1.1);
+}
+
+.hero-gradient-cta:hover .hero-gradient-cta-inner,
+.hero-gradient-cta:focus-visible .hero-gradient-cta-inner {
+  color: #0000;
+  text-shadow: 0 0 0 #0000;
+  transform: scale(1.02);
+}
+
+.hero-gradient-cta:active .hero-gradient-cta-overlay {
+  transform: scale(0.95);
+}
+
+.hero-gradient-cta:active .hero-gradient-cta-inner {
+  color: #0000;
+  text-shadow: 0 0 0 #0000;
+}
+
+.hero-gradient-cta-light {
+  position: absolute;
+
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 50px;
+  width: 80%;
+  height: 1.9rem;
+  aspect-ratio: 1;
+  background-color: #fff5;
+  filter: blur(5px);
+  animation: hero-gradient-pulse 3s ease-in-out infinite;
+}
+
+@keyframes hero-gradient-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.1;
+  }
+}
+
+@keyframes hero-gradient-opacity-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-gradient-cta-layer,
+  .hero-gradient-cta-overlay,
+  .hero-gradient-cta-light {
+    animation: none;
+  }
+}
+
 @custom-variant dark (&:is(.dark *));
 
 

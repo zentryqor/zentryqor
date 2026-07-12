@@ -105,23 +105,21 @@ export function Hero() {
               className="mt-6 flex flex-col sm:flex-row gap-3"
             >
               {user ? (
-                <MagneticButton
-                  as={Link as any}
-                  to="/dashboard"
-                  className="btn-donate group inline-flex items-center justify-center gap-2 w-full sm:w-auto"
-                >
-                  Browse dashboard
-                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </MagneticButton>
+                <Link to="/dashboard" className="hero-gradient-cta group w-full sm:w-auto">
+                  <span className="hero-gradient-cta-inner">Browse dashboard</span>
+                  <span className="hero-gradient-cta-layer" aria-hidden />
+                  <span className="hero-gradient-cta-layer" aria-hidden />
+                  <span className="hero-gradient-cta-overlay" aria-hidden>Browse dashboard</span>
+                  <span className="hero-gradient-cta-light" aria-hidden />
+                </Link>
               ) : (
-                <MagneticButton
-                  as={Link as any}
-                  to="/auth"
-                  className="btn-donate group inline-flex items-center justify-center gap-2 w-full sm:w-auto"
-                >
-                  Get started
-                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </MagneticButton>
+                <Link to="/auth" className="hero-gradient-cta group w-full sm:w-auto">
+                  <span className="hero-gradient-cta-inner">Get started</span>
+                  <span className="hero-gradient-cta-layer" aria-hidden />
+                  <span className="hero-gradient-cta-layer" aria-hidden />
+                  <span className="hero-gradient-cta-overlay" aria-hidden>Get started</span>
+                  <span className="hero-gradient-cta-light" aria-hidden />
+                </Link>
               )}
               <MagneticButton
                 as="a"
