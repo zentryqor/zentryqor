@@ -43,12 +43,7 @@ export function Hero() {
       ref={ref}
       className="relative pt-40 sm:pt-52 pb-24 px-4 overflow-hidden"
     >
-      {/* Background atmosphere */}
-      <div className="absolute inset-0 ring-grid opacity-50 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]" />
-      <motion.div style={disableParallax ? undefined : { y: orbY }} className="absolute inset-0">
-        <AnimatedOrbs />
-      </motion.div>
-      <div className="absolute inset-0 noise opacity-40" />
+      {/* Background atmosphere — orbs disabled for pure black background */}
 
       {/* Creator count */}
       <div className="relative mx-auto max-w-6xl">
