@@ -1,21 +1,20 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
-
-const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 const FREE_DAILY_CREDITS = 150;
 const PREMIUM_DAILY_CREDITS = 1000;
 const TEXT_COST = 10;
 const IMAGE_COST = 30;
 
+type SupaClient = any;
+
 function todayUtc(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-async function userIsPremium(userId: string): Promise<boolean> {
-  const { data } = await supabaseAdmin
+async function userIsPremium(supabase: SupaClient, userId: string): Promise<boolean> {
+  const { data } = await supabase
     .from("subscriptions")
     .select("status, current_period_end")
     .eq("user_id", userId)
@@ -30,17 +29,17 @@ async function userIsPremium(userId: string): Promise<boolean> {
   return false;
 }
 
-async function getCreditsState(userId: string) {
-  const isPremium = await userIsPremium(userId);
+async function getCreditsState(supabase: SupaClient, userId: string) {
+  const isPremium = await userIsPremium(supabase, userId);
   const limit = isPremium ? PREMIUM_DAILY_CREDITS : FREE_DAILY_CREDITS;
   const day = todayUtc();
-  const { data } = await supabaseAdmin
+  const { data } = await supabase
     .from("ai_credit_usage")
     .select("id, used")
     .eq("user_id", userId)
     .eq("day", day)
     .maybeSingle();
-  const { data: profile } = await (supabaseAdmin as any)
+  const { data: profile } = await supabase
     .from("profiles")
     .select("bonus_credits")
     .eq("id", userId)
@@ -59,36 +58,34 @@ async function getCreditsState(userId: string) {
   };
 }
 
-async function spendCredits(userId: string, cost: number) {
-  const state = await getCreditsState(userId);
+async function spendCredits(supabase: SupaClient, userId: string, cost: number) {
+  const state = await getCreditsState(supabase, userId);
   if (state.remaining < cost) {
     throw new Error(
       `Not enough credits. You need ${cost} credits but only have ${state.remaining} left (${state.isPremium ? "Premium" : "Free"} plan${state.bonus > 0 ? ` + ${state.bonus} bonus` : ""}).`,
     );
   }
-  // Deduct from daily first, then bonus
   const dailyRoom = Math.max(0, state.limit - state.used);
   const fromDaily = Math.min(dailyRoom, cost);
   const fromBonus = cost - fromDaily;
 
   if (fromDaily > 0) {
     if (state.rowId) {
-      await supabaseAdmin
+      await supabase
         .from("ai_credit_usage")
         .update({ used: state.used + fromDaily, updated_at: new Date().toISOString() })
         .eq("id", state.rowId);
     } else {
-      await supabaseAdmin
+      await supabase
         .from("ai_credit_usage")
         .insert({ user_id: userId, day: state.day, used: fromDaily });
     }
   }
   if (fromBonus > 0) {
-    await supabaseAdmin.rpc("consume_bonus_credits" as any, { _user_id: userId, _amount: fromBonus });
+    await supabase.rpc("consume_bonus_credits", { _user_id: userId, _amount: fromBonus });
   }
 
-  // Fire-and-forget: try to award referral bonus after first generation
-  supabaseAdmin.rpc("award_referral_bonus" as any, { _referee: userId }).then(
+  supabase.rpc("award_referral_bonus", { _referee: userId }).then(
     () => {},
     () => {},
   );
@@ -128,7 +125,7 @@ async function callLovableAiText(messages: Array<{ role: string; content: any }>
 export const getAiCredits = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const state = await getCreditsState(context.userId);
+    const state = await getCreditsState(context.supabase, context.userId);
     return {
       used: state.used,
       limit: state.limit,
@@ -151,7 +148,7 @@ export const generateAiText = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { enforceRateLimit } = await import("@/lib/security.server");
     await enforceRateLimit(`ai-text:${context.userId}`, 20, 60, "Too many AI text requests");
-    const usage = await spendCredits(context.userId, TEXT_COST);
+    const usage = await spendCredits(context.supabase, context.userId, TEXT_COST);
     try {
       const messages = [
         ...(data.system ? [{ role: "system", content: data.system }] : []),
@@ -159,11 +156,10 @@ export const generateAiText = createServerFn({ method: "POST" })
       ];
       const json = await callLovableAiText(messages);
       const text: string = json.choices?.[0]?.message?.content ?? "";
-      try { await supabaseAdmin.rpc("award_referral_bonus", { _referee: context.userId }); } catch {}
+      try { await context.supabase.rpc("award_referral_bonus", { _referee: context.userId }); } catch {}
       return { text, usage };
     } catch (e) {
-      // Refund credits on failure
-      await supabaseAdmin
+      await context.supabase
         .from("ai_credit_usage")
         .update({ used: Math.max(0, usage.used - TEXT_COST) })
         .eq("user_id", context.userId)
@@ -185,16 +181,16 @@ export const generateAiImage = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { enforceRateLimit } = await import("@/lib/security.server");
     await enforceRateLimit(`ai-image:${context.userId}`, 10, 60, "Too many AI image requests");
-    const usage = await spendCredits(context.userId, IMAGE_COST);
+    const usage = await spendCredits(context.supabase, context.userId, IMAGE_COST);
 
     try {
       const { generateGoogleImageDataUrl } = await import("@/lib/google-image.server");
       const image = await generateGoogleImageDataUrl({ prompt: data.prompt, aspectRatio: data.aspectRatio });
 
-      try { await supabaseAdmin.rpc("award_referral_bonus", { _referee: context.userId }); } catch {}
+      try { await context.supabase.rpc("award_referral_bonus", { _referee: context.userId }); } catch {}
       return { image, usage };
     } catch (e: any) {
-      await supabaseAdmin
+      await context.supabase
         .from("ai_credit_usage")
         .update({ used: Math.max(0, usage.used - IMAGE_COST) })
         .eq("user_id", context.userId)
@@ -207,6 +203,6 @@ export const generateAiImage = createServerFn({ method: "POST" })
 export const getThumbnailUsage = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const state = await getCreditsState(context.userId);
+    const state = await getCreditsState(context.supabase, context.userId);
     return { used: state.used, limit: state.limit, isPremium: state.isPremium };
   });
