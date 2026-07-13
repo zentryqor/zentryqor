@@ -184,8 +184,8 @@
 :root {
   --radius: 1rem;
 
-  /* Warm near-black base — premium, not pure #000 */
-  --background: oklch(0.08 0.008 60);
+  /* Pure black base */
+  --background: #000000;
   --surface: oklch(0.12 0.008 60);
   --elevated: oklch(0.16 0.008 60);
   --foreground: oklch(0.97 0.008 80);
@@ -222,7 +222,7 @@
 }
 
 .dark {
-  --background: oklch(0.04 0 0);
+  --background: #000000;
   --foreground: oklch(0.98 0.005 240);
 }
 
