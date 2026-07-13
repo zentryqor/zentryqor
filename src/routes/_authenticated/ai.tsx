@@ -5,8 +5,12 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import {
+  ArrowUpRight,
+  BookOpen,
   Calendar,
   FileText,
+  FolderHeart,
+  Grid3X3,
   Hash,
   Image as ImageIcon,
   Loader2,
@@ -15,15 +19,17 @@ import {
   Sparkles,
   TrendingUp,
   Video,
-  X,
+  Wand2,
   Zap,
-  ArrowLeft,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
-import { WorkspaceShell, SectionLabel } from "@/components/WorkspaceShell";
+import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
+import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { generateAiText, generateAiImage, getAiCredits } from "@/lib/ai.functions";
 import { shareToGallery } from "@/lib/gallery.functions";
 import { saveGeneration } from "@/lib/library.functions";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 
 export const Route = createFileRoute("/_authenticated/ai")({
   head: () => ({
@@ -32,7 +38,7 @@ export const Route = createFileRoute("/_authenticated/ai")({
       {
         name: "description",
         content:
-          "Nine AI tools for creators — captions, hooks, scripts, thumbnails, trends, and more.",
+          "Nine AI tools for creators — captions, hooks, scripts, thumbnails, trends, and more. Each tool runs in seconds and tells you exactly what it costs in credits.",
       },
     ],
   }),
@@ -42,14 +48,22 @@ export const Route = createFileRoute("/_authenticated/ai")({
 });
 
 type ToolId =
-  | "caption" | "hook" | "video-idea" | "thumbnail" | "bio"
-  | "planner" | "script" | "trend" | "hashtag";
+  | "caption"
+  | "hook"
+  | "video-idea"
+  | "thumbnail"
+  | "bio"
+  | "planner"
+  | "script"
+  | "trend"
+  | "hashtag";
 
 type Tool = {
   id: ToolId;
   name: string;
   tagline: string;
-  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  icon: React.ComponentType<{ className?: string }>;
+  accent: string; // tailwind text color class for icon
   placeholder: string;
   inputLabel: string;
   system: string;
@@ -57,50 +71,114 @@ type Tool = {
 };
 
 const TOOLS: Tool[] = [
-  { id: "caption", name: "caption-studio", tagline: "scroll-stopping captions",
-    icon: Quote, placeholder: "Topic: launching my new skincare brand for Gen-Z",
-    inputLabel: "what's the post about?",
-    system: "You are a viral social media copywriter. Output 5 punchy, scroll-stopping captions (under 220 chars each) with varied tones: bold, witty, story-driven, controversial, and emotional. Add 1 strong CTA per caption. Use markdown numbered list.",
-    buildPrompt: (i) => `Write viral captions about: ${i}` },
-  { id: "hook", name: "hook-generator", tagline: "first 3 seconds",
-    icon: Zap, placeholder: "Niche: personal finance for 20-somethings",
-    inputLabel: "topic / niche",
-    system: "You are a short-form video hook expert. Output 10 hooks under 12 words each. Mix curiosity, contrarian, listicle, question, story, and shock formats. Mark the format type in parentheses after each. Use markdown numbered list.",
-    buildPrompt: (i) => `Write hooks for: ${i}` },
-  { id: "video-idea", name: "video-ideas", tagline: "10 fresh concepts",
-    icon: Video, placeholder: "Niche: home workout for busy moms",
-    inputLabel: "your niche / audience",
-    system: "You are a viral content strategist. Generate 10 short-form video ideas. For each: **Title** — one line concept — *format* (talking head / tutorial / POV / day in life / reaction). Make them specific, native to short-form, and emotionally hooky.",
-    buildPrompt: (i) => `Video ideas for: ${i}` },
-  { id: "thumbnail", name: "thumbnail-image", tagline: "ai-generated thumbnails",
-    icon: ImageIcon, placeholder: "Bold YouTube thumbnail: shocked man holding a giant burger, neon background",
-    inputLabel: "describe the thumbnail", system: "",
-    buildPrompt: (i) => `A high-contrast, click-worthy YouTube thumbnail, 16:9, vivid colors, dramatic lighting, bold composition. Subject: ${i}` },
-  { id: "bio", name: "brand-bio", tagline: "bio that converts",
-    icon: Megaphone, placeholder: "I help SaaS founders grow on LinkedIn through storytelling",
-    inputLabel: "what you do (one sentence)",
-    system: "You are a personal branding expert. Write 4 distinct bio variations (Instagram/TikTok-style, ≤150 chars): 1) bold & confident, 2) playful & witty, 3) authority-driven, 4) minimal aesthetic. Include emojis tastefully where it fits.",
-    buildPrompt: (i) => `Write brand bios for: ${i}` },
-  { id: "planner", name: "content-planner", tagline: "7-day calendar",
-    icon: Calendar, placeholder: "Gaming creator on Instagram & TikTok",
-    inputLabel: "niche, platform & goal",
-    system: "You are a content strategist. Build a 7-day content calendar as a markdown table with columns: Day | Platform | Format | Hook | Topic | CTA. Mix educational, entertaining, and promotional content (60/30/10 rule).",
-    buildPrompt: (i) => `Build a 7-day content plan for: ${i}` },
-  { id: "script", name: "script-assistant", tagline: "full short-form scripts",
-    icon: FileText, placeholder: "30-sec Reel about morning routines",
-    inputLabel: "video idea & length",
-    system: "You are a short-form video scriptwriter. Output a full script with sections: **Hook (0-3s)**, **Setup (3-8s)**, **Value (main beats with timestamps)**, **CTA (last 3s)**. Add B-roll/visual cues in *italics*.",
-    buildPrompt: (i) => `Write a script for: ${i}` },
-  { id: "trend", name: "trend-finder", tagline: "what's hot now",
-    icon: TrendingUp, placeholder: "Niche: AI productivity tools",
-    inputLabel: "niche / industry",
-    system: "You are a trend analyst. List 8 current trends, sounds, formats, or angles working in this niche on TikTok/Reels/Shorts. For each: **Trend name** — why it works — how to apply it to the user's niche. Be specific and modern (2025).",
-    buildPrompt: (i) => `Find trends for: ${i}` },
-  { id: "hashtag", name: "hashtag-assistant", tagline: "reach-maximizing mixes",
-    icon: Hash, placeholder: "Post about: vegan meal prep recipes",
-    inputLabel: "post topic",
-    system: "You are a hashtag strategist. Output 3 groups for Instagram/TikTok: **High volume (1M+)**, **Medium (100K-1M)**, **Niche (<100K)**. 8 hashtags per group. Then a copy-paste block combining the best 20. No fluff.",
-    buildPrompt: (i) => `Generate hashtags for: ${i}` },
+  {
+    id: "caption",
+    name: "Viral Caption Generator",
+    tagline: "Scroll-stopping captions for any post.",
+    icon: Quote,
+    accent: "text-pink-400",
+    placeholder: "Topic: launching my new skincare brand for Gen-Z",
+    inputLabel: "What's the post about?",
+    system:
+      "You are a viral social media copywriter. Output 5 punchy, scroll-stopping captions (under 220 chars each) with varied tones: bold, witty, story-driven, controversial, and emotional. Add 1 strong CTA per caption. Use markdown numbered list.",
+    buildPrompt: (i) => `Write viral captions about: ${i}`,
+  },
+  {
+    id: "hook",
+    name: "Hook Generator",
+    tagline: "First 3 seconds that stop the scroll.",
+    icon: Zap,
+    accent: "text-yellow-400",
+    placeholder: "Niche: personal finance for 20-somethings",
+    inputLabel: "Topic / Niche",
+    system:
+      "You are a short-form video hook expert (TikTok/Reels/Shorts). Output 10 hooks under 12 words each. Mix curiosity, contrarian, listicle, question, story, and shock formats. Mark the format type in parentheses after each. Use markdown numbered list.",
+    buildPrompt: (i) => `Write hooks for: ${i}`,
+  },
+  {
+    id: "video-idea",
+    name: "Video Idea Generator",
+    tagline: "10 fresh concepts on demand.",
+    icon: Video,
+    accent: "text-blue-400",
+    placeholder: "Niche: home workout for busy moms",
+    inputLabel: "Your niche / audience",
+    system:
+      "You are a viral content strategist. Generate 10 short-form video ideas. For each: **Title** — one line concept — *format* (talking head / tutorial / POV / day in life / reaction). Make them specific, native to short-form, and emotionally hooky.",
+    buildPrompt: (i) => `Video ideas for: ${i}`,
+  },
+  {
+    id: "thumbnail",
+    name: "Thumbnail Photo Generator",
+    tagline: "AI-generated thumbnail images.",
+    icon: ImageIcon,
+    accent: "text-emerald-400",
+    placeholder: "Bold YouTube thumbnail: shocked man holding a giant burger, neon background, 'I ATE THIS' text",
+    inputLabel: "Describe the thumbnail",
+    system: "",
+    buildPrompt: (i) =>
+      `A high-contrast, click-worthy YouTube thumbnail, 16:9, vivid colors, dramatic lighting, bold composition. Subject: ${i}`,
+  },
+  {
+    id: "bio",
+    name: "Brand Bio Generator",
+    tagline: "A bio that converts followers.",
+    icon: Megaphone,
+    accent: "text-orange-400",
+    placeholder: "I help SaaS founders grow on LinkedIn through storytelling",
+    inputLabel: "What you do (one sentence)",
+    system:
+      "You are a personal branding expert. Write 4 distinct bio variations (Instagram/TikTok-style, ≤150 chars): 1) bold & confident, 2) playful & witty, 3) authority-driven, 4) minimal aesthetic. Include emojis tastefully where it fits.",
+    buildPrompt: (i) => `Write brand bios for: ${i}`,
+  },
+  {
+    id: "planner",
+    name: "Content Planner",
+    tagline: "7-day calendar in seconds.",
+    icon: Calendar,
+    accent: "text-violet-400",
+    placeholder: "Gaming creator on Instagram & TikTok",
+    inputLabel: "Niche, platform & goal",
+    system:
+      "You are a content strategist. Build a 7-day content calendar as a markdown table with columns: Day | Platform | Format | Hook | Topic | CTA. Mix educational, entertaining, and promotional content (60/30/10 rule).",
+    buildPrompt: (i) => `Build a 7-day content plan for: ${i}`,
+  },
+  {
+    id: "script",
+    name: "Script Assistant",
+    tagline: "Full short-form scripts, ready to film.",
+    icon: FileText,
+    accent: "text-cyan-400",
+    placeholder: "30-sec Reel about morning routines that 10x productivity",
+    inputLabel: "Video idea & length",
+    system:
+      "You are a short-form video scriptwriter. Output a full script with sections: **Hook (0-3s)**, **Setup (3-8s)**, **Value (main beats with timestamps)**, **CTA (last 3s)**. Add B-roll/visual cues in *italics*. Keep total under requested duration.",
+    buildPrompt: (i) => `Write a script for: ${i}`,
+  },
+  {
+    id: "trend",
+    name: "Trend Finder",
+    tagline: "What's hot in your niche right now.",
+    icon: TrendingUp,
+    accent: "text-rose-400",
+    placeholder: "Niche: AI productivity tools",
+    inputLabel: "Niche / industry",
+    system:
+      "You are a trend analyst. List 8 current trends, sounds, formats, or angles working in this niche on TikTok/Reels/Shorts. For each: **Trend name** — why it works — how to apply it to the user's niche. Be specific and modern (2025).",
+    buildPrompt: (i) => `Find trends for: ${i}`,
+  },
+  {
+    id: "hashtag",
+    name: "Hashtag Assistant",
+    tagline: "Reach-maximizing hashtag mixes.",
+    icon: Hash,
+    accent: "text-teal-400",
+    placeholder: "Post about: vegan meal prep recipes",
+    inputLabel: "Post topic",
+    system:
+      "You are a hashtag strategist. Output 3 groups for Instagram/TikTok: **High volume (1M+)**, **Medium (100K-1M)**, **Niche (<100K)**. 8 hashtags per group. Then a copy-paste block combining the best 20. No fluff.",
+    buildPrompt: (i) => `Generate hashtags for: ${i}`,
+  },
 ];
 
 type AspectRatio = "16:9" | "9:16" | "4:3" | "3:4";
@@ -114,6 +192,7 @@ function AiStudio() {
   const [imageOutput, setImageOutput] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>("16:9");
   const [lastPromptUsed, setLastPromptUsed] = useState<string>("");
+  const [sharedIds, setSharedIds] = useState<Set<string>>(new Set());
   const [lastSavedId, setLastSavedId] = useState<string | null>(null);
   const [lastSavedForTool, setLastSavedForTool] = useState<ToolId | null>(null);
 
@@ -124,10 +203,14 @@ function AiStudio() {
   const save = useServerFn(saveGeneration);
   const active = TOOLS.find((t) => t.id === activeId) ?? null;
 
+  // Deep-link: open tool via ?tool=<id>
   useEffect(() => {
-    if (toolParam && TOOLS.some((t) => t.id === toolParam)) setActiveId(toolParam as ToolId);
+    if (toolParam && TOOLS.some((t) => t.id === toolParam)) {
+      setActiveId(toolParam as ToolId);
+    }
   }, [toolParam]);
 
+  // Deep-link: pre-fill prompt from ?prompt= (template flow)
   useEffect(() => {
     if (promptParam) setInput(promptParam);
   }, [promptParam]);
@@ -151,137 +234,260 @@ function AiStudio() {
       return { kind: "text" as const, text: r.text, tool, builtPrompt, value };
     },
     onSuccess: async (r) => {
-      if (r.kind === "image") { setImageOutput(r.image); setOutput(""); }
-      else { setOutput(r.text); setImageOutput(null); }
+      if (r.kind === "image") {
+        setImageOutput(r.image);
+        setOutput("");
+      } else {
+        setOutput(r.text);
+        setImageOutput(null);
+      }
       creditsQuery.refetch();
+
+      // Auto-save to library; link as a version when the same tool is re-run
       try {
         const parentId = lastSavedForTool === r.tool.id ? lastSavedId ?? undefined : undefined;
         const saved = await save({
           data: {
-            toolId: r.tool.id, toolName: r.tool.name, kind: r.kind,
-            prompt: r.builtPrompt, systemPrompt: r.tool.system || undefined, input: r.value,
+            toolId: r.tool.id,
+            toolName: r.tool.name,
+            kind: r.kind,
+            prompt: r.builtPrompt,
+            systemPrompt: r.tool.system || undefined,
+            input: r.value,
             outputText: r.kind === "text" ? r.text : undefined,
             outputImage: r.kind === "image" ? r.image : undefined,
             aspectRatio: r.kind === "image" ? aspectRatio : undefined,
-            creditsCost: r.kind === "image" ? 30 : 10, parentId,
+            creditsCost: r.kind === "image" ? 30 : 10,
+            parentId,
           },
         });
         setLastSavedId(saved.id);
         setLastSavedForTool(r.tool.id);
-      } catch {}
+      } catch {
+        // silent — library save is best-effort
+      }
     },
-    onError: (e: any) => { toast.error(e?.message ?? "Generation failed"); creditsQuery.refetch(); },
+    onError: (e: any) => {
+      toast.error(e?.message ?? "Generation failed");
+      creditsQuery.refetch();
+    },
   });
 
   const shareMut = useMutation({
-    mutationFn: async (p: { kind: "text" | "image"; prompt: string; outputText?: string; imageUrl?: string }) => share({ data: p }),
-    onSuccess: () => toast.success("Shared to gallery"),
+    mutationFn: async (payload: { kind: "text" | "image"; prompt: string; outputText?: string; imageUrl?: string }) => {
+      return share({ data: payload });
+    },
+    onSuccess: (r) => {
+      setSharedIds((s) => new Set(s).add(r.id));
+      toast.success("Shared to gallery");
+    },
     onError: (e: any) => toast.error(e?.message ?? "Share failed"),
   });
 
+
   const openTool = (id: ToolId) => {
-    setActiveId(id); setInput(""); setOutput(""); setImageOutput(null);
-    setAspectRatio("16:9"); setLastSavedId(null); setLastSavedForTool(null);
+    setActiveId(id);
+    setInput("");
+    setOutput("");
+    setImageOutput(null);
+    setAspectRatio("16:9");
+    setLastSavedId(null);
+    setLastSavedForTool(null);
   };
 
-  const closeTool = () => {
-    setActiveId(null);
-    if (toolParam) navigate({ to: "/ai", search: {} });
-  };
 
   const isThumbnail = active?.id === "thumbnail";
   const credits = creditsQuery.data;
   const cost = isThumbnail ? (credits?.costs.image ?? 30) : (credits?.costs.text ?? 10);
   const insufficient = !!credits && credits.remaining < cost;
 
+
   return (
-    <WorkspaceShell
-      path={active ? ["ai-studio", active.name] : ["ai-studio"]}
-      isPremium={credits?.isPremium}
-      actions={
-        credits && (
-          <div className="flex items-center gap-1.5 h-8 px-2.5 rounded-md terminal-panel text-[11px] font-mono-display">
-            <Zap className="h-3 w-3 text-accent" strokeWidth={2} />
-            <span className="tabular-nums">{credits.remaining}</span>
-            <span className="text-muted-foreground">/{credits.limit}</span>
-            {credits.isPremium && <span className="ml-1 text-accent uppercase text-[9px] tracking-wider">pro</span>}
-          </div>
-        )
-      }
-    >
-      {!active ? (
-        <>
-          <div className="mb-8">
-            <div className="text-[11px] font-mono-display text-muted-foreground">
-              &gt; ls ./tools
+    <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
+      <AnimatedOrbs />
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.04] text-foreground"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+        aria-hidden
+      />
+
+      <div className="relative pb-40 sm:pb-32">
+        <AppHeader
+          nav={
+            <>
+              <AppHeaderLink to="/dashboard">Dashboard</AppHeaderLink>
+              <AppHeaderLink to="/assets">Vault</AppHeaderLink>
+              <AppHeaderLink to="/ai" active>AI Studio</AppHeaderLink>
+            </>
+          }
+          right={
+            credits ? (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="group relative flex items-center gap-1.5 pl-2 pr-3 py-1.5 rounded-full bg-gradient-to-br from-primary/15 via-elevated/60 to-accent/15 border border-border/60 hover:border-accent/60 hover:shadow-[0_0_24px_-6px_hsl(var(--accent)/0.45)] transition-all"
+                  >
+                    <span className="h-5 w-5 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-[0_0_12px_-2px_hsl(var(--accent)/0.6)]">
+                      <Zap className="h-2.5 w-2.5 text-background icon-fx" />
+                    </span>
+                    <span className="text-foreground font-semibold tabular-nums text-xs">{credits.remaining}</span>
+                    <span className="text-muted-foreground text-[11px] tabular-nums">/ {credits.limit}</span>
+                    {credits.isPremium && (
+                      <span className="ml-1 text-[9px] uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full bg-accent/20 text-accent font-medium">
+                        Pro
+                      </span>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent
+                  align="end"
+                  sideOffset={8}
+                  className="w-[320px] p-5 rounded-2xl glass-strong border border-border/60"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="text-base font-semibold tracking-tight">Credits</div>
+                    <div className="text-sm text-muted-foreground">
+                      {credits.remaining} left
+                    </div>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-elevated/60 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary to-accent transition-all"
+                      style={{
+                        width: `${Math.min(100, Math.max(0, (credits.remaining / credits.limit) * 100))}%`,
+                      }}
+                    />
+                  </div>
+                  <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
+                    Daily credits reset at midnight UTC
+                  </div>
+                  <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground border-t border-border/60 pt-3">
+                    <span>Text tools</span>
+                    <span className="text-foreground font-medium">{credits.costs.text} credits</span>
+                  </div>
+                  <div className="mt-1.5 flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Thumbnail image</span>
+                    <span className="text-foreground font-medium">{credits.costs.image} credits</span>
+                  </div>
+
+                  {!credits.isPremium && (
+                    <Link
+                      to="/billing"
+                      className="mt-5 w-full h-11 px-4 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary flex items-center justify-center gap-1.5"
+                    >
+                      <Sparkles className="h-3.5 w-3.5 icon-fx" />
+                      Upgrade — get 1,000 credits/day
+                    </Link>
+                  )}
+                  {credits.isPremium && (
+                    <div className="mt-5 text-center text-xs text-accent uppercase tracking-[0.2em]">
+                      Premium — 1,000 / day
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+            ) : null
+          }
+        />
+        
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-28 pb-10 sm:pb-14">
+          {/* Hero */}
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+            <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3 flex items-center justify-center gap-1.5">
+              <Wand2 className="h-3 w-3 text-accent" /> The Creator Toolkit
             </div>
-            <h1 className="mt-1 text-2xl sm:text-3xl font-mono-display tracking-tight">
-              9 tools <span className="text-muted-foreground">/ pick one</span>
+            <h1 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em]">
+              Your unfair{" "}
+              <span className="text-gradient-brand">creative advantage</span>.
             </h1>
-            <p className="text-sm text-muted-foreground mt-2 font-mono-display">
-              text tools cost <span className="text-accent">{credits?.costs.text ?? 10}</span> credits · thumbnail costs <span className="text-accent">{credits?.costs.image ?? 30}</span>
+            <p className="text-sm text-muted-foreground mt-3">
+              Nine AI tools tuned for creators — captions, hooks, scripts, trends, and more.
             </p>
+
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                to="/templates"
+                className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-elevated/40 hover:bg-elevated/80 hover:border-foreground/30 px-4 py-2 text-xs font-medium transition-all"
+              >
+                <BookOpen className="h-3.5 w-3.5 text-accent icon-fx" /> Templates
+              </Link>
+              <Link
+                to="/gallery"
+                className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-elevated/40 hover:bg-elevated/80 hover:border-foreground/30 px-4 py-2 text-xs font-medium transition-all"
+              >
+                <Grid3X3 className="h-3.5 w-3.5 text-primary icon-fx" /> Community Gallery
+              </Link>
+              <Link
+                to="/library"
+                className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-elevated/40 hover:bg-elevated/80 hover:border-foreground/30 px-4 py-2 text-xs font-medium transition-all"
+              >
+                <FolderHeart className="h-3.5 w-3.5 text-rose-400 icon-fx" /> My Library
+              </Link>
+
+            </div>
           </div>
 
-          <SectionLabel>tools</SectionLabel>
-          <div className="terminal-panel rounded-md divide-y divide-border/50">
+          {/* Tool grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {TOOLS.map((t) => {
               const Icon = t.icon;
               return (
                 <button
                   key={t.id}
                   onClick={() => openTool(t.id)}
-                  className="w-full flex items-center gap-4 px-4 py-3.5 text-left hover:bg-elevated/30 transition-colors group"
+                  className="group text-left glass rounded-2xl p-5 hover:border-foreground/30 border border-border/60 transition-all hover:-translate-y-0.5"
                 >
-                  <div className="h-8 w-8 rounded-sm terminal-panel-inset flex items-center justify-center shrink-0">
-                    <Icon className="h-4 w-4 text-accent" strokeWidth={1.75} />
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="h-10 w-10 rounded-xl bg-elevated/50 border border-border/60 flex items-center justify-center">
+                      <Icon className={`h-5 w-5 ${t.accent}`} />
+                    </div>
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors icon-fx" />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-mono-display truncate">{t.name}</div>
-                    <div className="text-[11px] text-muted-foreground truncate">{t.tagline}</div>
-                  </div>
-                  <div className="text-[10px] font-mono-display uppercase tracking-wider text-muted-foreground shrink-0 hidden sm:block">
-                    {t.id === "thumbnail" ? `${credits?.costs.image ?? 30}c` : `${credits?.costs.text ?? 10}c`}
-                  </div>
-                  <div className="text-muted-foreground group-hover:text-accent transition-colors font-mono-display shrink-0">→</div>
+                  <div className="text-base font-medium tracking-tight">{t.name}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{t.tagline}</div>
                 </button>
               );
             })}
           </div>
+        </main>
+      </div>
 
-          <div className="mt-8 flex flex-wrap gap-2">
-            <Link to="/templates" className="h-8 px-3 rounded-md terminal-panel text-[11px] font-mono-display hover:bg-elevated/40 transition-colors">
-              ./templates
-            </Link>
-            <Link to="/gallery" className="h-8 px-3 rounded-md terminal-panel text-[11px] font-mono-display hover:bg-elevated/40 transition-colors">
-              ./gallery
-            </Link>
-            <Link to="/library" className="h-8 px-3 rounded-md terminal-panel text-[11px] font-mono-display hover:bg-elevated/40 transition-colors">
-              ./my-library
-            </Link>
-          </div>
-        </>
-      ) : (
-        <div className="max-w-3xl">
-          <button
-            onClick={closeTool}
-            className="mb-6 inline-flex items-center gap-1.5 text-[11px] font-mono-display text-muted-foreground hover:text-foreground"
+      {/* Tool drawer/modal */}
+      {active && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-background/70 backdrop-blur-md"
+          onClick={() => { setActiveId(null); if (toolParam) navigate({ to: "/ai", search: {} }); }}
+        >
+          <div
+            className="relative w-full sm:max-w-2xl max-h-[85vh] sm:max-h-[92vh] overflow-y-auto glass-strong border border-border/60 rounded-t-3xl sm:rounded-3xl p-6 pb-32 sm:p-8 sm:pb-8"
+            onClick={(e) => e.stopPropagation()}
           >
-            <ArrowLeft className="h-3 w-3" strokeWidth={2} /> back to tools
-          </button>
-
-          <div className="flex items-center gap-3 mb-6">
-            <div className="h-9 w-9 rounded-sm terminal-panel-inset flex items-center justify-center">
-              <active.icon className="h-4 w-4 text-accent" strokeWidth={1.75} />
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-elevated/50 border border-border/60 flex items-center justify-center">
+                  <active.icon className={`h-5 w-5 ${active.accent}`} />
+                </div>
+                <div>
+                  <div className="text-base font-medium">{active.name}</div>
+                  <div className="text-xs text-muted-foreground">{active.tagline}</div>
+                </div>
+              </div>
+              <button
+                onClick={() => { setActiveId(null); if (toolParam) navigate({ to: "/ai", search: {} }); }}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Close
+              </button>
             </div>
-            <div className="min-w-0">
-              <div className="text-base font-mono-display">{active.name}</div>
-              <div className="text-xs text-muted-foreground">{active.tagline}</div>
-            </div>
-          </div>
 
-          <div className="terminal-panel rounded-md p-4 sm:p-5">
-            <label className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-mono-display">
+            <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
               {active.inputLabel}
             </label>
             <textarea
@@ -289,24 +495,24 @@ function AiStudio() {
               onChange={(e) => setInput(e.target.value)}
               placeholder={active.placeholder}
               rows={3}
-              className="mt-2 w-full bg-transparent border border-border/60 rounded-sm px-3 py-2 text-sm font-mono-display focus:outline-none focus:border-accent/60 resize-none"
+              className="mt-2 w-full bg-elevated/40 border border-border/60 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
             />
 
             {isThumbnail && (
-              <div className="mt-4">
-                <label className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-mono-display">
-                  aspect
+              <div className="mt-5">
+                <label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                  Aspect ratio
                 </label>
-                <div className="mt-2 grid grid-cols-4 gap-1.5">
+                <div className="mt-2 grid grid-cols-4 gap-2">
                   {(["16:9", "9:16", "4:3", "3:4"] as AspectRatio[]).map((r) => (
                     <button
                       key={r}
                       type="button"
                       onClick={() => setAspectRatio(r)}
-                      className={`h-8 rounded-sm text-[11px] font-mono-display transition-colors ${
+                      className={`h-10 rounded-xl border text-xs font-medium transition-colors ${
                         aspectRatio === r
-                          ? "bg-accent text-accent-foreground"
-                          : "terminal-panel-inset text-muted-foreground hover:text-foreground"
+                          ? "bg-foreground text-background border-foreground"
+                          : "bg-elevated/40 border-border/60 text-muted-foreground hover:text-foreground"
                       }`}
                     >
                       {r}
@@ -317,86 +523,123 @@ function AiStudio() {
             )}
 
             {insufficient && credits && (
-              <div className="mt-4 p-3 rounded-sm border border-accent/30 text-xs font-mono-display flex items-center justify-between gap-3 flex-wrap">
-                <span className="text-muted-foreground">
-                  [!] need <span className="text-accent">{cost}</span> credits, have <span className="text-foreground">{credits.remaining}</span>
-                </span>
+              <div className="mt-5 p-4 rounded-2xl border border-accent/30 bg-gradient-to-br from-primary/10 to-accent/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <div className="text-sm font-medium flex items-center gap-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-accent icon-fx" />
+                    Insufficient credits
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    This tool costs <span className="text-foreground font-medium">{cost}</span>{" "}
+                    credits, but you only have <span className="text-foreground font-medium">{credits.remaining}</span>{" "}
+                    left today.
+                    {credits.isPremium
+                      ? " Your daily allowance resets at midnight UTC."
+                      : " Upgrade for 1,000 credits/day."}
+                  </div>
+                </div>
                 {!credits.isPremium && (
-                  <Link to="/billing" className="h-7 px-2.5 rounded-sm bg-accent text-accent-foreground font-medium flex items-center gap-1">
-                    upgrade
+                  <Link
+                    to="/billing"
+                    className="shrink-0 h-10 px-5 rounded-xl bg-foreground text-background text-xs font-medium flex items-center gap-1.5 magnetic glow-primary"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 icon-fx" /> Upgrade to Premium
                   </Link>
                 )}
               </div>
             )}
 
-            <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
-              <div className="text-[11px] text-muted-foreground font-mono-display">
-                cost: <span className="text-foreground">{cost}c</span>
-                {credits && (
-                  <>
+
+            <div className="flex items-center justify-between mt-4 gap-3">
+              <div className="text-xs text-muted-foreground">
+                {credits ? (
+                  <span>
+                    <span className="text-foreground font-medium">{cost} credits</span>
                     {" · "}
-                    <span className="tabular-nums">{credits.remaining}</span>/{credits.limit} left
-                  </>
+                    {credits.remaining} / {credits.limit} left today
+                    {credits.isPremium ? " (Premium)" : ""}
+                  </span>
+                ) : (
+                  <span className="opacity-50">…</span>
                 )}
               </div>
+
               <button
-                onClick={() => input.trim() && mut.mutate({ tool: active, value: input.trim() })}
+                onClick={() =>
+                  input.trim() && mut.mutate({ tool: active, value: input.trim() })
+                }
                 disabled={mut.isPending || !input.trim() || insufficient}
-                className="h-9 px-4 rounded-sm bg-accent text-accent-foreground text-xs font-mono-display font-medium disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                className="pb-ai-button disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {mut.isPending ? (
-                  <><Loader2 className="h-3 w-3 animate-spin" strokeWidth={2} /> running…</>
-                ) : insufficient ? "insufficient credits" : (
-                  <><Sparkles className="h-3 w-3" strokeWidth={2} /> generate · {cost}c</>
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating
+                  </>
+                ) : insufficient ? (
+                  <>Not enough credits</>
+                ) : (
+                  <>
+                    <Sparkles className="h-3.5 w-3.5 icon-fx" /> Generate · {cost}
+                  </>
                 )}
+
               </button>
             </div>
-          </div>
 
-          {output && (
-            <div className="mt-4 terminal-panel rounded-md p-4 sm:p-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-accent font-mono-display">stdout</span>
-                <button
-                  onClick={() => shareMut.mutate({ kind: "text", prompt: lastPromptUsed || input, outputText: output })}
-                  disabled={shareMut.isPending}
-                  className="text-[11px] text-muted-foreground hover:text-foreground font-mono-display"
-                >
-                  {shareMut.isPending ? "sharing…" : "share →"}
-                </button>
-              </div>
-              <div className="prose prose-sm prose-invert max-w-none">
-                <ReactMarkdown>{output}</ReactMarkdown>
-              </div>
-            </div>
-          )}
 
-          {imageOutput && (
-            <div className="mt-4 terminal-panel rounded-md p-4 sm:p-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-accent font-mono-display">image.png</span>
-                <div className="flex items-center gap-3">
+            {output && (
+              <div className="mt-6 p-5 rounded-2xl bg-elevated/40 border border-border/60">
+                <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3 flex items-center justify-between gap-3">
+                  <span>Output</span>
                   <button
-                    onClick={() => shareMut.mutate({ kind: "image", prompt: lastPromptUsed || input, imageUrl: imageOutput })}
+                    onClick={() =>
+                      shareMut.mutate({ kind: "text", prompt: lastPromptUsed || input, outputText: output })
+                    }
                     disabled={shareMut.isPending}
-                    className="text-[11px] text-muted-foreground hover:text-foreground font-mono-display"
+                    className="text-muted-foreground hover:text-foreground normal-case tracking-normal text-xs disabled:opacity-60"
                   >
-                    {shareMut.isPending ? "sharing…" : "share"}
+                    {shareMut.isPending ? "Sharing…" : "Share to gallery"}
                   </button>
-                  <a
-                    href={imageOutput}
-                    download="thumbnail.png"
-                    className="text-[11px] text-muted-foreground hover:text-foreground font-mono-display"
-                  >
-                    download
-                  </a>
+                </div>
+                <div className="prose prose-sm prose-invert max-w-none">
+                  <ReactMarkdown>{output}</ReactMarkdown>
                 </div>
               </div>
-              <img src={imageOutput} alt="Generated thumbnail" className="w-full rounded-sm border border-border/60" />
-            </div>
-          )}
+            )}
+
+            {imageOutput && (
+              <div className="mt-6 p-5 rounded-2xl bg-elevated/40 border border-border/60">
+                <div className="text-xs uppercase tracking-[0.2em] text-accent mb-3 flex items-center justify-between gap-3">
+                  <span>Thumbnail</span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() =>
+                        shareMut.mutate({ kind: "image", prompt: lastPromptUsed || input, imageUrl: imageOutput })
+                      }
+                      disabled={shareMut.isPending}
+                      className="text-muted-foreground hover:text-foreground normal-case tracking-normal text-xs disabled:opacity-60"
+                    >
+                      {shareMut.isPending ? "Sharing…" : "Share to gallery"}
+                    </button>
+                    <a
+                      href={imageOutput}
+                      download="thumbnail.png"
+                      className="text-muted-foreground hover:text-foreground normal-case tracking-normal text-xs"
+                    >
+                      Download
+                    </a>
+                  </div>
+                </div>
+                <img
+                  src={imageOutput}
+                  alt="Generated thumbnail"
+                  className="w-full rounded-xl border border-border/60"
+                />
+              </div>
+            )}
+          </div>
         </div>
       )}
-    </WorkspaceShell>
+    </div>
   );
 }
