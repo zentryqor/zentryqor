@@ -35,6 +35,7 @@ import { Route as AuthenticatedPosterRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedLibraryRouteImport } from './routes/_authenticated/library'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCaptionAiRouteImport } from './routes/_authenticated/caption-ai'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedBatchRouteImport } from './routes/_authenticated/batch'
 import { Route as AuthenticatedApiUsageRouteImport } from './routes/_authenticated/api-usage'
@@ -189,6 +190,11 @@ const AuthenticatedLibraryRoute = AuthenticatedLibraryRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCaptionAiRoute = AuthenticatedCaptionAiRouteImport.update({
+  id: '/caption-ai',
+  path: '/caption-ai',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
@@ -356,6 +362,7 @@ export interface FileRoutesByFullPath {
   '/api-usage': typeof AuthenticatedApiUsageRoute
   '/batch': typeof AuthenticatedBatchRoute
   '/billing': typeof AuthenticatedBillingRoute
+  '/caption-ai': typeof AuthenticatedCaptionAiRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/library': typeof AuthenticatedLibraryRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -409,6 +416,7 @@ export interface FileRoutesByTo {
   '/api-usage': typeof AuthenticatedApiUsageRoute
   '/batch': typeof AuthenticatedBatchRoute
   '/billing': typeof AuthenticatedBillingRoute
+  '/caption-ai': typeof AuthenticatedCaptionAiRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/library': typeof AuthenticatedLibraryRouteWithChildren
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -463,6 +471,7 @@ export interface FileRoutesById {
   '/_authenticated/api-usage': typeof AuthenticatedApiUsageRoute
   '/_authenticated/batch': typeof AuthenticatedBatchRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
+  '/_authenticated/caption-ai': typeof AuthenticatedCaptionAiRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/library': typeof AuthenticatedLibraryRouteWithChildren
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
@@ -518,6 +527,7 @@ export interface FileRouteTypes {
     | '/api-usage'
     | '/batch'
     | '/billing'
+    | '/caption-ai'
     | '/dashboard'
     | '/library'
     | '/onboarding'
@@ -571,6 +581,7 @@ export interface FileRouteTypes {
     | '/api-usage'
     | '/batch'
     | '/billing'
+    | '/caption-ai'
     | '/dashboard'
     | '/library'
     | '/onboarding'
@@ -624,6 +635,7 @@ export interface FileRouteTypes {
     | '/_authenticated/api-usage'
     | '/_authenticated/batch'
     | '/_authenticated/billing'
+    | '/_authenticated/caption-ai'
     | '/_authenticated/dashboard'
     | '/_authenticated/library'
     | '/_authenticated/onboarding'
@@ -868,6 +880,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/caption-ai': {
+      id: '/_authenticated/caption-ai'
+      path: '/caption-ai'
+      fullPath: '/caption-ai'
+      preLoaderRoute: typeof AuthenticatedCaptionAiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/billing': {
       id: '/_authenticated/billing'
       path: '/billing'
@@ -1093,6 +1112,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedApiUsageRoute: typeof AuthenticatedApiUsageRoute
   AuthenticatedBatchRoute: typeof AuthenticatedBatchRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
+  AuthenticatedCaptionAiRoute: typeof AuthenticatedCaptionAiRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLibraryRoute: typeof AuthenticatedLibraryRouteWithChildren
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
@@ -1113,6 +1133,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedApiUsageRoute: AuthenticatedApiUsageRoute,
   AuthenticatedBatchRoute: AuthenticatedBatchRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
+  AuthenticatedCaptionAiRoute: AuthenticatedCaptionAiRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLibraryRoute: AuthenticatedLibraryRouteWithChildren,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,

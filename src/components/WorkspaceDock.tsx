@@ -1,10 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { motion } from "framer-motion";
-import { Boxes, Calendar, LayoutDashboard, WandSparkles } from "lucide-react";
+import { Boxes, Calendar, Captions, LayoutDashboard, WandSparkles } from "lucide-react";
 
 const destinations = [
   { to: "/dashboard" as const, label: "Dashboard", icon: LayoutDashboard },
   { to: "/ai" as const, label: "AI Studio", icon: WandSparkles },
+  { to: "/caption-ai" as const, label: "CaptionAI", icon: Captions },
   { to: "/poster" as const, label: "Poster", icon: Calendar },
   { to: "/assets" as const, label: "Assets", icon: Boxes },
 ];
@@ -17,7 +18,7 @@ export function WorkspaceDock() {
       aria-label="Workspace navigation"
       className="fixed inset-x-4 bottom-4 z-50 mx-auto w-auto max-w-2xl sm:inset-x-6 sm:bottom-6"
     >
-      <div className="grid grid-cols-4 items-stretch rounded-[2rem] border border-border/40 bg-elevated/40 p-1 shadow-xl backdrop-blur-xl sm:p-1">
+      <div className="grid grid-cols-5 items-stretch rounded-[2rem] border border-border/40 bg-elevated/40 p-1 shadow-xl backdrop-blur-xl sm:p-1">
         {destinations.map((destination) => {
           const Icon = destination.icon;
           const isActive = pathname === destination.to;
