@@ -25,15 +25,7 @@ export const startTranscription = createServerFn({ method: "POST" })
       })
       .parse(input),
   )
-  .handler(async ({ data, context }) => {
-    const { enforceRateLimit } = await import("@/lib/security.server");
-    await enforceRateLimit(
-      `caption-ai:${context.userId}`,
-      10,
-      60,
-      "Too many transcription requests",
-    );
-
+  .handler(async ({ data }) => {
     const key = keyOrThrow();
     const bytes = Uint8Array.from(atob(data.base64), (c) => c.charCodeAt(0));
 
