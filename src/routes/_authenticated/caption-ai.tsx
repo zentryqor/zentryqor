@@ -487,8 +487,6 @@ function CaptionAiPage() {
 
   const downloadExport = () => {
     if (!exportUrl) return;
-    const isMp4 = exportUrl && (window as any).__lastExportMime !== "webm";
-    // Guess extension from the recorder's mimeType stored on the blob via URL is hard; use .mp4/.webm based on support probe.
     const mp4Supported = MediaRecorder.isTypeSupported("video/mp4");
     const ext = mp4Supported ? "mp4" : "webm";
     const a = document.createElement("a");
