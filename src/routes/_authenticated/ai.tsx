@@ -25,6 +25,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
+import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
 import { generateAiText, generateAiImage, getAiCredits } from "@/lib/ai.functions";
 import { shareToGallery } from "@/lib/gallery.functions";
 import { saveGeneration } from "@/lib/library.functions";
