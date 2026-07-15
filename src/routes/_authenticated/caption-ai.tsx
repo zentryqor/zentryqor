@@ -601,8 +601,17 @@ function CaptionAiPage() {
           Caption<span className="text-accent">AI</span>
         </>
       }
-      description="Upload a clip up to 60 seconds. Edit transcript & timings, tweak the size, pick from 20+ styles, then export."
+      description="Upload a clip up to 60 seconds. Edit transcript & timings, tweak the size, pick from 20+ styles, then export. Generation costs 50 credits."
     >
+      <FirstVisitTutorial
+        storageKey="tutorial:caption-ai:v1"
+        title="CaptionAI"
+        steps={[
+          { title: "Drop a video (up to 60s)", body: "MP4, MOV, or WebM under 40MB. We probe duration client-side before anything hits the server." },
+          { title: "Generate captions — 50 credits", body: "AI transcribes with word-level timing. You can then edit any word's text and start/end time in the transcript editor." },
+          { title: "Style, size, export", body: "Pick from 20+ presets and tweak caption size, then hit Export. We burn the captions onto the video right in your browser." },
+        ]}
+      />
       <div className="grid gap-6 lg:grid-cols-[1fr_340px] pb-32">
         {/* Left column */}
         <div className="space-y-6">
