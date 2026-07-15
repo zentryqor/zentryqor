@@ -146,6 +146,15 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+      <FirstVisitTutorial
+        storageKey="tutorial:dashboard:v1"
+        title="Dashboard"
+        steps={[
+          { title: "Welcome to Zentry Qor 👋", body: "This is your home base. Every tool, template, and stat is one tap away — the dock at the bottom jumps between the main workspaces." },
+          { title: "Track your streak & credits", body: "The top cards show your daily creative streak and remaining AI credits. Credits refresh every day at midnight UTC." },
+          { title: "Jump into a workflow", body: "Tap AI Studio for text & image gen, CaptionAI for video captions, or Poster to schedule social posts. Recent work stays saved in your Library." },
+        ]}
+      />
       <AnimatedOrbs />
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.04]"
