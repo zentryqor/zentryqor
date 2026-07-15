@@ -40,6 +40,7 @@ import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ChevronRight, Settings } from "lucide-react";
 import { ProfileMenu } from "@/components/ProfileMenu";
+import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Zentry Qor" }] }),
