@@ -18,6 +18,7 @@ import {
   type CaptionWord,
 } from "@/lib/caption-ai.functions";
 import { PageShell } from "@/components/PageShell";
+import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
 
 export const Route = createFileRoute("/_authenticated/caption-ai")({
   head: () => ({
