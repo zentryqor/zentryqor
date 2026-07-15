@@ -19,7 +19,6 @@ export const Route = createFileRoute("/sitemap.xml")({
           { path: "/guides/ugc-essentials", changefreq: "monthly", priority: "0.8" },
           { path: "/help", changefreq: "monthly", priority: "0.7" },
           { path: "/contact", changefreq: "monthly", priority: "0.6" },
-          { path: "/changelog", changefreq: "weekly", priority: "0.6" },
           { path: "/roadmap", changefreq: "weekly", priority: "0.6" },
           { path: "/status", changefreq: "daily", priority: "0.4" },
           { path: "/auth", changefreq: "yearly", priority: "0.4" },

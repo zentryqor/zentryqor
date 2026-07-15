@@ -81,7 +81,6 @@ export function CtaFooter() {
             <Link to="/templates" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Templates</Link>
             <Link to="/gallery" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Gallery</Link>
             <Link to="/roadmap" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Roadmap</Link>
-            <Link to="/changelog" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Changelog</Link>
             <Link to="/status" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Status</Link>
           </div>
           <div className="space-y-2">
