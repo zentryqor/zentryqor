@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
+import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
 import { getMySavedIds, toggleSave } from "@/lib/assets.functions";
 import { DownloadLimitModal } from "@/components/DownloadLimitModal";
 import { downloadAsset, DownloadError, type DownloadLimitDetails } from "@/lib/download";
