@@ -159,6 +159,15 @@ function AssetsPage() {
 
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
+      <FirstVisitTutorial
+        storageKey="tutorial:assets:v1"
+        title="Vault"
+        steps={[
+          { title: "Your creative vault", body: "Thousands of curated assets — presets, LUTs, overlays, and UI kits. Search or filter by category to find what you need." },
+          { title: "Save & download", body: "Bookmark favorites and download them anytime. Free plan gets 3 downloads/day; Premium is unlimited." },
+          { title: "Premium packs", body: "Items with a lock icon are Premium-only. Upgrade to unlock the full catalog and skip the daily cap." },
+        ]}
+      />
       <AnimatedOrbs />
 
       {/* Subtle grid overlay */}
