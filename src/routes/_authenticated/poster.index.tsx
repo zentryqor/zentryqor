@@ -15,6 +15,7 @@ import {
   Plus,
 } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
+import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { ProfileMenu } from "@/components/ProfileMenu";
 import {
