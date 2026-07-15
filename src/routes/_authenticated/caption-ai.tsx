@@ -18,6 +18,7 @@ import {
   type CaptionWord,
 } from "@/lib/caption-ai.functions";
 import { PageShell } from "@/components/PageShell";
+import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
 
 export const Route = createFileRoute("/_authenticated/caption-ai")({
   head: () => ({
@@ -497,32 +498,63 @@ function CaptionAiPage() {
       setExportUrl(null);
     }
 
+    let srcUrl: string | null = null;
+    let audioCtx: AudioContext | null = null;
     try {
       const src = document.createElement("video");
-      src.src = URL.createObjectURL(file);
-      src.muted = true;
+      srcUrl = URL.createObjectURL(file);
+      src.src = srcUrl;
+      // IMPORTANT: don't mute the source element — captureStream from an
+      // AudioContext still needs the media element to be un-muted for
+      // audio to flow into the destination on some browsers.
+      src.crossOrigin = "anonymous";
       src.playsInline = true;
+      src.preload = "auto";
+      // Some browsers only render video frames to canvas when the element
+      // is attached (or at least loaded). Attach off-screen to be safe.
+      src.style.position = "fixed";
+      src.style.left = "-9999px";
+      src.style.top = "0";
+      src.style.width = "1px";
+      src.style.height = "1px";
+      src.style.opacity = "0";
+      document.body.appendChild(src);
+
       await new Promise<void>((res, rej) => {
-        src.onloadedmetadata = () => res();
+        const ok = () => res();
+        src.onloadeddata = ok;
         src.onerror = () => rej(new Error("Could not load video for export"));
       });
 
       const width = src.videoWidth;
       const height = src.videoHeight;
+      if (!width || !height) throw new Error("Video has no dimensions");
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext("2d")!;
+
+      // Draw the first frame BEFORE starting the recorder so it has valid
+      // video data immediately on start (fixes empty exports on some browsers).
+      src.currentTime = 0;
+      await new Promise<void>((res) => {
+        src.onseeked = () => res();
+      });
+      ctx.drawImage(src, 0, 0, width, height);
 
       const canvasStream = (canvas as HTMLCanvasElement).captureStream(30);
       let combined: MediaStream = canvasStream;
       try {
         const AudioCtx: typeof AudioContext =
           (window as any).AudioContext || (window as any).webkitAudioContext;
-        const audioCtx = new AudioCtx();
+        audioCtx = new AudioCtx();
+        if (audioCtx.state === "suspended") await audioCtx.resume();
         const srcNode = audioCtx.createMediaElementSource(src);
         const dest = audioCtx.createMediaStreamDestination();
         srcNode.connect(dest);
+        // Also route to the speakers so playback is audible during export;
+        // without this, some browsers pause the element.
+        srcNode.connect(audioCtx.destination);
         const audioTracks = dest.stream.getAudioTracks();
         combined = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
       } catch (e) {
@@ -542,25 +574,47 @@ function CaptionAiPage() {
       recorder.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) chunks.push(e.data);
       };
-      const done = new Promise<Blob>((resolve) => {
-        recorder.onstop = () =>
+      const done = new Promise<Blob>((resolve, reject) => {
+        recorder.onstop = () => {
+          if (chunks.length === 0) {
+            reject(new Error("Export produced no data. Try a different browser (Chrome recommended)."));
+            return;
+          }
           resolve(new Blob(chunks, { type: recorder.mimeType || "video/webm" }));
+        };
+        recorder.onerror = (ev: any) =>
+          reject(new Error(ev?.error?.message ?? "MediaRecorder failed"));
       });
 
-      recorder.start(250);
+      recorder.start(500);
+      // Give the recorder a tick to attach before playback starts.
+      await new Promise((r) => setTimeout(r, 50));
       src.currentTime = 0;
       await src.play();
 
       const duration = src.duration;
       let stopped = false;
+      const finish = async () => {
+        if (stopped) return;
+        stopped = true;
+        // Draw final frame + request the last chunk before stopping.
+        try {
+          ctx.drawImage(src, 0, 0, width, height);
+          drawCaption(ctx, width, height, duration * 1000);
+        } catch {}
+        try { recorder.requestData(); } catch {}
+        await new Promise((r) => setTimeout(r, 250));
+        try { recorder.stop(); } catch {}
+      };
+      src.onended = () => void finish();
+
       const drawLoop = () => {
         if (stopped) return;
         ctx.drawImage(src, 0, 0, width, height);
         drawCaption(ctx, width, height, src.currentTime * 1000);
         setExportProgress(Math.min(1, src.currentTime / duration));
-        if (src.ended || src.currentTime >= duration - 0.05) {
-          stopped = true;
-          recorder.stop();
+        if (src.currentTime >= duration - 0.03) {
+          void finish();
           return;
         }
         requestAnimationFrame(drawLoop);
@@ -573,10 +627,17 @@ function CaptionAiPage() {
       setPhase("ready");
       setExportProgress(1);
       toast.success("Export complete — your download is ready.");
+      // Cleanup temp element/audio
+      try { src.pause(); } catch {}
+      if (src.parentNode) src.parentNode.removeChild(src);
+      if (audioCtx) { try { await audioCtx.close(); } catch {} }
+      if (srcUrl) URL.revokeObjectURL(srcUrl);
     } catch (e: any) {
       console.error(e);
       toast.error(e?.message ?? "Export failed");
       setPhase("ready");
+      if (audioCtx) { try { await audioCtx.close(); } catch {} }
+      if (srcUrl) URL.revokeObjectURL(srcUrl);
     }
   };
 
@@ -600,8 +661,17 @@ function CaptionAiPage() {
           Caption<span className="text-accent">AI</span>
         </>
       }
-      description="Upload a clip up to 60 seconds. Edit transcript & timings, tweak the size, pick from 20+ styles, then export."
+      description="Upload a clip up to 60 seconds. Edit transcript & timings, tweak the size, pick from 20+ styles, then export. Generation costs 50 credits."
     >
+      <FirstVisitTutorial
+        storageKey="tutorial:caption-ai:v1"
+        title="CaptionAI"
+        steps={[
+          { title: "Drop a video (up to 60s)", body: "MP4, MOV, or WebM under 40MB. We probe duration client-side before anything hits the server." },
+          { title: "Generate captions — 50 credits", body: "AI transcribes with word-level timing. You can then edit any word's text and start/end time in the transcript editor." },
+          { title: "Style, size, export", body: "Pick from 20+ presets and tweak caption size, then hit Export. We burn the captions onto the video right in your browser." },
+        ]}
+      />
       <div className="grid gap-6 lg:grid-cols-[1fr_340px] pb-32">
         {/* Left column */}
         <div className="space-y-6">

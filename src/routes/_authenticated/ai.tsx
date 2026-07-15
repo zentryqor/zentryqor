@@ -25,6 +25,7 @@ import {
 import ReactMarkdown from "react-markdown";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
+import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
 import { generateAiText, generateAiImage, getAiCredits } from "@/lib/ai.functions";
 import { shareToGallery } from "@/lib/gallery.functions";
 import { saveGeneration } from "@/lib/library.functions";
@@ -304,6 +305,15 @@ function AiStudio() {
 
   return (
     <div className="relative min-h-screen bg-background text-foreground overflow-hidden">
+      <FirstVisitTutorial
+        storageKey="tutorial:ai:v1"
+        title="AI Studio"
+        steps={[
+          { title: "Generate text & images", body: "Pick a prompt template or write your own. Text costs 10 credits, images cost 30 — the balance on the right updates instantly." },
+          { title: "Save what you love", body: "Every generation can be saved to your Library or shared straight to the public Gallery." },
+          { title: "Tone & style presets", body: "Use the preset chips to steer voice, length, and format. Great starting points for hooks, captions, and outlines." },
+        ]}
+      />
       <AnimatedOrbs />
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.04] text-foreground"
