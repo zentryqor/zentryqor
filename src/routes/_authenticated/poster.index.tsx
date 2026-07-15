@@ -123,6 +123,15 @@ function PosterPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
+      <FirstVisitTutorial
+        storageKey="tutorial:poster:v1"
+        title="Poster"
+        steps={[
+          { title: "Schedule social posts", body: "Draft once, publish to YouTube and other channels on autopilot. Connect an account to unlock scheduled posting." },
+          { title: "Series & single posts", body: "Use +New for one-off posts or +Series to plan a batch across days. Each item lives in the timeline below." },
+          { title: "Analytics at a glance", body: "The YouTube Analytics view surfaces best posting times and top-performing videos so you can double down on what works." },
+        ]}
+      />
       <AnimatedOrbs />
       <AppHeader right={<ProfileMenu />} />
 
