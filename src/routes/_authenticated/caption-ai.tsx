@@ -1066,12 +1066,56 @@ function CaptionAiPage() {
               step={0.05}
               value={sizeMult}
               onChange={(e) => setSizeMult(parseFloat(e.target.value))}
-              className="w-full accent-[hsl(var(--accent))]"
+              className="w-full accent-[hsl(var(--primary))]"
             />
             <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
               <span>Small</span>
               <span>Default</span>
               <span>Huge</span>
+            </div>
+          </div>
+
+          {/* Export settings */}
+          <div className="rounded-2xl border border-border/50 bg-elevated/30 p-4 space-y-3">
+            <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              Export quality
+            </div>
+            <div>
+              <div className="text-[11px] text-muted-foreground mb-1.5">Resolution</div>
+              <div className="grid grid-cols-4 gap-1.5">
+                {(["source", "1080", "720", "480"] as const).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setQualityScale(v)}
+                    className={`text-[11px] rounded-lg py-1.5 border transition ${
+                      qualityScale === v
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border/50 hover:border-border text-muted-foreground"
+                    }`}
+                  >
+                    {v === "source" ? "Source" : `${v}p`}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
+                <span>Bitrate</span>
+                <span className="tabular-nums text-foreground">{bitrateMbps} Mbps</span>
+              </div>
+              <input
+                type="range"
+                min={2}
+                max={16}
+                step={1}
+                value={bitrateMbps}
+                onChange={(e) => setBitrateMbps(parseInt(e.target.value, 10))}
+                className="w-full accent-[hsl(var(--primary))]"
+              />
+              <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                <span>Smaller</span>
+                <span>Clearer</span>
+              </div>
             </div>
           </div>
 
@@ -1087,7 +1131,7 @@ function CaptionAiPage() {
                   onClick={() => setStyleId(s.id)}
                   className={`text-left rounded-xl border p-2 transition-all ${
                     active
-                      ? "border-accent bg-accent/10"
+                      ? "border-primary bg-primary/10"
                       : "border-border/50 bg-elevated/30 hover:border-border"
                   }`}
                 >
@@ -1098,6 +1142,7 @@ function CaptionAiPage() {
             })}
           </div>
         </aside>
+
       </div>
     </PageShell>
   );
