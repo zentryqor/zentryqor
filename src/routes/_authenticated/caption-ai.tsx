@@ -985,14 +985,14 @@ function CaptionAiPage() {
                       key={i}
                       className={`grid grid-cols-[1fr_84px_84px_auto_auto] gap-2 items-center rounded-xl border p-2 text-xs transition ${
                         active
-                          ? "border-accent bg-accent/10"
+                          ? "border-primary bg-primary/10"
                           : "border-border/40 bg-background/40"
                       }`}
                     >
                       <input
                         value={w.text}
                         onChange={(e) => updateWord(i, { text: e.target.value })}
-                        className="bg-transparent border border-border/40 rounded-md px-2 py-1 outline-none focus:border-accent"
+                        className="bg-transparent border border-border/40 rounded-md px-2 py-1 outline-none focus:border-primary"
                       />
                       <input
                         type="number"
@@ -1001,7 +1001,7 @@ function CaptionAiPage() {
                         onChange={(e) =>
                           updateWord(i, { start: Math.max(0, parseFloat(e.target.value) * 1000 || 0) })
                         }
-                        className="bg-transparent border border-border/40 rounded-md px-2 py-1 outline-none focus:border-accent tabular-nums"
+                        className="bg-transparent border border-border/40 rounded-md px-2 py-1 outline-none focus:border-primary tabular-nums"
                         title="Start (s)"
                       />
                       <input
@@ -1011,9 +1011,10 @@ function CaptionAiPage() {
                         onChange={(e) =>
                           updateWord(i, { end: Math.max(0, parseFloat(e.target.value) * 1000 || 0) })
                         }
-                        className="bg-transparent border border-border/40 rounded-md px-2 py-1 outline-none focus:border-accent tabular-nums"
+                        className="bg-transparent border border-border/40 rounded-md px-2 py-1 outline-none focus:border-primary tabular-nums"
                         title="End (s)"
                       />
+
                       <button
                         onClick={() => {
                           const v = videoRef.current;
