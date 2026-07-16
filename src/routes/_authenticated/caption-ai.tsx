@@ -279,7 +279,10 @@ function CaptionAiPage() {
     setCurrentMs(0);
     setExportUrl(null);
     setExportProgress(0);
+    setExportStage("idle");
+    setExportError(null);
   };
+
 
   const acceptFile = useCallback(
     async (f: File) => {
