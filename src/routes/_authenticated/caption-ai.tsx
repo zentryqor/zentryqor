@@ -19,6 +19,11 @@ import {
 } from "@/lib/caption-ai.functions";
 import { PageShell } from "@/components/PageShell";
 import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
+import { CreditBadge } from "@/components/CreditBadge";
+import { useServerFn as _useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { getAiCredits } from "@/lib/ai.functions";
+
 
 export const Route = createFileRoute("/_authenticated/caption-ai")({
   head: () => ({
