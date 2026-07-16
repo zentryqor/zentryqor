@@ -19,6 +19,11 @@ import {
 } from "@/lib/caption-ai.functions";
 import { PageShell } from "@/components/PageShell";
 import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
+import { CreditBadge } from "@/components/CreditBadge";
+import { useQuery } from "@tanstack/react-query";
+import { getAiCredits } from "@/lib/ai.functions";
+
+
 
 export const Route = createFileRoute("/_authenticated/caption-ai")({
   head: () => ({
@@ -232,7 +237,23 @@ function CaptionAiPage() {
   const [sizeMult, setSizeMult] = useState(1);
   const [currentMs, setCurrentMs] = useState(0);
   const [exportProgress, setExportProgress] = useState(0);
+  const [exportStage, setExportStage] = useState<
+    "idle" | "preparing" | "burning" | "recording" | "finalizing"
+  >("idle");
+  const [exportError, setExportError] = useState<string | null>(null);
   const [exportUrl, setExportUrl] = useState<string | null>(null);
+  const [qualityScale, setQualityScale] = useState<"source" | "1080" | "720" | "480">("source");
+  const [bitrateMbps, setBitrateMbps] = useState<number>(6);
+
+  // Live credit balance for the inline CaptionAI badge
+  const fetchCredits = useServerFn(getAiCredits);
+  const { data: credits } = useQuery({
+    queryKey: ["ai-credits"],
+    queryFn: () => fetchCredits(),
+    staleTime: 15_000,
+  });
+  const canAffordGenerate = (credits?.remaining ?? 0) >= 50;
+
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -258,7 +279,10 @@ function CaptionAiPage() {
     setCurrentMs(0);
     setExportUrl(null);
     setExportProgress(0);
+    setExportStage("idle");
+    setExportError(null);
   };
+
 
   const acceptFile = useCallback(
     async (f: File) => {
@@ -493,6 +517,8 @@ function CaptionAiPage() {
     if (!file || !videoRef.current || words.length === 0) return;
     setPhase("exporting");
     setExportProgress(0);
+    setExportError(null);
+    setExportStage("preparing");
     if (exportUrl) {
       URL.revokeObjectURL(exportUrl);
       setExportUrl(null);
@@ -500,18 +526,15 @@ function CaptionAiPage() {
 
     let srcUrl: string | null = null;
     let audioCtx: AudioContext | null = null;
+    let tempSrc: HTMLVideoElement | null = null;
     try {
       const src = document.createElement("video");
+      tempSrc = src;
       srcUrl = URL.createObjectURL(file);
       src.src = srcUrl;
-      // IMPORTANT: don't mute the source element — captureStream from an
-      // AudioContext still needs the media element to be un-muted for
-      // audio to flow into the destination on some browsers.
       src.crossOrigin = "anonymous";
       src.playsInline = true;
       src.preload = "auto";
-      // Some browsers only render video frames to canvas when the element
-      // is attached (or at least loaded). Attach off-screen to be safe.
       src.style.position = "fixed";
       src.style.left = "-9999px";
       src.style.top = "0";
@@ -521,26 +544,34 @@ function CaptionAiPage() {
       document.body.appendChild(src);
 
       await new Promise<void>((res, rej) => {
-        const ok = () => res();
-        src.onloadeddata = ok;
+        src.onloadeddata = () => res();
         src.onerror = () => rej(new Error("Could not load video for export"));
       });
 
-      const width = src.videoWidth;
-      const height = src.videoHeight;
-      if (!width || !height) throw new Error("Video has no dimensions");
+      const srcW = src.videoWidth;
+      const srcH = src.videoHeight;
+      if (!srcW || !srcH) throw new Error("Video has no dimensions");
+
+      // Resolve export resolution from quality setting.
+      let targetH = srcH;
+      if (qualityScale === "1080") targetH = Math.min(srcH, 1080);
+      else if (qualityScale === "720") targetH = Math.min(srcH, 720);
+      else if (qualityScale === "480") targetH = Math.min(srcH, 480);
+      const scale = targetH / srcH;
+      const width = Math.round(srcW * scale / 2) * 2;
+      const height = Math.round(srcH * scale / 2) * 2;
+
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext("2d")!;
 
-      // Draw the first frame BEFORE starting the recorder so it has valid
-      // video data immediately on start (fixes empty exports on some browsers).
+      // Draw first frame BEFORE starting the recorder so it has valid data
       src.currentTime = 0;
-      await new Promise<void>((res) => {
-        src.onseeked = () => res();
-      });
+      await new Promise<void>((res) => { src.onseeked = () => res(); });
       ctx.drawImage(src, 0, 0, width, height);
+
+      setExportStage("burning");
 
       const canvasStream = (canvas as HTMLCanvasElement).captureStream(30);
       let combined: MediaStream = canvasStream;
@@ -552,8 +583,6 @@ function CaptionAiPage() {
         const srcNode = audioCtx.createMediaElementSource(src);
         const dest = audioCtx.createMediaStreamDestination();
         srcNode.connect(dest);
-        // Also route to the speakers so playback is audible during export;
-        // without this, some browsers pause the element.
         srcNode.connect(audioCtx.destination);
         const audioTracks = dest.stream.getAudioTracks();
         combined = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
@@ -569,7 +598,11 @@ function CaptionAiPage() {
         "video/webm",
       ];
       const mime = mimeCandidates.find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
-      const recorder = new MediaRecorder(combined, mime ? { mimeType: mime } : undefined);
+      const recorder = new MediaRecorder(combined, {
+        ...(mime ? { mimeType: mime } : {}),
+        videoBitsPerSecond: Math.round(bitrateMbps * 1_000_000),
+        audioBitsPerSecond: 128_000,
+      });
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) chunks.push(e.data);
@@ -587,17 +620,17 @@ function CaptionAiPage() {
       });
 
       recorder.start(500);
-      // Give the recorder a tick to attach before playback starts.
       await new Promise((r) => setTimeout(r, 50));
       src.currentTime = 0;
       await src.play();
+      setExportStage("recording");
 
       const duration = src.duration;
       let stopped = false;
       const finish = async () => {
         if (stopped) return;
         stopped = true;
-        // Draw final frame + request the last chunk before stopping.
+        setExportStage("finalizing");
         try {
           ctx.drawImage(src, 0, 0, width, height);
           drawCaption(ctx, width, height, duration * 1000);
@@ -626,19 +659,25 @@ function CaptionAiPage() {
       setExportUrl(outUrl);
       setPhase("ready");
       setExportProgress(1);
+      setExportStage("idle");
       toast.success("Export complete — your download is ready.");
-      // Cleanup temp element/audio
       try { src.pause(); } catch {}
       if (src.parentNode) src.parentNode.removeChild(src);
       if (audioCtx) { try { await audioCtx.close(); } catch {} }
       if (srcUrl) URL.revokeObjectURL(srcUrl);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message ?? "Export failed");
+      const msg = e?.message ?? "Export failed";
+      setExportError(msg);
+      toast.error(msg);
       setPhase("ready");
+      setExportStage("idle");
+      try { tempSrc?.pause(); } catch {}
+      if (tempSrc?.parentNode) tempSrc.parentNode.removeChild(tempSrc);
       if (audioCtx) { try { await audioCtx.close(); } catch {} }
       if (srcUrl) URL.revokeObjectURL(srcUrl);
     }
+
   };
 
   const downloadExport = () => {
@@ -658,7 +697,7 @@ function CaptionAiPage() {
       eyebrow="New"
       title={
         <>
-          Caption<span className="text-accent">AI</span>
+          Caption<span className="text-primary">AI</span>
         </>
       }
       description="Upload a clip up to 60 seconds. Edit transcript & timings, tweak the size, pick from 20+ styles, then export. Generation costs 50 credits."
@@ -672,6 +711,36 @@ function CaptionAiPage() {
           { title: "Style, size, export", body: "Pick from 20+ presets and tweak caption size, then hit Export. We burn the captions onto the video right in your browser." },
         ]}
       />
+
+      {/* Inline credit balance banner */}
+      <div className="mb-5 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <div className="text-sm font-semibold">
+              {credits ? `${credits.remaining} credits available` : "Loading credits…"}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Caption generation costs <span className="text-foreground font-medium">50 credits</span>
+              {credits ? ` · ${credits.limit}/day on ${credits.isPremium ? "Premium" : "Free"}` : ""}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <CreditBadge className="!inline-flex" />
+          {!canAffordGenerate && credits && (
+            <a
+              href="/billing"
+              className="text-xs px-3 py-1.5 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition"
+            >
+              Get more
+            </a>
+          )}
+        </div>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-[1fr_340px] pb-32">
         {/* Left column */}
         <div className="space-y-6">
@@ -686,8 +755,8 @@ function CaptionAiPage() {
               onClick={() => fileInputRef.current?.click()}
               className={`relative rounded-3xl border-2 border-dashed p-12 text-center cursor-pointer transition-all ${
                 dragOver
-                  ? "border-accent bg-accent/5 scale-[1.01]"
-                  : "border-border/60 bg-elevated/30 hover:border-accent/60 hover:bg-elevated/50"
+                  ? "border-primary bg-primary/5 scale-[1.01]"
+                  : "border-border/60 bg-elevated/30 hover:border-primary/60 hover:bg-elevated/50"
               }`}
             >
               <input
@@ -701,8 +770,8 @@ function CaptionAiPage() {
                   e.target.value = "";
                 }}
               />
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mb-4">
-                <Upload className="w-7 h-7 text-accent" />
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                <Upload className="w-7 h-7 text-primary" />
               </div>
               <div className="text-lg font-semibold">Drop a video here</div>
               <div className="text-sm text-muted-foreground mt-1">
@@ -710,7 +779,7 @@ function CaptionAiPage() {
               </div>
               <button
                 type="button"
-                className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-accent-foreground font-medium hover:opacity-90 transition"
+                className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition"
               >
                 Choose file
               </button>
@@ -766,8 +835,9 @@ function CaptionAiPage() {
             <div className="rounded-3xl border border-border/50 bg-elevated/30 p-5 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
               <button
                 onClick={generateCaptions}
-                disabled={phase === "transcribing" || phase === "exporting"}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-accent text-accent-foreground font-semibold hover:opacity-90 disabled:opacity-60 transition"
+                disabled={phase === "transcribing" || phase === "exporting" || !canAffordGenerate}
+                title={!canAffordGenerate ? "Not enough credits — need 50" : undefined}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-primary text-primary-foreground font-semibold hover:opacity-90 disabled:opacity-60 transition"
               >
                 {phase === "transcribing" ? (
                   <>
@@ -777,7 +847,7 @@ function CaptionAiPage() {
                 ) : (
                   <>
                     <Wand2 className="w-4 h-4" />
-                    {words.length > 0 ? "Regenerate captions" : "Generate captions"}
+                    {words.length > 0 ? "Regenerate (50 cr)" : "Generate captions (50 cr)"}
                   </>
                 )}
               </button>
@@ -803,26 +873,97 @@ function CaptionAiPage() {
             </div>
           )}
 
+          {/* Export progress / retry panel */}
+          {(phase === "exporting" || exportError) && (
+            <div className="rounded-3xl border border-border/50 bg-elevated/30 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-sm font-semibold">
+                  {exportError ? "Export failed" : "Exporting video"}
+                </div>
+                <div className="text-xs text-muted-foreground tabular-nums">
+                  {Math.round(exportProgress * 100)}%
+                </div>
+              </div>
+              <div className="h-2 rounded-full bg-foreground/10 overflow-hidden">
+                <div
+                  className={`h-full transition-all ${exportError ? "bg-destructive" : "bg-gradient-to-r from-primary to-primary-glow"}`}
+                  style={{ width: `${Math.max(4, exportProgress * 100)}%` }}
+                />
+              </div>
+              <div className="mt-3 grid grid-cols-4 gap-2 text-[11px]">
+                {(
+                  [
+                    ["preparing", "Preparing"],
+                    ["burning", "Burning captions"],
+                    ["recording", "Recording"],
+                    ["finalizing", "Finalizing"],
+                  ] as const
+                ).map(([id, label]) => {
+                  const order = ["preparing", "burning", "recording", "finalizing"] as const;
+                  const idx = order.indexOf(id);
+                  const curIdx = order.indexOf(exportStage as any);
+                  const state =
+                    exportError ? (idx <= curIdx ? "error" : "pending")
+                    : curIdx === -1 ? "pending"
+                    : idx < curIdx ? "done"
+                    : idx === curIdx ? "active"
+                    : "pending";
+                  return (
+                    <div
+                      key={id}
+                      className={`flex items-center gap-1.5 rounded-lg border px-2 py-1.5 ${
+                        state === "active"
+                          ? "border-primary/50 bg-primary/10 text-primary"
+                          : state === "done"
+                          ? "border-primary/30 bg-primary/5 text-foreground"
+                          : state === "error"
+                          ? "border-destructive/50 bg-destructive/10 text-destructive"
+                          : "border-border/40 text-muted-foreground"
+                      }`}
+                    >
+                      {state === "active" && <Loader2 className="w-3 h-3 animate-spin" />}
+                      <span className="truncate">{label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              {exportError && (
+                <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+                  <div className="text-xs text-muted-foreground">{exportError}</div>
+                  <button
+                    onClick={() => void exportVideo()}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition"
+                  >
+                    <Wand2 className="w-3.5 h-3.5" />
+                    Retry export
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {exportUrl && (
-            <div className="rounded-3xl border border-accent/40 bg-accent/5 p-5 flex items-center justify-between gap-3 flex-wrap">
+            <div className="rounded-3xl border border-primary/40 bg-primary/5 p-5 flex items-center justify-between gap-3 flex-wrap">
               <div className="text-sm">
                 <div className="font-semibold text-foreground flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-accent" />
+                  <Sparkles className="w-4 h-4 text-primary" />
                   Your captioned video is ready
                 </div>
                 <div className="text-muted-foreground mt-1">
-                  Burned in with the {style.name} style.
+                  Burned in with the {style.name} style · {qualityScale === "source" ? "source" : `${qualityScale}p`} · {bitrateMbps} Mbps.
                 </div>
               </div>
               <button
                 onClick={downloadExport}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-accent-foreground font-semibold hover:opacity-90 transition"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-semibold hover:opacity-90 transition"
               >
                 <Download className="w-4 h-4" />
                 Download
               </button>
             </div>
           )}
+
+
 
           {/* Transcript editor */}
           {words.length > 0 && (
@@ -844,14 +985,14 @@ function CaptionAiPage() {
                       key={i}
                       className={`grid grid-cols-[1fr_84px_84px_auto_auto] gap-2 items-center rounded-xl border p-2 text-xs transition ${
                         active
-                          ? "border-accent bg-accent/10"
+                          ? "border-primary bg-primary/10"
                           : "border-border/40 bg-background/40"
                       }`}
                     >
                       <input
                         value={w.text}
                         onChange={(e) => updateWord(i, { text: e.target.value })}
-                        className="bg-transparent border border-border/40 rounded-md px-2 py-1 outline-none focus:border-accent"
+                        className="bg-transparent border border-border/40 rounded-md px-2 py-1 outline-none focus:border-primary"
                       />
                       <input
                         type="number"
@@ -860,7 +1001,7 @@ function CaptionAiPage() {
                         onChange={(e) =>
                           updateWord(i, { start: Math.max(0, parseFloat(e.target.value) * 1000 || 0) })
                         }
-                        className="bg-transparent border border-border/40 rounded-md px-2 py-1 outline-none focus:border-accent tabular-nums"
+                        className="bg-transparent border border-border/40 rounded-md px-2 py-1 outline-none focus:border-primary tabular-nums"
                         title="Start (s)"
                       />
                       <input
@@ -870,9 +1011,10 @@ function CaptionAiPage() {
                         onChange={(e) =>
                           updateWord(i, { end: Math.max(0, parseFloat(e.target.value) * 1000 || 0) })
                         }
-                        className="bg-transparent border border-border/40 rounded-md px-2 py-1 outline-none focus:border-accent tabular-nums"
+                        className="bg-transparent border border-border/40 rounded-md px-2 py-1 outline-none focus:border-primary tabular-nums"
                         title="End (s)"
                       />
+
                       <button
                         onClick={() => {
                           const v = videoRef.current;
@@ -924,12 +1066,56 @@ function CaptionAiPage() {
               step={0.05}
               value={sizeMult}
               onChange={(e) => setSizeMult(parseFloat(e.target.value))}
-              className="w-full accent-[hsl(var(--accent))]"
+              className="w-full accent-[hsl(var(--primary))]"
             />
             <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
               <span>Small</span>
               <span>Default</span>
               <span>Huge</span>
+            </div>
+          </div>
+
+          {/* Export settings */}
+          <div className="rounded-2xl border border-border/50 bg-elevated/30 p-4 space-y-3">
+            <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              Export quality
+            </div>
+            <div>
+              <div className="text-[11px] text-muted-foreground mb-1.5">Resolution</div>
+              <div className="grid grid-cols-4 gap-1.5">
+                {(["source", "1080", "720", "480"] as const).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setQualityScale(v)}
+                    className={`text-[11px] rounded-lg py-1.5 border transition ${
+                      qualityScale === v
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border/50 hover:border-border text-muted-foreground"
+                    }`}
+                  >
+                    {v === "source" ? "Source" : `${v}p`}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5">
+                <span>Bitrate</span>
+                <span className="tabular-nums text-foreground">{bitrateMbps} Mbps</span>
+              </div>
+              <input
+                type="range"
+                min={2}
+                max={16}
+                step={1}
+                value={bitrateMbps}
+                onChange={(e) => setBitrateMbps(parseInt(e.target.value, 10))}
+                className="w-full accent-[hsl(var(--primary))]"
+              />
+              <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                <span>Smaller</span>
+                <span>Clearer</span>
+              </div>
             </div>
           </div>
 
@@ -945,7 +1131,7 @@ function CaptionAiPage() {
                   onClick={() => setStyleId(s.id)}
                   className={`text-left rounded-xl border p-2 transition-all ${
                     active
-                      ? "border-accent bg-accent/10"
+                      ? "border-primary bg-primary/10"
                       : "border-border/50 bg-elevated/30 hover:border-border"
                   }`}
                 >
@@ -956,6 +1142,7 @@ function CaptionAiPage() {
             })}
           </div>
         </aside>
+
       </div>
     </PageShell>
   );
