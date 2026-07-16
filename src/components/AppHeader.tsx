@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import logoAsset from "@/assets/zentry-logo.png.asset.json";
+import { CreditBadge } from "@/components/CreditBadge";
+
 
 export function AppHeader({
   nav,
