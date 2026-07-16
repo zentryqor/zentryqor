@@ -237,7 +237,23 @@ function CaptionAiPage() {
   const [sizeMult, setSizeMult] = useState(1);
   const [currentMs, setCurrentMs] = useState(0);
   const [exportProgress, setExportProgress] = useState(0);
+  const [exportStage, setExportStage] = useState<
+    "idle" | "preparing" | "burning" | "recording" | "finalizing"
+  >("idle");
+  const [exportError, setExportError] = useState<string | null>(null);
   const [exportUrl, setExportUrl] = useState<string | null>(null);
+  const [qualityScale, setQualityScale] = useState<"source" | "1080" | "720" | "480">("source");
+  const [bitrateMbps, setBitrateMbps] = useState<number>(6);
+
+  // Live credit balance for the inline CaptionAI badge
+  const fetchCredits = useServerFn(getAiCredits);
+  const { data: credits } = useQuery({
+    queryKey: ["ai-credits"],
+    queryFn: () => fetchCredits(),
+    staleTime: 15_000,
+  });
+  const canAffordGenerate = (credits?.remaining ?? 0) >= 50;
+
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
