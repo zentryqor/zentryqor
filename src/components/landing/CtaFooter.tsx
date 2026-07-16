@@ -71,11 +71,8 @@ export function CtaFooter() {
         transition={{ duration: 0.6, delay: 0.2 }}
         className="max-w-6xl mx-auto mt-14"
       >
-        <div className="grid sm:grid-cols-4 gap-8 pb-10 border-b border-border">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground sm:col-span-1">
-            <div className="h-5 w-5 rounded-md bg-gradient-to-br from-primary-glow to-primary" />
-            <span>Zentry Qor</span>
-          </div>
+        <div className="grid sm:grid-cols-3 gap-8 pb-10 border-b border-border">
+
           <div className="space-y-2">
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70">Product</p>
             <Link to="/templates" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Templates</Link>
