@@ -48,9 +48,10 @@ export function FirstVisitTutorial({ storageKey, title, steps }: Props) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="w-full max-w-md rounded-3xl border border-border/60 bg-elevated/95 shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-5 pt-4">
-          <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-accent">
+          <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-primary">
             <Sparkles className="w-3.5 h-3.5" />
             Quick tour · {i + 1} / {steps.length}
+
           </div>
           <button
             onClick={dismiss}
