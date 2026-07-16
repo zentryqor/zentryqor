@@ -517,6 +517,8 @@ function CaptionAiPage() {
     if (!file || !videoRef.current || words.length === 0) return;
     setPhase("exporting");
     setExportProgress(0);
+    setExportError(null);
+    setExportStage("preparing");
     if (exportUrl) {
       URL.revokeObjectURL(exportUrl);
       setExportUrl(null);
@@ -524,18 +526,15 @@ function CaptionAiPage() {
 
     let srcUrl: string | null = null;
     let audioCtx: AudioContext | null = null;
+    let tempSrc: HTMLVideoElement | null = null;
     try {
       const src = document.createElement("video");
+      tempSrc = src;
       srcUrl = URL.createObjectURL(file);
       src.src = srcUrl;
-      // IMPORTANT: don't mute the source element — captureStream from an
-      // AudioContext still needs the media element to be un-muted for
-      // audio to flow into the destination on some browsers.
       src.crossOrigin = "anonymous";
       src.playsInline = true;
       src.preload = "auto";
-      // Some browsers only render video frames to canvas when the element
-      // is attached (or at least loaded). Attach off-screen to be safe.
       src.style.position = "fixed";
       src.style.left = "-9999px";
       src.style.top = "0";
@@ -545,26 +544,34 @@ function CaptionAiPage() {
       document.body.appendChild(src);
 
       await new Promise<void>((res, rej) => {
-        const ok = () => res();
-        src.onloadeddata = ok;
+        src.onloadeddata = () => res();
         src.onerror = () => rej(new Error("Could not load video for export"));
       });
 
-      const width = src.videoWidth;
-      const height = src.videoHeight;
-      if (!width || !height) throw new Error("Video has no dimensions");
+      const srcW = src.videoWidth;
+      const srcH = src.videoHeight;
+      if (!srcW || !srcH) throw new Error("Video has no dimensions");
+
+      // Resolve export resolution from quality setting.
+      let targetH = srcH;
+      if (qualityScale === "1080") targetH = Math.min(srcH, 1080);
+      else if (qualityScale === "720") targetH = Math.min(srcH, 720);
+      else if (qualityScale === "480") targetH = Math.min(srcH, 480);
+      const scale = targetH / srcH;
+      const width = Math.round(srcW * scale / 2) * 2;
+      const height = Math.round(srcH * scale / 2) * 2;
+
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext("2d")!;
 
-      // Draw the first frame BEFORE starting the recorder so it has valid
-      // video data immediately on start (fixes empty exports on some browsers).
+      // Draw first frame BEFORE starting the recorder so it has valid data
       src.currentTime = 0;
-      await new Promise<void>((res) => {
-        src.onseeked = () => res();
-      });
+      await new Promise<void>((res) => { src.onseeked = () => res(); });
       ctx.drawImage(src, 0, 0, width, height);
+
+      setExportStage("burning");
 
       const canvasStream = (canvas as HTMLCanvasElement).captureStream(30);
       let combined: MediaStream = canvasStream;
@@ -576,8 +583,6 @@ function CaptionAiPage() {
         const srcNode = audioCtx.createMediaElementSource(src);
         const dest = audioCtx.createMediaStreamDestination();
         srcNode.connect(dest);
-        // Also route to the speakers so playback is audible during export;
-        // without this, some browsers pause the element.
         srcNode.connect(audioCtx.destination);
         const audioTracks = dest.stream.getAudioTracks();
         combined = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
@@ -593,7 +598,11 @@ function CaptionAiPage() {
         "video/webm",
       ];
       const mime = mimeCandidates.find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
-      const recorder = new MediaRecorder(combined, mime ? { mimeType: mime } : undefined);
+      const recorder = new MediaRecorder(combined, {
+        ...(mime ? { mimeType: mime } : {}),
+        videoBitsPerSecond: Math.round(bitrateMbps * 1_000_000),
+        audioBitsPerSecond: 128_000,
+      });
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) chunks.push(e.data);
@@ -611,17 +620,17 @@ function CaptionAiPage() {
       });
 
       recorder.start(500);
-      // Give the recorder a tick to attach before playback starts.
       await new Promise((r) => setTimeout(r, 50));
       src.currentTime = 0;
       await src.play();
+      setExportStage("recording");
 
       const duration = src.duration;
       let stopped = false;
       const finish = async () => {
         if (stopped) return;
         stopped = true;
-        // Draw final frame + request the last chunk before stopping.
+        setExportStage("finalizing");
         try {
           ctx.drawImage(src, 0, 0, width, height);
           drawCaption(ctx, width, height, duration * 1000);
@@ -650,19 +659,25 @@ function CaptionAiPage() {
       setExportUrl(outUrl);
       setPhase("ready");
       setExportProgress(1);
+      setExportStage("idle");
       toast.success("Export complete — your download is ready.");
-      // Cleanup temp element/audio
       try { src.pause(); } catch {}
       if (src.parentNode) src.parentNode.removeChild(src);
       if (audioCtx) { try { await audioCtx.close(); } catch {} }
       if (srcUrl) URL.revokeObjectURL(srcUrl);
     } catch (e: any) {
       console.error(e);
-      toast.error(e?.message ?? "Export failed");
+      const msg = e?.message ?? "Export failed";
+      setExportError(msg);
+      toast.error(msg);
       setPhase("ready");
+      setExportStage("idle");
+      try { tempSrc?.pause(); } catch {}
+      if (tempSrc?.parentNode) tempSrc.parentNode.removeChild(tempSrc);
       if (audioCtx) { try { await audioCtx.close(); } catch {} }
       if (srcUrl) URL.revokeObjectURL(srcUrl);
     }
+
   };
 
   const downloadExport = () => {
