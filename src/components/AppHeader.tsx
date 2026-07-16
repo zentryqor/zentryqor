@@ -31,7 +31,11 @@ export function AppHeader({
           <div className="hidden md:flex items-center gap-1 text-sm">{nav}</div>
         )}
 
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">{right}</div>
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <CreditBadge />
+          {right}
+        </div>
+
       </nav>
     </header>
   );
