@@ -697,7 +697,7 @@ function CaptionAiPage() {
       eyebrow="New"
       title={
         <>
-          Caption<span className="text-accent">AI</span>
+          Caption<span className="text-primary">AI</span>
         </>
       }
       description="Upload a clip up to 60 seconds. Edit transcript & timings, tweak the size, pick from 20+ styles, then export. Generation costs 50 credits."
@@ -711,6 +711,36 @@ function CaptionAiPage() {
           { title: "Style, size, export", body: "Pick from 20+ presets and tweak caption size, then hit Export. We burn the captions onto the video right in your browser." },
         ]}
       />
+
+      {/* Inline credit balance banner */}
+      <div className="mb-5 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-primary" />
+          </div>
+          <div>
+            <div className="text-sm font-semibold">
+              {credits ? `${credits.remaining} credits available` : "Loading credits…"}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Caption generation costs <span className="text-foreground font-medium">50 credits</span>
+              {credits ? ` · ${credits.limit}/day on ${credits.isPremium ? "Premium" : "Free"}` : ""}
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <CreditBadge className="!inline-flex" />
+          {!canAffordGenerate && credits && (
+            <a
+              href="/billing"
+              className="text-xs px-3 py-1.5 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition"
+            >
+              Get more
+            </a>
+          )}
+        </div>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-[1fr_340px] pb-32">
         {/* Left column */}
         <div className="space-y-6">
@@ -725,8 +755,8 @@ function CaptionAiPage() {
               onClick={() => fileInputRef.current?.click()}
               className={`relative rounded-3xl border-2 border-dashed p-12 text-center cursor-pointer transition-all ${
                 dragOver
-                  ? "border-accent bg-accent/5 scale-[1.01]"
-                  : "border-border/60 bg-elevated/30 hover:border-accent/60 hover:bg-elevated/50"
+                  ? "border-primary bg-primary/5 scale-[1.01]"
+                  : "border-border/60 bg-elevated/30 hover:border-primary/60 hover:bg-elevated/50"
               }`}
             >
               <input
@@ -740,8 +770,8 @@ function CaptionAiPage() {
                   e.target.value = "";
                 }}
               />
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center mb-4">
-                <Upload className="w-7 h-7 text-accent" />
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                <Upload className="w-7 h-7 text-primary" />
               </div>
               <div className="text-lg font-semibold">Drop a video here</div>
               <div className="text-sm text-muted-foreground mt-1">
@@ -749,7 +779,7 @@ function CaptionAiPage() {
               </div>
               <button
                 type="button"
-                className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-accent-foreground font-medium hover:opacity-90 transition"
+                className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition"
               >
                 Choose file
               </button>
@@ -805,8 +835,9 @@ function CaptionAiPage() {
             <div className="rounded-3xl border border-border/50 bg-elevated/30 p-5 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
               <button
                 onClick={generateCaptions}
-                disabled={phase === "transcribing" || phase === "exporting"}
-                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-accent text-accent-foreground font-semibold hover:opacity-90 disabled:opacity-60 transition"
+                disabled={phase === "transcribing" || phase === "exporting" || !canAffordGenerate}
+                title={!canAffordGenerate ? "Not enough credits — need 50" : undefined}
+                className="flex-1 inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-primary text-primary-foreground font-semibold hover:opacity-90 disabled:opacity-60 transition"
               >
                 {phase === "transcribing" ? (
                   <>
@@ -816,7 +847,7 @@ function CaptionAiPage() {
                 ) : (
                   <>
                     <Wand2 className="w-4 h-4" />
-                    {words.length > 0 ? "Regenerate captions" : "Generate captions"}
+                    {words.length > 0 ? "Regenerate (50 cr)" : "Generate captions (50 cr)"}
                   </>
                 )}
               </button>
@@ -842,26 +873,97 @@ function CaptionAiPage() {
             </div>
           )}
 
+          {/* Export progress / retry panel */}
+          {(phase === "exporting" || exportError) && (
+            <div className="rounded-3xl border border-border/50 bg-elevated/30 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-sm font-semibold">
+                  {exportError ? "Export failed" : "Exporting video"}
+                </div>
+                <div className="text-xs text-muted-foreground tabular-nums">
+                  {Math.round(exportProgress * 100)}%
+                </div>
+              </div>
+              <div className="h-2 rounded-full bg-foreground/10 overflow-hidden">
+                <div
+                  className={`h-full transition-all ${exportError ? "bg-destructive" : "bg-gradient-to-r from-primary to-primary-glow"}`}
+                  style={{ width: `${Math.max(4, exportProgress * 100)}%` }}
+                />
+              </div>
+              <div className="mt-3 grid grid-cols-4 gap-2 text-[11px]">
+                {(
+                  [
+                    ["preparing", "Preparing"],
+                    ["burning", "Burning captions"],
+                    ["recording", "Recording"],
+                    ["finalizing", "Finalizing"],
+                  ] as const
+                ).map(([id, label]) => {
+                  const order = ["preparing", "burning", "recording", "finalizing"] as const;
+                  const idx = order.indexOf(id);
+                  const curIdx = order.indexOf(exportStage as any);
+                  const state =
+                    exportError ? (idx <= curIdx ? "error" : "pending")
+                    : curIdx === -1 ? "pending"
+                    : idx < curIdx ? "done"
+                    : idx === curIdx ? "active"
+                    : "pending";
+                  return (
+                    <div
+                      key={id}
+                      className={`flex items-center gap-1.5 rounded-lg border px-2 py-1.5 ${
+                        state === "active"
+                          ? "border-primary/50 bg-primary/10 text-primary"
+                          : state === "done"
+                          ? "border-primary/30 bg-primary/5 text-foreground"
+                          : state === "error"
+                          ? "border-destructive/50 bg-destructive/10 text-destructive"
+                          : "border-border/40 text-muted-foreground"
+                      }`}
+                    >
+                      {state === "active" && <Loader2 className="w-3 h-3 animate-spin" />}
+                      <span className="truncate">{label}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              {exportError && (
+                <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+                  <div className="text-xs text-muted-foreground">{exportError}</div>
+                  <button
+                    onClick={() => void exportVideo()}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition"
+                  >
+                    <Wand2 className="w-3.5 h-3.5" />
+                    Retry export
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {exportUrl && (
-            <div className="rounded-3xl border border-accent/40 bg-accent/5 p-5 flex items-center justify-between gap-3 flex-wrap">
+            <div className="rounded-3xl border border-primary/40 bg-primary/5 p-5 flex items-center justify-between gap-3 flex-wrap">
               <div className="text-sm">
                 <div className="font-semibold text-foreground flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-accent" />
+                  <Sparkles className="w-4 h-4 text-primary" />
                   Your captioned video is ready
                 </div>
                 <div className="text-muted-foreground mt-1">
-                  Burned in with the {style.name} style.
+                  Burned in with the {style.name} style · {qualityScale === "source" ? "source" : `${qualityScale}p`} · {bitrateMbps} Mbps.
                 </div>
               </div>
               <button
                 onClick={downloadExport}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-accent-foreground font-semibold hover:opacity-90 transition"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-semibold hover:opacity-90 transition"
               >
                 <Download className="w-4 h-4" />
                 Download
               </button>
             </div>
           )}
+
+
 
           {/* Transcript editor */}
           {words.length > 0 && (
