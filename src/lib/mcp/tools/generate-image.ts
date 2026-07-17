@@ -14,9 +14,10 @@ export default defineTool({
     if (!ctx.isAuthenticated()) {
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
+    const userId = ctx.getUserId()!;
     try {
       const { spendCredits, refundCredits, callImageGen, IMAGE_COST } = await import("@/lib/api-ai.server");
-      await spendCredits(ctx.getUserId(), IMAGE_COST);
+      await spendCredits(userId, IMAGE_COST);
       try {
         const image = await callImageGen(prompt, aspect_ratio);
         return {
@@ -24,7 +25,7 @@ export default defineTool({
           structuredContent: { image, aspect_ratio },
         };
       } catch (e) {
-        await refundCredits(ctx.getUserId(), IMAGE_COST);
+        await refundCredits(userId, IMAGE_COST);
         throw e;
       }
     } catch (e) {
