@@ -16,6 +16,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as RefundRouteImport } from './routes/refund'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as DocsRouteImport } from './routes/docs'
@@ -43,6 +44,8 @@ import { Route as AuthenticatedApiKeysRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedApiDocsRouteImport } from './routes/_authenticated/api-docs'
 import { Route as AuthenticatedAiRouteImport } from './routes/_authenticated/ai'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedPosterIndexRouteImport } from './routes/_authenticated/poster.index'
 import { Route as AuthenticatedAssetsIndexRouteImport } from './routes/_authenticated/assets.index'
 import { Route as AuthenticatedPosterYoutubeAnalyticsRouteImport } from './routes/_authenticated/poster.youtube-analytics'
@@ -50,6 +53,7 @@ import { Route as AuthenticatedPosterYoutubeRouteImport } from './routes/_authen
 import { Route as AuthenticatedPosterNewRouteImport } from './routes/_authenticated/poster.new'
 import { Route as AuthenticatedLibraryIdRouteImport } from './routes/_authenticated/library.$id'
 import { Route as AuthenticatedAssetsIdRouteImport } from './routes/_authenticated/assets.$id'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPublicV1TextRouteImport } from './routes/api/public/v1/text'
 import { Route as ApiPublicV1ImageRouteImport } from './routes/api/public/v1/image'
 import { Route as ApiPublicV1HealthRouteImport } from './routes/api/public/v1/health'
@@ -95,6 +99,11 @@ const RefundRoute = RefundRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HelpRoute = HelpRouteImport.update({
@@ -231,6 +240,18 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedPosterIndexRoute =
   AuthenticatedPosterIndexRouteImport.update({
     id: '/',
@@ -270,6 +291,12 @@ const AuthenticatedAssetsIdRoute = AuthenticatedAssetsIdRouteImport.update({
   path: '/assets/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicV1TextRoute = ApiPublicV1TextRouteImport.update({
   id: '/api/public/v1/text',
   path: '/api/public/v1/text',
@@ -340,6 +367,7 @@ export interface FileRoutesByFullPath {
   '/docs': typeof DocsRoute
   '/gallery': typeof GalleryRouteWithChildren
   '/help': typeof HelpRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/roadmap': typeof RoadmapRoute
@@ -347,6 +375,8 @@ export interface FileRoutesByFullPath {
   '/status': typeof StatusRoute
   '/templates': typeof TemplatesRouteWithChildren
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai': typeof AuthenticatedAiRoute
   '/api-docs': typeof AuthenticatedApiDocsRoute
@@ -366,6 +396,7 @@ export interface FileRoutesByFullPath {
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/templates/$slug': typeof TemplatesSlugRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/library/$id': typeof AuthenticatedLibraryIdRoute
   '/poster/new': typeof AuthenticatedPosterNewRoute
@@ -393,6 +424,7 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsRoute
   '/gallery': typeof GalleryRouteWithChildren
   '/help': typeof HelpRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/roadmap': typeof RoadmapRoute
@@ -400,6 +432,8 @@ export interface FileRoutesByTo {
   '/status': typeof StatusRoute
   '/templates': typeof TemplatesRouteWithChildren
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/ai': typeof AuthenticatedAiRoute
   '/api-docs': typeof AuthenticatedApiDocsRoute
@@ -418,6 +452,7 @@ export interface FileRoutesByTo {
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/templates/$slug': typeof TemplatesSlugRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/library/$id': typeof AuthenticatedLibraryIdRoute
   '/poster/new': typeof AuthenticatedPosterNewRoute
@@ -447,6 +482,7 @@ export interface FileRoutesById {
   '/docs': typeof DocsRoute
   '/gallery': typeof GalleryRouteWithChildren
   '/help': typeof HelpRoute
+  '/mcp': typeof McpRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/roadmap': typeof RoadmapRoute
@@ -454,6 +490,8 @@ export interface FileRoutesById {
   '/status': typeof StatusRoute
   '/templates': typeof TemplatesRouteWithChildren
   '/terms': typeof TermsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/ai': typeof AuthenticatedAiRoute
   '/_authenticated/api-docs': typeof AuthenticatedApiDocsRoute
@@ -473,6 +511,7 @@ export interface FileRoutesById {
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/templates/$slug': typeof TemplatesSlugRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/assets/$id': typeof AuthenticatedAssetsIdRoute
   '/_authenticated/library/$id': typeof AuthenticatedLibraryIdRoute
   '/_authenticated/poster/new': typeof AuthenticatedPosterNewRoute
@@ -502,6 +541,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/gallery'
     | '/help'
+    | '/mcp'
     | '/privacy'
     | '/refund'
     | '/roadmap'
@@ -509,6 +549,8 @@ export interface FileRouteTypes {
     | '/status'
     | '/templates'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/ai'
     | '/api-docs'
@@ -528,6 +570,7 @@ export interface FileRouteTypes {
     | '/gallery/$id'
     | '/guides/ugc-essentials'
     | '/templates/$slug'
+    | '/.mcp/invoke-tool/$tool'
     | '/assets/$id'
     | '/library/$id'
     | '/poster/new'
@@ -555,6 +598,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/gallery'
     | '/help'
+    | '/mcp'
     | '/privacy'
     | '/refund'
     | '/roadmap'
@@ -562,6 +606,8 @@ export interface FileRouteTypes {
     | '/status'
     | '/templates'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/admin'
     | '/ai'
     | '/api-docs'
@@ -580,6 +626,7 @@ export interface FileRouteTypes {
     | '/gallery/$id'
     | '/guides/ugc-essentials'
     | '/templates/$slug'
+    | '/.mcp/invoke-tool/$tool'
     | '/assets/$id'
     | '/library/$id'
     | '/poster/new'
@@ -608,6 +655,7 @@ export interface FileRouteTypes {
     | '/docs'
     | '/gallery'
     | '/help'
+    | '/mcp'
     | '/privacy'
     | '/refund'
     | '/roadmap'
@@ -615,6 +663,8 @@ export interface FileRouteTypes {
     | '/status'
     | '/templates'
     | '/terms'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/_authenticated/admin'
     | '/_authenticated/ai'
     | '/_authenticated/api-docs'
@@ -634,6 +684,7 @@ export interface FileRouteTypes {
     | '/gallery/$id'
     | '/guides/ugc-essentials'
     | '/templates/$slug'
+    | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/assets/$id'
     | '/_authenticated/library/$id'
     | '/_authenticated/poster/new'
@@ -663,6 +714,7 @@ export interface RootRouteChildren {
   DocsRoute: typeof DocsRoute
   GalleryRoute: typeof GalleryRouteWithChildren
   HelpRoute: typeof HelpRoute
+  McpRoute: typeof McpRoute
   PrivacyRoute: typeof PrivacyRoute
   RefundRoute: typeof RefundRoute
   RoadmapRoute: typeof RoadmapRoute
@@ -670,7 +722,10 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   TemplatesRoute: typeof TemplatesRouteWithChildren
   TermsRoute: typeof TermsRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   GuidesUgcEssentialsRoute: typeof GuidesUgcEssentialsRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicAuthSigninRoute: typeof ApiPublicAuthSigninRoute
   ApiPublicHooksRunScheduledJobsRoute: typeof ApiPublicHooksRunScheduledJobsRoute
   ApiPublicHooksRunScheduledPostsRoute: typeof ApiPublicHooksRunScheduledPostsRoute
@@ -732,6 +787,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/help': {
@@ -923,6 +985,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/poster/': {
       id: '/_authenticated/poster/'
       path: '/'
@@ -971,6 +1047,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/assets/$id'
       preLoaderRoute: typeof AuthenticatedAssetsIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/v1/text': {
       id: '/api/public/v1/text'
@@ -1160,6 +1243,7 @@ const rootRouteChildren: RootRouteChildren = {
   DocsRoute: DocsRoute,
   GalleryRoute: GalleryRouteWithChildren,
   HelpRoute: HelpRoute,
+  McpRoute: McpRoute,
   PrivacyRoute: PrivacyRoute,
   RefundRoute: RefundRoute,
   RoadmapRoute: RoadmapRoute,
@@ -1167,7 +1251,11 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   TemplatesRoute: TemplatesRouteWithChildren,
   TermsRoute: TermsRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   GuidesUgcEssentialsRoute: GuidesUgcEssentialsRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicAuthSigninRoute: ApiPublicAuthSigninRoute,
   ApiPublicHooksRunScheduledJobsRoute: ApiPublicHooksRunScheduledJobsRoute,
   ApiPublicHooksRunScheduledPostsRoute: ApiPublicHooksRunScheduledPostsRoute,
