@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "sdk_version": "0.23.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://wzuzzoywsfhrmbaojsab.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "zentry-qor-mcp",
+      "version": "0.1.0",
+      "title": "Zentry Qor"
+    },
+    "tools": [
+      {
+        "name": "get_credits",
+        "title": "Get AI credit balance",
+        "description": "Returns the signed-in Zentry Qor user's remaining AI credits, daily limit, and plan (free or premium).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "generate_text",
+        "title": "Generate AI text",
+        "description": "Generate text with Zentry Qor's AI. Costs 10 AI credits per call. Optional system instructions steer the tone.",
+        "annotations": {
+          "readOnlyHint": false,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "prompt": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 8000,
+              "description": "The user prompt for the AI."
+            },
+            "system": {
+              "type": "string",
+              "maxLength": 2000,
+              "description": "Optional system instructions."
+            }
+          },
+          "required": [
+            "prompt"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "generate_image",
+        "title": "Generate AI image",
+        "description": "Generate an image with Zentry Qor's AI (returns a base64 data URL). Costs 30 AI credits per call.",
+        "annotations": {
+          "readOnlyHint": false,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "prompt": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000,
+              "description": "Describe the image to generate."
+            },
+            "aspect_ratio": {
+              "type": "string",
+              "enum": [
+                "16:9",
+                "9:16",
+                "4:3",
+                "3:4"
+              ],
+              "default": "16:9",
+              "description": "Output aspect ratio."
+            }
+          },
+          "required": [
+            "prompt"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
