@@ -84,8 +84,10 @@ function McpPage() {
   );
 
   return (
-    <PageShell>
+    <div className="min-h-screen bg-background text-foreground">
+      <AppHeader />
       <div className="max-w-4xl mx-auto py-10 px-4 space-y-8">
+
         <header className="space-y-2">
           <p className="text-[11px] tracking-[0.22em] text-muted-foreground uppercase">Integrations</p>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Connect Zentry Qor to your AI</h1>
