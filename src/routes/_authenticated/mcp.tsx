@@ -226,6 +226,6 @@ function McpPage() {
           </CardContent>
         </Card>
       </div>
-    </PageShell>
+    </div>
   );
 }
