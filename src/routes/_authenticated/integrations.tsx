@@ -9,7 +9,7 @@ import { Copy, Check, Terminal, Link as LinkIcon } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/mcp")({
+export const Route = createFileRoute("/_authenticated/integrations")({
   head: () => ({
     meta: [
       { title: "Connect MCP — Zentry Qor" },
