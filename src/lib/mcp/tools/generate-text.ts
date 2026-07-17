@@ -14,14 +14,15 @@ export default defineTool({
     if (!ctx.isAuthenticated()) {
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
+    const userId = ctx.getUserId()!;
     try {
       const { spendCredits, refundCredits, callOpenRouterText, TEXT_COST } = await import("@/lib/api-ai.server");
-      await spendCredits(ctx.getUserId(), TEXT_COST);
+      await spendCredits(userId, TEXT_COST);
       try {
         const text = await callOpenRouterText(prompt, system);
         return { content: [{ type: "text", text }] };
       } catch (e) {
-        await refundCredits(ctx.getUserId(), TEXT_COST);
+        await refundCredits(userId, TEXT_COST);
         throw e;
       }
     } catch (e) {
