@@ -2,6 +2,7 @@ import { auth, defineMcp } from "@lovable.dev/mcp-js";
 import getCreditsTool from "./tools/get-credits";
 import generateTextTool from "./tools/generate-text";
 import generateImageTool from "./tools/generate-image";
+import searchAssetsTool from "./tools/search-assets";
 
 // The OAuth issuer MUST be the direct Supabase host. On publish, SUPABASE_URL
 // is rewritten to the `.lovable.cloud` proxy, which mcp-js rejects.
