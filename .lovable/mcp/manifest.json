@@ -99,6 +99,40 @@
           "$schema": "http://json-schema.org/draft-07/schema#"
         },
         "outputSchema": null
+      },
+      {
+        "name": "search_assets",
+        "title": "Search editing assets",
+        "description": "Search Zentry Qor's asset vault (LUTs, overlays, sound FX, templates, fonts, etc.) by keyword or category. Returns matching asset names, descriptions, category, tags, and a direct download link the user can click to download the file. Use this whenever the user asks for an editing asset, overlay, LUT, sound effect, template, or similar resource.",
+        "annotations": {
+          "readOnlyHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "maxLength": 200,
+              "description": "Free-text search across title, description, and tags. Omit to browse."
+            },
+            "category": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Optional exact category filter (e.g. 'LUT', 'Overlay', 'SFX', 'Template')."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 5,
+              "description": "Max results to return."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
       }
     ]
   }
