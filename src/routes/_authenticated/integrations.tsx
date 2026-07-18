@@ -218,6 +218,13 @@ function McpPage() {
             </div>
             <div className="flex items-start justify-between gap-4">
               <div>
+                <div className="font-medium">search_assets</div>
+                <div className="text-muted-foreground text-xs">Search the asset vault by keyword or category and get download links.</div>
+              </div>
+              <span className="text-[11px] rounded-full bg-white/10 px-2 py-0.5">free</span>
+            </div>
+            <div className="flex items-start justify-between gap-4">
+              <div>
                 <div className="font-medium">generate_image</div>
                 <div className="text-muted-foreground text-xs">Generate an image at 16:9, 9:16, 4:3, or 3:4.</div>
               </div>
