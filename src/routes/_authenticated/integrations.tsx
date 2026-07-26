@@ -60,6 +60,8 @@ function McpPage() {
   const origin = typeof window !== "undefined" ? window.location.origin : "https://zentryqor.lovable.app";
   const mcpUrl = `${origin}/mcp`;
   const serverName = "zentry-qor";
+  const projectRef = import.meta.env.VITE_SUPABASE_PROJECT_ID || "<project-ref>";
+  const supabaseAuth = `https://${projectRef}.supabase.co/auth/v1`;
 
   const npxCommand = useMemo(
     () => `npx -y mcp-remote ${mcpUrl}`,
