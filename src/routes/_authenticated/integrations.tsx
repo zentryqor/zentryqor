@@ -199,6 +199,61 @@ function McpPage() {
 
         <Card className="border-white/10 bg-white/[0.03]">
           <CardHeader>
+            <CardTitle className="text-base">Authorization for native MCP clients</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5 text-sm">
+            <p className="text-muted-foreground">
+              Zentry Qor's MCP endpoint speaks <span className="font-mono">OAuth 2.1</span> with dynamic client registration (RFC 7591) and PKCE. Once OAuth completes, every JSON-RPC call must include an <span className="font-mono">Authorization: Bearer &lt;access_token&gt;</span> header. Use one of the paths below.
+            </p>
+
+            <div className="space-y-2">
+              <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">1. Automatic (recommended)</div>
+              <p className="text-sm text-muted-foreground">
+                Point the client at the server URL. It discovers OAuth from <span className="font-mono">/.well-known/oauth-protected-resource</span>, registers itself, opens a browser tab for you to sign in and approve, then stores the token. No manual header needed.
+              </p>
+              <CodeBlock code={`${origin}/.well-known/oauth-protected-resource`} />
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">2. Via the mcp-remote bridge (Claude Desktop / Cursor / Codex CLI)</div>
+              <p className="text-sm text-muted-foreground">
+                Run the bridge once — it walks you through OAuth in the browser and caches the token in <span className="font-mono">~/.mcp-auth/</span>. After that, restart the client with the config from the Terminal tab above.
+              </p>
+              <CodeBlock code={`npx -y mcp-remote ${mcpUrl}`} />
+              <p className="text-xs text-muted-foreground">
+                Force a fresh sign-in with <span className="font-mono">rm -rf ~/.mcp-auth</span> and re-run.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">3. Manual token (custom clients, scripts, curl)</div>
+              <p className="text-sm text-muted-foreground">
+                For scripting or custom integrations, register a client and complete the authorization code + PKCE flow against the endpoints below, then send the returned <span className="font-mono">access_token</span> on every request:
+              </p>
+              <CodeBlock code={`Authorization: Bearer <access_token>
+Accept: application/json, text/event-stream
+Content-Type: application/json`} />
+              <p className="text-sm text-muted-foreground">OAuth endpoints (auto-discovered):</p>
+              <CodeBlock code={`Resource metadata:  ${origin}/.well-known/oauth-protected-resource
+Authorization:      https://${(typeof import.meta !== "undefined" && (import.meta as ImportMeta).env?.VITE_SUPABASE_PROJECT_ID) || "<project-ref>"}.supabase.co/auth/v1/authorize
+Token:              https://${(typeof import.meta !== "undefined" && (import.meta as ImportMeta).env?.VITE_SUPABASE_PROJECT_ID) || "<project-ref>"}.supabase.co/auth/v1/token
+Registration:       https://${(typeof import.meta !== "undefined" && (import.meta as ImportMeta).env?.VITE_SUPABASE_PROJECT_ID) || "<project-ref>"}.supabase.co/auth/v1/oauth/clients`} />
+              <p className="text-sm text-muted-foreground">Verify with a JSON-RPC ping:</p>
+              <CodeBlock code={`curl -X POST ${mcpUrl} \\
+  -H "Authorization: Bearer $ZENTRY_MCP_TOKEN" \\
+  -H "Accept: application/json, text/event-stream" \\
+  -H "Content-Type: application/json" \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'`} />
+            </div>
+
+            <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3 text-xs text-muted-foreground">
+              Access tokens expire (typically 1 hour). Native clients refresh automatically; scripts should exchange the refresh token at the token endpoint. Never paste your Zentry Qor password or a copied browser session token — always use the OAuth flow.
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10 bg-white/[0.03]">
+          <CardHeader>
             <CardTitle className="text-base">Available tools</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
