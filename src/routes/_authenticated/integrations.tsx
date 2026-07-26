@@ -237,9 +237,9 @@ Accept: application/json, text/event-stream
 Content-Type: application/json`} />
               <p className="text-sm text-muted-foreground">OAuth endpoints (auto-discovered):</p>
               <CodeBlock code={`Resource metadata:  ${origin}/.well-known/oauth-protected-resource
-Authorization:      https://${(typeof import.meta !== "undefined" && (import.meta as ImportMeta).env?.VITE_SUPABASE_PROJECT_ID) || "<project-ref>"}.supabase.co/auth/v1/authorize
-Token:              https://${(typeof import.meta !== "undefined" && (import.meta as ImportMeta).env?.VITE_SUPABASE_PROJECT_ID) || "<project-ref>"}.supabase.co/auth/v1/token
-Registration:       https://${(typeof import.meta !== "undefined" && (import.meta as ImportMeta).env?.VITE_SUPABASE_PROJECT_ID) || "<project-ref>"}.supabase.co/auth/v1/oauth/clients`} />
+Authorization:      ${supabaseAuth}/authorize
+Token:              ${supabaseAuth}/token
+Registration:       ${supabaseAuth}/oauth/clients`} />
               <p className="text-sm text-muted-foreground">Verify with a JSON-RPC ping:</p>
               <CodeBlock code={`curl -X POST ${mcpUrl} \\
   -H "Authorization: Bearer $ZENTRY_MCP_TOKEN" \\
