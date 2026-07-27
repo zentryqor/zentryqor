@@ -170,8 +170,22 @@ function SavedPage() {
       return;
     }
 
+    // Pre-flight quota warning for free users. Each asset consumes 1 daily download.
+    if (!isPremium) {
+      const cap = limitDetails?.dailyLimit ?? 3;
+      if (targets.length > cap) {
+        const proceed = window.confirm(
+          `Free plan allows up to ${cap} downloads per day. You selected ${targets.length}. Only the first ${cap} that fit your remaining quota will be added to the ZIP. Continue?`,
+        );
+        if (!proceed) return;
+      }
+    }
+
     setZipping(true);
     setZipProgress({ done: 0, total: targets.length });
+    let added = 0;
+    let hitLimit = false;
+    let limitPayload: DownloadLimitDetails | null = null;
     try {
       const { data } = await supabase.auth.getSession();
       const token = data.session?.access_token;
@@ -179,7 +193,7 @@ function SavedPage() {
 
       const zip = new JSZip();
       let done = 0;
-      // Sequential to respect per-user rate limits and avoid spikes
+      // Sequential to respect per-user rate limits and avoid spikes.
       for (const a of targets) {
         try {
           const { url, filename } = await fetchSignedUrl(a.id, token);
@@ -188,13 +202,16 @@ function SavedPage() {
             return r.blob();
           });
           const folder = zip.folder(a.category || "Uncategorized")!;
-          // Prefix with id-slice to avoid collisions on same file_name
           const safeName = filename.replace(/[/\\]/g, "_");
           folder.file(safeName, blob);
+          added += 1;
         } catch (e) {
           if (e instanceof DownloadError && e.status === 429) {
-            setLimitDetails(e.limitDetails ?? null);
-            throw e;
+            hitLimit = true;
+            limitPayload = e.limitDetails ?? null;
+            // Stop making more calls — but keep what we've already fetched so the user
+            // still receives a ZIP for the quota they've already spent.
+            break;
           }
           console.error("zip item failed", a.id, e);
           toast.error(`Skipped ${a.file_name}: ${(e as Error).message}`);
@@ -203,8 +220,13 @@ function SavedPage() {
         setZipProgress({ done, total: targets.length });
       }
 
+      if (added === 0) {
+        // Nothing to zip — surface the limit modal instead of downloading an empty archive.
+        if (hitLimit) setLimitDetails(limitPayload);
+        return;
+      }
+
       const out = await zip.generateAsync({ type: "blob" }, (meta) => {
-        // Optional: could show compression progress
         if (meta.percent >= 99) setZipProgress({ done: targets.length, total: targets.length });
       });
       const href = URL.createObjectURL(out);
@@ -215,10 +237,15 @@ function SavedPage() {
       a.click();
       a.remove();
       URL.revokeObjectURL(href);
-      toast.success(`Downloaded ${targets.length} asset${targets.length === 1 ? "" : "s"} as ZIP`);
+      if (hitLimit) {
+        toast.warning(`Daily limit reached — ZIP contains the first ${added} of ${targets.length} selected.`);
+        setLimitDetails(limitPayload);
+      } else {
+        toast.success(`Downloaded ${added} asset${added === 1 ? "" : "s"} as ZIP`);
+      }
       qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
     } catch (e) {
-      if (!(e instanceof DownloadError)) toast.error((e as Error).message ?? "ZIP download failed");
+      toast.error((e as Error).message ?? "ZIP download failed");
     } finally {
       setZipping(false);
       setZipProgress(null);
