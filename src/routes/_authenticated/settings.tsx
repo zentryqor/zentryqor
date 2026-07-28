@@ -24,6 +24,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getMyContext } from "@/lib/preferences.functions";
 import { updateProfile } from "@/lib/settings.functions";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
+import { PwaSettings } from "@/components/pwa/PwaSettings";
+
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { PremiumBadge } from "@/components/PremiumLock";
 import { Button } from "@/components/ui/button";
@@ -306,7 +308,10 @@ function SettingsPage() {
                   </button>
                 </div>
               </Section>
+
+              <PwaSettings />
             </div>
+
           )}
         </main>
       </div>

@@ -6,6 +6,7 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
+import { VitePWA } from "vite-plugin-pwa";
 
 export default defineConfig({
   tanstackStart: {
@@ -14,6 +15,84 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    plugins: [mcpPlugin()],
+    plugins: [
+      mcpPlugin(),
+      VitePWA({
+        strategies: "generateSW",
+        registerType: "prompt",
+        // The guarded wrapper in src/lib/pwa/register-sw.ts is the ONLY registrar.
+        injectRegister: null,
+        // Never emit or serve a service worker in dev / Lovable preview.
+        devOptions: { enabled: false },
+        // Manifest is a static file in public/ so it stays stable across builds.
+        manifest: false,
+        filename: "sw.js",
+        // TanStack Start emits browser assets to dist/client; keep the SW beside them.
+        outDir: "dist/client",
+        workbox: {
+          globDirectory: "dist/client",
+          globPatterns: ["**/*.{js,css,woff,woff2,svg,png,ico}"],
+          globIgnores: ["**/node_modules/**", "**/sw.js", "**/workbox-*.js"],
+          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: false,
+          // Precache the offline shell by fetching it at install time.
+          additionalManifestEntries: [{ url: "/offline", revision: `${Date.now()}` }],
+          navigateFallback: "/offline",
+          navigateFallbackDenylist: [
+            /^\/api\//,
+            /^\/~oauth/,
+            /^\/\.mcp/,
+            /^\/\.well-known/,
+            /^\/mcp/,
+            /^\/sitemap\.xml$/,
+          ],
+          runtimeCaching: [
+            {
+              // HTML navigations: always try the network first.
+              urlPattern: ({ request }: { request: Request }) => request.mode === "navigate",
+              handler: "NetworkFirst",
+              options: {
+                cacheName: "zq-pages",
+                networkTimeoutSeconds: 4,
+                expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 },
+              },
+            },
+            {
+              urlPattern: /\.(?:js|css)$/,
+              handler: "StaleWhileRevalidate",
+              options: { cacheName: "zq-static" },
+            },
+            {
+              urlPattern: /\.(?:png|jpg|jpeg|webp|avif|gif|svg|ico)$/,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "zq-images",
+                expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\//,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "zq-fonts",
+                expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public\//,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "zq-remote-media",
+                expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 14 },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+          ],
+        },
+      }),
+    ],
   },
 });

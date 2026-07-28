@@ -17,6 +17,7 @@ export function WorkspaceDock() {
     <nav
       aria-label="Workspace navigation"
       className="fixed inset-x-4 bottom-4 z-50 mx-auto w-auto max-w-2xl sm:inset-x-6 sm:bottom-6"
+      style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}
     >
       <div className="grid grid-cols-5 items-stretch rounded-[2rem] border border-border/40 bg-elevated/40 p-1 shadow-xl backdrop-blur-xl sm:p-1">
         {destinations.map((destination) => {

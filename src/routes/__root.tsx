@@ -11,6 +11,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { PwaProvider } from "@/components/pwa/PwaProvider";
+
 
 function NotFoundComponent() {
   return (
@@ -76,11 +78,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
+      },
       { title: "Zentry Qor" },
       { name: "description", content: "Zentry Qor is a premium creator productivity vault for digital creators." },
       { name: "author", content: "Zentry Qor" },
+      { name: "theme-color", content: "#0F0F0F" },
+      { name: "color-scheme", content: "dark" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Zentry Qor" },
+      { name: "application-name", content: "Zentry Qor" },
       { name: "google-site-verification", content: "vOuTxkxNavC3Xbw52B2bKlrbLYPcXgdt_sOCDk7v72A" },
+
       { property: "og:title", content: "Zentry Qor — The Creator OS" },
       { property: "og:description", content: "The creator OS — a premium asset vault, AI tools, and a workspace built for daily output." },
       { property: "og:site_name", content: "Zentry Qor" },
@@ -131,7 +144,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "icon", href: "/favicon.ico", sizes: "any" },
+      { rel: "icon", type: "image/png", sizes: "192x192", href: "/icons/icon-192.png" },
+      { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+      { rel: "mask-icon", href: "/icons/icon-512.png", color: "#0F0F0F" },
     ],
+
   }),
   shellComponent: RootShell,
   component: RootComponent,
@@ -202,6 +221,8 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <PwaProvider />
     </QueryClientProvider>
   );
+
 }

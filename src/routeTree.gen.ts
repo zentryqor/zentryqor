@@ -16,6 +16,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as RefundRouteImport } from './routes/refund'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as OfflineRouteImport } from './routes/offline'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as GalleryRouteImport } from './routes/gallery'
@@ -101,6 +102,11 @@ const RefundRoute = RefundRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OfflineRoute = OfflineRouteImport.update({
+  id: '/offline',
+  path: '/offline',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -381,6 +387,7 @@ export interface FileRoutesByFullPath {
   '/gallery': typeof GalleryRouteWithChildren
   '/help': typeof HelpRoute
   '/mcp': typeof McpRoute
+  '/offline': typeof OfflineRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/roadmap': typeof RoadmapRoute
@@ -440,6 +447,7 @@ export interface FileRoutesByTo {
   '/gallery': typeof GalleryRouteWithChildren
   '/help': typeof HelpRoute
   '/mcp': typeof McpRoute
+  '/offline': typeof OfflineRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/roadmap': typeof RoadmapRoute
@@ -500,6 +508,7 @@ export interface FileRoutesById {
   '/gallery': typeof GalleryRouteWithChildren
   '/help': typeof HelpRoute
   '/mcp': typeof McpRoute
+  '/offline': typeof OfflineRoute
   '/privacy': typeof PrivacyRoute
   '/refund': typeof RefundRoute
   '/roadmap': typeof RoadmapRoute
@@ -561,6 +570,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/help'
     | '/mcp'
+    | '/offline'
     | '/privacy'
     | '/refund'
     | '/roadmap'
@@ -620,6 +630,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/help'
     | '/mcp'
+    | '/offline'
     | '/privacy'
     | '/refund'
     | '/roadmap'
@@ -679,6 +690,7 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/help'
     | '/mcp'
+    | '/offline'
     | '/privacy'
     | '/refund'
     | '/roadmap'
@@ -740,6 +752,7 @@ export interface RootRouteChildren {
   GalleryRoute: typeof GalleryRouteWithChildren
   HelpRoute: typeof HelpRoute
   McpRoute: typeof McpRoute
+  OfflineRoute: typeof OfflineRoute
   PrivacyRoute: typeof PrivacyRoute
   RefundRoute: typeof RefundRoute
   RoadmapRoute: typeof RoadmapRoute
@@ -813,6 +826,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/offline': {
+      id: '/offline'
+      path: '/offline'
+      fullPath: '/offline'
+      preLoaderRoute: typeof OfflineRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -1286,6 +1306,7 @@ const rootRouteChildren: RootRouteChildren = {
   GalleryRoute: GalleryRouteWithChildren,
   HelpRoute: HelpRoute,
   McpRoute: McpRoute,
+  OfflineRoute: OfflineRoute,
   PrivacyRoute: PrivacyRoute,
   RefundRoute: RefundRoute,
   RoadmapRoute: RoadmapRoute,
