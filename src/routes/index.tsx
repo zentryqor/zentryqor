@@ -37,7 +37,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "A premium asset vault and nine AI tools for short-form creators. One subscription. One tab.",
+          "A premium asset vault and nine AI tools for short-form creators — captions, hooks, scripts, thumbnails, and more. One subscription. One tab.",
       },
       { property: "og:url", content: "https://zentryqor.lovable.app/" },
     ],
