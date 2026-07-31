@@ -158,3 +158,38 @@ export function inQuietHours(start: number | null, end: number | null, hour = ne
   if (start === null || end === null || start === end) return false;
   return start < end ? hour >= start && hour < end : hour >= start || hour < end;
 }
+
+/**
+ * Delivers a categorised notification to one user, honouring their category
+ * switches and quiet hours. Safe to call from any server function.
+ */
+export async function notifyUser(userId: string, message: PushMessage) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+  const { data: prefs } = await supabaseAdmin
+    .from("push_preferences")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (prefs) {
+    if ((prefs as Record<string, unknown>)[message.category] === false) return { sent: 0, skipped: "category" };
+    if (inQuietHours(prefs.quiet_hours_start, prefs.quiet_hours_end)) {
+      return { sent: 0, skipped: "quiet_hours" };
+    }
+  }
+
+  const { data: devices } = await supabaseAdmin
+    .from("push_devices")
+    .select("token")
+    .eq("user_id", userId);
+
+  const tokens = (devices ?? []).map((d) => d.token);
+  if (!tokens.length) return { sent: 0, skipped: "no_devices" };
+
+  const { sent, invalidTokens } = await sendPushToTokens(tokens, message);
+  if (invalidTokens.length) {
+    await supabaseAdmin.from("push_devices").delete().in("token", invalidTokens);
+  }
+  return { sent };
+}
