@@ -32,7 +32,13 @@ export default defineConfig({
         workbox: {
           globDirectory: "dist/client",
           globPatterns: ["**/*.{js,css,woff,woff2,svg,png,ico}"],
-          globIgnores: ["**/node_modules/**", "**/sw.js", "**/workbox-*.js"],
+          globIgnores: [
+            "**/node_modules/**",
+            "**/sw.js",
+            "**/workbox-*.js",
+            // FCM messaging worker: separate worker/scope, never precached.
+            "**/firebase-messaging-sw.js",
+          ],
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           cleanupOutdatedCaches: true,
           clientsClaim: true,

@@ -25,6 +25,7 @@ import { getMyContext } from "@/lib/preferences.functions";
 import { updateProfile } from "@/lib/settings.functions";
 import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
 import { PwaSettings } from "@/components/pwa/PwaSettings";
+import { PushSettings } from "@/components/pwa/PushSettings";
 
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
 import { PremiumBadge } from "@/components/PremiumLock";
@@ -308,6 +309,8 @@ function SettingsPage() {
                   </button>
                 </div>
               </Section>
+
+              <PushSettings />
 
               <PwaSettings />
             </div>
