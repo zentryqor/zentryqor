@@ -595,6 +595,78 @@ export type Database = {
         }
         Relationships: []
       }
+      push_devices: {
+        Row: {
+          created_at: string
+          id: string
+          last_seen_at: string
+          platform: string | null
+          token: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          platform?: string | null
+          token: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          platform?: string | null
+          token?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      push_preferences: {
+        Row: {
+          ai_ready: boolean
+          billing: boolean
+          credits: boolean
+          new_assets: boolean
+          product_updates: boolean
+          quiet_hours_end: number | null
+          quiet_hours_start: number | null
+          referrals: boolean
+          scheduled_posts: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_ready?: boolean
+          billing?: boolean
+          credits?: boolean
+          new_assets?: boolean
+          product_updates?: boolean
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          referrals?: boolean
+          scheduled_posts?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_ready?: boolean
+          billing?: boolean
+          credits?: boolean
+          new_assets?: boolean
+          product_updates?: boolean
+          quiet_hours_end?: number | null
+          quiet_hours_start?: number | null
+          referrals?: boolean
+          scheduled_posts?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       rate_limit_buckets: {
         Row: {
           bucket_key: string
