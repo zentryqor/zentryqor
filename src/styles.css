@@ -237,12 +237,18 @@
     -moz-osx-font-smoothing: grayscale;
     background-color: var(--color-background);
     scroll-behavior: auto;
+    /* PWA app-like feel: disable pull-to-refresh bounce and rubber-banding */
+    overscroll-behavior-y: none;
+    overscroll-behavior-x: none;
   }
 
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-feature-settings: "ss01", "cv11";
+    /* Allow vertical scroll but disable browser zoom/pinch gestures */
+    touch-action: pan-y;
+    overscroll-behavior-y: none;
   }
 
   ::selection {
