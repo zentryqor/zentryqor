@@ -71,19 +71,28 @@ async function spendCredits(supabase: SupaClient, userId: string, cost: number) 
 
   if (fromDaily > 0) {
     if (state.rowId) {
-      await supabase
+      const { data: updated, error } = await supabase
         .from("ai_credit_usage")
         .update({ used: state.used + fromDaily, updated_at: new Date().toISOString() })
-        .eq("id", state.rowId);
+        .eq("id", state.rowId)
+        .select("id");
+      if (error) throw new Error(`Could not record credit usage: ${error.message}`);
+      if (!updated || updated.length === 0) throw new Error("Could not record credit usage.");
     } else {
-      await supabase
+      const { error } = await supabase
         .from("ai_credit_usage")
         .insert({ user_id: userId, day: state.day, used: fromDaily });
+      if (error) throw new Error(`Could not record credit usage: ${error.message}`);
     }
   }
   if (fromBonus > 0) {
-    await supabase.rpc("consume_bonus_credits", { _user_id: userId, _amount: fromBonus });
+    const { error } = await supabase.rpc("consume_bonus_credits", {
+      _user_id: userId,
+      _amount: fromBonus,
+    });
+    if (error) throw new Error(`Could not record credit usage: ${error.message}`);
   }
+
 
   supabase.rpc("award_referral_bonus", { _referee: userId }).then(
     () => {},
