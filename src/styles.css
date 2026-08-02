@@ -278,8 +278,7 @@
     border: 1px solid oklch(1 0 0 / 0.10);
   }
 
-  /* Specular reflection: a soft top-edge highlight + faint diagonal sheen,
-     giving glass surfaces real depth like polished acrylic. */
+  /* Specular reflection: a soft top-edge highlight only (no diagonal sheen). */
   .glass::before,
   .glass-strong::before,
   .glass-reflect::before {
@@ -289,10 +288,14 @@
     border-radius: inherit;
     pointer-events: none;
     z-index: -1;
-    background:
-      linear-gradient(180deg, oklch(1 0 0 / 0.14) 0%, oklch(1 0 0 / 0.02) 22%, transparent 45%),
-      linear-gradient(115deg, transparent 40%, oklch(1 0 0 / 0.07) 50%, transparent 60%);
+    background: linear-gradient(
+      180deg,
+      oklch(1 0 0 / 0.14) 0%,
+      oklch(1 0 0 / 0.02) 22%,
+      transparent 45%
+    );
   }
+
 
   /* Inner light line along the top edge — the classic glass lip */
   .glass::after,

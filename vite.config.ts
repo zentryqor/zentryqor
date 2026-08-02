@@ -43,8 +43,18 @@ export default defineConfig({
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: false,
-          // Precache the offline shell by fetching it at install time.
-          additionalManifestEntries: [{ url: "/offline", revision: `${Date.now()}` }],
+          // Precache the offline shell + key public pages at install time so they
+          // are available instantly, even on a first offline launch.
+          additionalManifestEntries: [
+            "/offline",
+            "/",
+            "/gallery",
+            "/templates",
+            "/docs",
+            "/help",
+            "/about",
+            "/manifest.webmanifest",
+          ].map((url) => ({ url, revision: `${Date.now()}` })),
           navigateFallback: "/offline",
           navigateFallbackDenylist: [
             /^\/api\//,
@@ -56,19 +66,38 @@ export default defineConfig({
           ],
           runtimeCaching: [
             {
-              // HTML navigations: always try the network first.
+              // HTML navigations: try the network briefly, then fall back to the
+              // cached page so previously visited routes open instantly offline.
               urlPattern: ({ request }: { request: Request }) => request.mode === "navigate",
               handler: "NetworkFirst",
               options: {
                 cacheName: "zq-pages",
-                networkTimeoutSeconds: 4,
-                expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 * 7 },
+                networkTimeoutSeconds: 2,
+                expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 30 },
+                cacheableResponse: { statuses: [0, 200] },
+              },
+            },
+            {
+              // Hashed build assets never change content — serve from cache.
+              urlPattern: /\/_build\/assets\/.*\.(?:js|css)$/,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "zq-build-assets",
+                expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 365 },
               },
             },
             {
               urlPattern: /\.(?:js|css)$/,
               handler: "StaleWhileRevalidate",
               options: { cacheName: "zq-static" },
+            },
+            {
+              urlPattern: /\.(?:woff2?|ttf|otf)$/,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "zq-local-fonts",
+                expiration: { maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              },
             },
             {
               urlPattern: /\.(?:png|jpg|jpeg|webp|avif|gif|svg|ico)$/,
@@ -96,7 +125,19 @@ export default defineConfig({
                 cacheableResponse: { statuses: [0, 200] },
               },
             },
+            {
+              // Read-only content queries: last good response keeps the UI usable offline.
+              urlPattern: /^https:\/\/[a-z0-9-]+\.supabase\.co\/rest\/v1\//,
+              handler: "NetworkFirst",
+              options: {
+                cacheName: "zq-api",
+                networkTimeoutSeconds: 5,
+                expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 },
+                cacheableResponse: { statuses: [200] },
+              },
+            },
           ],
+
         },
       }),
     ],
