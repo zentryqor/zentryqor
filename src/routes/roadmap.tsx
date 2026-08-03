@@ -20,8 +20,9 @@ const items = [
   { status: "shipped", title: "Public API", body: "Programmatic /text, /image, and /credits endpoints via API keys at /api-docs." },
   { status: "progress", title: "Team workspaces", body: "Shared vaults, roles, and seat-based billing. Private beta now." },
   { status: "progress", title: "Mobile app (iOS)", body: "Vault browsing, AI runs, and quick publish from your phone." },
+  { status: "shipped", title: "Native Poster", body: "Queue posts to TikTok, Reels, and Shorts from inside the workspace." },
+  { status: "progress", title: "Video editor", body: "Trim, crop, and caption clips in-app before scheduling them — no external tools." },
   { status: "planned", title: "Brand kits", body: "Auto-apply your fonts, colors, and watermark across every export." },
-  { status: "planned", title: "Native Poster", body: "Queue posts to TikTok, Reels, and Shorts from inside the workspace." },
 ];
 
 const meta: Record<string, { label: string; icon: typeof CheckCircle2; cls: string }> = {
