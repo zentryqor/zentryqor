@@ -19,7 +19,7 @@ export function WorkspaceDock() {
       className="fixed inset-x-4 bottom-4 z-50 mx-auto w-auto max-w-2xl sm:inset-x-6 sm:bottom-6"
       style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}
     >
-      <div className="liquid-dock grid grid-cols-5 items-stretch p-1.5 sm:p-2">
+      <div className="liquid-dock grid grid-cols-5 items-stretch p-1">
         {destinations.map((destination) => {
           const Icon = destination.icon;
           const isActive = pathname === destination.to;
@@ -30,10 +30,11 @@ export function WorkspaceDock() {
               to={destination.to}
               aria-current={isActive ? "page" : undefined}
               aria-label={destination.label}
-              className={`liquid-dock__item relative flex min-w-0 flex-col items-center justify-center gap-1 px-1 py-2 text-[10px] font-medium sm:text-[11px] ${
+              className={`liquid-dock__item relative flex min-w-0 flex-col items-center justify-center gap-0.5 px-1 py-1.5 text-[9px] font-medium leading-none sm:text-[10px] ${
                 isActive ? "text-foreground" : "text-muted-foreground hover:text-primary"
               }`}
             >
+
               {isActive && (
                 <motion.span
                   layoutId="workspace-dock-active"
