@@ -241,23 +241,26 @@ function AssetsPage() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="glass-strong rounded-2xl p-3 mb-8 flex flex-col md:flex-row gap-3"
           >
-            <div className="relative flex-1 h-11 shrink-0">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground icon-fx" />
+            <div className="relative flex h-11 flex-1 shrink-0 items-center rounded-xl bg-background/40 border border-border/60 transition focus-within:ring-2 focus-within:ring-primary/40">
+              <span className="pointer-events-none flex h-11 w-11 shrink-0 items-center justify-center">
+                <Search className="h-4 w-4 text-muted-foreground icon-fx" />
+              </span>
               <input
                 placeholder="Search title, tags, description…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-11 pl-11 pr-10 rounded-xl bg-background/40 border border-border/60 text-sm placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+                className="h-11 w-full min-w-0 flex-1 bg-transparent pr-2 text-sm placeholder:text-muted-foreground/70 focus:outline-none"
               />
               {search && (
                 <button
                   onClick={() => setSearch("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-elevated transition"
+                  className="mr-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-elevated transition"
                 >
                   <X className="h-3 w-3 icon-fx" />
                 </button>
               )}
             </div>
+
 
             <div className="flex gap-2 overflow-x-auto md:overflow-visible">
               <Chip active={tier === "all"} onClick={() => setTier("all")}>
