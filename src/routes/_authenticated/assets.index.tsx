@@ -241,7 +241,7 @@ function AssetsPage() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="glass-strong rounded-2xl p-3 mb-8 flex flex-col md:flex-row gap-3"
           >
-            <div className="relative flex-1">
+            <div className="relative flex-1 h-11 shrink-0">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground icon-fx" />
               <input
                 placeholder="Search title, tags, description…"
