@@ -42,7 +42,7 @@ export function WorkspaceDock() {
                   transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
-              <Icon className="liquid-dock__icon relative z-10 h-5 w-5 shrink-0" strokeWidth={2.2} />
+              <Icon className="liquid-dock__icon relative z-10 h-[18px] w-[18px] shrink-0" strokeWidth={2.2} />
               <span className="relative z-10 truncate">{destination.label}</span>
             </Link>
           );
