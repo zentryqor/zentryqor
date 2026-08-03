@@ -19,7 +19,7 @@ export function WorkspaceDock() {
       className="fixed inset-x-4 bottom-4 z-50 mx-auto w-auto max-w-2xl sm:inset-x-6 sm:bottom-6"
       style={{ bottom: "max(1rem, env(safe-area-inset-bottom))" }}
     >
-      <div className="grid grid-cols-5 items-stretch rounded-[2rem] border border-border/40 bg-elevated/40 p-1 shadow-xl backdrop-blur-xl sm:p-1">
+      <div className="liquid-dock grid grid-cols-5 items-stretch p-1.5 sm:p-2">
         {destinations.map((destination) => {
           const Icon = destination.icon;
           const isActive = pathname === destination.to;
@@ -30,22 +30,23 @@ export function WorkspaceDock() {
               to={destination.to}
               aria-current={isActive ? "page" : undefined}
               aria-label={destination.label}
-              className={`relative flex min-w-0 flex-col items-center justify-center gap-0.5 rounded-[1.6rem] px-1 py-1 text-[10px] font-medium transition-colors sm:py-1 sm:text-[11px] ${
-                isActive ? "text-primary" : "text-foreground hover:text-primary"
+              className={`liquid-dock__item relative flex min-w-0 flex-col items-center justify-center gap-1 px-1 py-2 text-[10px] font-medium sm:text-[11px] ${
+                isActive ? "text-foreground" : "text-muted-foreground hover:text-primary"
               }`}
             >
               {isActive && (
                 <motion.span
                   layoutId="workspace-dock-active"
-                  className="absolute inset-0 rounded-[1.6rem] bg-primary/10 shadow-sm"
+                  className="liquid-dock__pill absolute inset-0"
                   transition={{ type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
-              <Icon className="relative z-10 h-5 w-5 shrink-0 sm:h-5 sm:w-5" strokeWidth={2.2} />
+              <Icon className="liquid-dock__icon relative z-10 h-5 w-5 shrink-0" strokeWidth={2.2} />
               <span className="relative z-10 truncate">{destination.label}</span>
             </Link>
           );
         })}
+
       </div>
     </nav>
   );
