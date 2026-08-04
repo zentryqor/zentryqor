@@ -1224,7 +1224,9 @@ function CaptionAiPage() {
         </aside>
 
       </div>
-    </PageShell>
+      </main>
+    </div>
+
   );
 }
 
