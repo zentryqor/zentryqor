@@ -17,9 +17,10 @@ import {
   pollTranscription,
   type CaptionWord,
 } from "@/lib/caption-ai.functions";
-import { PageShell } from "@/components/PageShell";
+import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
+import { ProfileMenu } from "@/components/ProfileMenu";
 import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
-import { CreditBadge } from "@/components/CreditBadge";
+
 import { useQuery } from "@tanstack/react-query";
 import { getAiCredits } from "@/lib/ai.functions";
 
