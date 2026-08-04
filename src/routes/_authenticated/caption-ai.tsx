@@ -752,16 +752,26 @@ function CaptionAiPage() {
     a.remove();
   };
 
+  const estMb =
+    durationSec && durationSec > 0
+      ? ((bitrateMbps + 0.128) * durationSec) / 8
+      : null;
+
   return (
-    <PageShell
-      eyebrow="New"
-      title={
-        <>
-          Caption<span className="text-primary">AI</span>
-        </>
-      }
-      description="Upload a clip up to 60 seconds. Edit transcript & timings, tweak the size, pick from 20+ styles, then export. Generation costs 50 credits."
-    >
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      <AppHeader
+        nav={
+          <>
+            <AppHeaderLink to="/dashboard">Dashboard</AppHeaderLink>
+            <AppHeaderLink to="/assets">Vault</AppHeaderLink>
+            <AppHeaderLink to="/ai">AI Studio</AppHeaderLink>
+            <AppHeaderLink to="/caption-ai" active>CaptionAI</AppHeaderLink>
+          </>
+        }
+        right={<ProfileMenu />}
+      />
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-32">
       <FirstVisitTutorial
         storageKey="tutorial:caption-ai:v1"
         title="CaptionAI"
@@ -772,36 +782,46 @@ function CaptionAiPage() {
         ]}
       />
 
-      {/* Inline credit balance banner */}
-      <div className="mb-5 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-primary" />
-          </div>
-          <div>
-            <div className="text-sm font-semibold">
-              {credits ? `${credits.remaining} credits available` : "Loading credits…"}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Caption generation costs <span className="text-foreground font-medium">50 credits</span>
-              {credits ? ` · ${credits.limit}/day on ${credits.isPremium ? "Premium" : "Free"}` : ""}
-            </div>
-          </div>
+      {/* Header band */}
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
+        <div className="min-w-0">
+          <h1 className="text-3xl sm:text-5xl font-semibold tracking-[-0.035em] leading-[1.03]">
+            Caption<span className="text-primary">AI</span>
+          </h1>
+          <p className="mt-3 text-sm text-muted-foreground max-w-xl leading-relaxed">
+            Drop a clip up to 60 seconds, fix the transcript and timings, pick a style,
+            then burn captions in and export.
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <CreditBadge className="!inline-flex" />
+
+        <div className="glass rounded-2xl px-4 py-3 flex items-center gap-4">
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold tabular-nums">
+                {credits ? `${credits.remaining} credits` : "Loading…"}
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                50 per generation
+                {credits ? ` · ${credits.limit}/day` : ""}
+              </div>
+            </div>
+          </div>
           {!canAffordGenerate && credits && (
-            <a
-              href="/billing"
+            <Link
+              to="/billing"
               className="text-xs px-3 py-1.5 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition"
             >
               Get more
-            </a>
+            </Link>
           )}
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_340px] pb-32">
+
         {/* Left column */}
         <div className="space-y-6">
           {!videoUrl ? (
