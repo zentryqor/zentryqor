@@ -1241,7 +1241,7 @@ function CaptionAiPage() {
             </div>
           </div>
 
-          </div>
+
 
           <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground px-1">
             Caption style
