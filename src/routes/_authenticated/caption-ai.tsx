@@ -513,8 +513,10 @@ function CaptionAiPage() {
   };
 
   // -------- Export via canvas + MediaRecorder --------
+  const exportExtRef = useRef<string>("mp4");
+
   const exportVideo = async () => {
-    if (!file || !videoRef.current || words.length === 0) return;
+    if (!file || words.length === 0) return;
     setPhase("exporting");
     setExportProgress(0);
     setExportError(null);
@@ -532,49 +534,81 @@ function CaptionAiPage() {
       tempSrc = src;
       srcUrl = URL.createObjectURL(file);
       src.src = srcUrl;
-      src.crossOrigin = "anonymous";
       src.playsInline = true;
       src.preload = "auto";
-      src.style.position = "fixed";
-      src.style.left = "-9999px";
-      src.style.top = "0";
-      src.style.width = "1px";
-      src.style.height = "1px";
-      src.style.opacity = "0";
+      // Keep it out of view but attached so decoding is not throttled.
+      src.style.cssText =
+        "position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none";
       document.body.appendChild(src);
 
+      const waitEvent = (el: HTMLVideoElement, ev: string, ms: number) =>
+        new Promise<void>((res) => {
+          let done = false;
+          const on = () => {
+            if (done) return;
+            done = true;
+            el.removeEventListener(ev, on);
+            res();
+          };
+          el.addEventListener(ev, on, { once: true });
+          setTimeout(on, ms);
+        });
+
       await new Promise<void>((res, rej) => {
-        src.onloadeddata = () => res();
-        src.onerror = () => rej(new Error("Could not load video for export"));
+        const ok = () => res();
+        src.addEventListener("loadeddata", ok, { once: true });
+        src.addEventListener(
+          "error",
+          () => rej(new Error("Could not load video for export")),
+          { once: true },
+        );
+        setTimeout(() => (src.readyState >= 2 ? res() : rej(new Error("Video load timed out"))), 20000);
       });
+
+      // Blob-sourced videos often report Infinity until forced to seek.
+      let duration = src.duration;
+      if (!Number.isFinite(duration) || duration <= 0) {
+        src.currentTime = 1e101;
+        await waitEvent(src, "timeupdate", 3000);
+        duration = Number.isFinite(src.duration) && src.duration > 0 ? src.duration : src.currentTime;
+        src.currentTime = 0;
+        await waitEvent(src, "seeked", 3000);
+      }
+      if (!Number.isFinite(duration) || duration <= 0) {
+        const last = words[words.length - 1];
+        duration = last ? last.end / 1000 + 0.5 : 5;
+      }
 
       const srcW = src.videoWidth;
       const srcH = src.videoHeight;
       if (!srcW || !srcH) throw new Error("Video has no dimensions");
 
-      // Resolve export resolution from quality setting.
       let targetH = srcH;
       if (qualityScale === "1080") targetH = Math.min(srcH, 1080);
       else if (qualityScale === "720") targetH = Math.min(srcH, 720);
       else if (qualityScale === "480") targetH = Math.min(srcH, 480);
       const scale = targetH / srcH;
-      const width = Math.round(srcW * scale / 2) * 2;
-      const height = Math.round(srcH * scale / 2) * 2;
+      const width = Math.max(2, Math.round((srcW * scale) / 2) * 2);
+      const height = Math.max(2, Math.round((srcH * scale) / 2) * 2);
 
       const canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
-      const ctx = canvas.getContext("2d")!;
+      const ctx = canvas.getContext("2d", { alpha: false })!;
 
-      // Draw first frame BEFORE starting the recorder so it has valid data
-      src.currentTime = 0;
-      await new Promise<void>((res) => { src.onseeked = () => res(); });
+      // Rewind and paint the first frame before the recorder starts.
+      if (src.currentTime > 0.01) {
+        src.currentTime = 0;
+        await waitEvent(src, "seeked", 3000);
+      }
       ctx.drawImage(src, 0, 0, width, height);
+      drawCaption(ctx, width, height, 0);
 
       setExportStage("burning");
 
       const canvasStream = (canvas as HTMLCanvasElement).captureStream(30);
       let combined: MediaStream = canvasStream;
+      let hasAudio = false;
       try {
         const AudioCtx: typeof AudioContext =
           (window as any).AudioContext || (window as any).webkitAudioContext;
@@ -582,26 +616,38 @@ function CaptionAiPage() {
         if (audioCtx.state === "suspended") await audioCtx.resume();
         const srcNode = audioCtx.createMediaElementSource(src);
         const dest = audioCtx.createMediaStreamDestination();
+        // Route only into the recording destination so export stays silent
+        // for the user while audio is still captured into the file.
         srcNode.connect(dest);
-        srcNode.connect(audioCtx.destination);
         const audioTracks = dest.stream.getAudioTracks();
-        combined = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
+        if (audioTracks.length > 0) {
+          hasAudio = true;
+          combined = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
+        }
       } catch (e) {
         console.warn("Audio capture failed, exporting silent video", e);
       }
 
-      const mimeCandidates = [
-        "video/mp4;codecs=h264,aac",
-        "video/mp4",
-        "video/webm;codecs=vp9,opus",
-        "video/webm;codecs=vp8,opus",
-        "video/webm",
-      ];
+      const mimeCandidates = hasAudio
+        ? [
+            "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+            "video/mp4;codecs=h264,aac",
+            "video/mp4",
+            "video/webm;codecs=vp9,opus",
+            "video/webm;codecs=vp8,opus",
+            "video/webm",
+          ]
+        : [
+            "video/mp4;codecs=avc1.42E01E",
+            "video/mp4",
+            "video/webm;codecs=vp9",
+            "video/webm",
+          ];
       const mime = mimeCandidates.find((m) => MediaRecorder.isTypeSupported(m)) ?? "";
       const recorder = new MediaRecorder(combined, {
         ...(mime ? { mimeType: mime } : {}),
         videoBitsPerSecond: Math.round(bitrateMbps * 1_000_000),
-        audioBitsPerSecond: 128_000,
+        ...(hasAudio ? { audioBitsPerSecond: 128_000 } : {}),
       });
       const chunks: BlobPart[] = [];
       recorder.ondataavailable = (e) => {
@@ -610,57 +656,74 @@ function CaptionAiPage() {
       const done = new Promise<Blob>((resolve, reject) => {
         recorder.onstop = () => {
           if (chunks.length === 0) {
-            reject(new Error("Export produced no data. Try a different browser (Chrome recommended)."));
+            reject(new Error("Export produced no data. Try Chrome for best results."));
             return;
           }
-          resolve(new Blob(chunks, { type: recorder.mimeType || "video/webm" }));
+          resolve(new Blob(chunks, { type: recorder.mimeType || mime || "video/webm" }));
         };
         recorder.onerror = (ev: any) =>
           reject(new Error(ev?.error?.message ?? "MediaRecorder failed"));
       });
 
-      recorder.start(500);
-      await new Promise((r) => setTimeout(r, 50));
-      src.currentTime = 0;
+      recorder.start(1000);
+      src.muted = false;
+      src.volume = 1;
       await src.play();
       setExportStage("recording");
 
-      const duration = src.duration;
       let stopped = false;
       const finish = async () => {
         if (stopped) return;
         stopped = true;
         setExportStage("finalizing");
+        // Hold the last frame briefly so the final caption is encoded.
         try {
           ctx.drawImage(src, 0, 0, width, height);
           drawCaption(ctx, width, height, duration * 1000);
         } catch {}
+        await new Promise((r) => setTimeout(r, 400));
         try { recorder.requestData(); } catch {}
-        await new Promise((r) => setTimeout(r, 250));
-        try { recorder.stop(); } catch {}
+        await new Promise((r) => setTimeout(r, 200));
+        try { src.pause(); } catch {}
+        try { if (recorder.state !== "inactive") recorder.stop(); } catch {}
       };
-      src.onended = () => void finish();
+      src.addEventListener("ended", () => void finish(), { once: true });
 
-      const drawLoop = () => {
+      // Hard safety stop: never run longer than the clip + 5s.
+      const guard = setTimeout(() => void finish(), (duration + 5) * 1000);
+
+      const useRVFC = typeof (src as any).requestVideoFrameCallback === "function";
+      const paint = () => {
         if (stopped) return;
-        ctx.drawImage(src, 0, 0, width, height);
-        drawCaption(ctx, width, height, src.currentTime * 1000);
-        setExportProgress(Math.min(1, src.currentTime / duration));
-        if (src.currentTime >= duration - 0.03) {
+        try {
+          ctx.drawImage(src, 0, 0, width, height);
+          drawCaption(ctx, width, height, src.currentTime * 1000);
+        } catch {}
+        setExportProgress(Math.min(0.99, src.currentTime / duration));
+        if (src.ended || src.currentTime >= duration - 0.02) {
           void finish();
           return;
         }
-        requestAnimationFrame(drawLoop);
+        if (useRVFC) (src as any).requestVideoFrameCallback(paint);
+        else requestAnimationFrame(paint);
       };
-      requestAnimationFrame(drawLoop);
+      if (useRVFC) (src as any).requestVideoFrameCallback(paint);
+      else requestAnimationFrame(paint);
 
       const blob = await done;
+      clearTimeout(guard);
+
+      const type = blob.type || mime;
+      exportExtRef.current = type.includes("mp4") ? "mp4" : "webm";
+
       const outUrl = URL.createObjectURL(blob);
       setExportUrl(outUrl);
       setPhase("ready");
       setExportProgress(1);
       setExportStage("idle");
-      toast.success("Export complete — your download is ready.");
+      toast.success(
+        `Export complete — ${exportExtRef.current.toUpperCase()}${hasAudio ? " with audio" : " (no audio track found)"}.`,
+      );
       try { src.pause(); } catch {}
       if (src.parentNode) src.parentNode.removeChild(src);
       if (audioCtx) { try { await audioCtx.close(); } catch {} }
@@ -677,16 +740,13 @@ function CaptionAiPage() {
       if (audioCtx) { try { await audioCtx.close(); } catch {} }
       if (srcUrl) URL.revokeObjectURL(srcUrl);
     }
-
   };
 
   const downloadExport = () => {
     if (!exportUrl) return;
-    const mp4Supported = MediaRecorder.isTypeSupported("video/mp4");
-    const ext = mp4Supported ? "mp4" : "webm";
     const a = document.createElement("a");
     a.href = exportUrl;
-    a.download = `captioned-video.${ext}`;
+    a.download = `captioned-video.${exportExtRef.current}`;
     document.body.appendChild(a);
     a.click();
     a.remove();
