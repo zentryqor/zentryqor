@@ -1157,10 +1157,46 @@ function CaptionAiPage() {
           </div>
 
           {/* Export settings */}
-          <div className="rounded-2xl border border-border/50 bg-elevated/30 p-4 space-y-3">
-            <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-              Export quality
+          <div className="rounded-2xl border border-border/50 bg-elevated/30 p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                Export settings
+              </div>
+              {estMb && (
+                <div className="text-[11px] tabular-nums text-foreground">
+                  ≈ {estMb < 10 ? estMb.toFixed(1) : Math.round(estMb)} MB
+                </div>
+              )}
             </div>
+
+            <div className="grid grid-cols-3 gap-1.5">
+              {(
+                [
+                  ["Small", "720", 3],
+                  ["Balanced", "1080", 6],
+                  ["Max", "source", 12],
+                ] as const
+              ).map(([label, res, br]) => {
+                const active = qualityScale === res && bitrateMbps === br;
+                return (
+                  <button
+                    key={label}
+                    onClick={() => {
+                      setQualityScale(res);
+                      setBitrateMbps(br);
+                    }}
+                    className={`text-[11px] rounded-xl py-2 border transition ${
+                      active
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border/50 hover:border-border text-muted-foreground"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
             <div>
               <div className="text-[11px] text-muted-foreground mb-1.5">Resolution</div>
               <div className="grid grid-cols-4 gap-1.5">
@@ -1186,7 +1222,7 @@ function CaptionAiPage() {
               </div>
               <input
                 type="range"
-                min={2}
+                min={1}
                 max={16}
                 step={1}
                 value={bitrateMbps}
@@ -1194,10 +1230,17 @@ function CaptionAiPage() {
                 className="w-full accent-[hsl(var(--primary))]"
               />
               <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-                <span>Smaller</span>
-                <span>Clearer</span>
+                <span>Smaller file</span>
+                <span>Sharper text</span>
               </div>
+              {bitrateMbps <= 2 && (
+                <div className="mt-2 text-[10px] text-muted-foreground">
+                  Very low bitrate can soften thin caption outlines. Keep 720p or above for readable text.
+                </div>
+              )}
             </div>
+          </div>
+
           </div>
 
           <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground px-1">
