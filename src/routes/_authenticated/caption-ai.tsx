@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -17,9 +17,10 @@ import {
   pollTranscription,
   type CaptionWord,
 } from "@/lib/caption-ai.functions";
-import { PageShell } from "@/components/PageShell";
+import { AppHeader, AppHeaderLink } from "@/components/AppHeader";
+import { ProfileMenu } from "@/components/ProfileMenu";
 import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
-import { CreditBadge } from "@/components/CreditBadge";
+
 import { useQuery } from "@tanstack/react-query";
 import { getAiCredits } from "@/lib/ai.functions";
 
@@ -752,16 +753,26 @@ function CaptionAiPage() {
     a.remove();
   };
 
+  const estMb =
+    durationSec && durationSec > 0
+      ? ((bitrateMbps + 0.128) * durationSec) / 8
+      : null;
+
   return (
-    <PageShell
-      eyebrow="New"
-      title={
-        <>
-          Caption<span className="text-primary">AI</span>
-        </>
-      }
-      description="Upload a clip up to 60 seconds. Edit transcript & timings, tweak the size, pick from 20+ styles, then export. Generation costs 50 credits."
-    >
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      <AppHeader
+        nav={
+          <>
+            <AppHeaderLink to="/dashboard">Dashboard</AppHeaderLink>
+            <AppHeaderLink to="/assets">Vault</AppHeaderLink>
+            <AppHeaderLink to="/ai">AI Studio</AppHeaderLink>
+            <AppHeaderLink to="/caption-ai" active>CaptionAI</AppHeaderLink>
+          </>
+        }
+        right={<ProfileMenu />}
+      />
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-32">
       <FirstVisitTutorial
         storageKey="tutorial:caption-ai:v1"
         title="CaptionAI"
@@ -772,36 +783,46 @@ function CaptionAiPage() {
         ]}
       />
 
-      {/* Inline credit balance banner */}
-      <div className="mb-5 rounded-2xl border border-primary/30 bg-primary/5 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-primary" />
-          </div>
-          <div>
-            <div className="text-sm font-semibold">
-              {credits ? `${credits.remaining} credits available` : "Loading credits…"}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Caption generation costs <span className="text-foreground font-medium">50 credits</span>
-              {credits ? ` · ${credits.limit}/day on ${credits.isPremium ? "Premium" : "Free"}` : ""}
-            </div>
-          </div>
+      {/* Header band */}
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
+        <div className="min-w-0">
+          <h1 className="text-3xl sm:text-5xl font-semibold tracking-[-0.035em] leading-[1.03]">
+            Caption<span className="text-primary">AI</span>
+          </h1>
+          <p className="mt-3 text-sm text-muted-foreground max-w-xl leading-relaxed">
+            Drop a clip up to 60 seconds, fix the transcript and timings, pick a style,
+            then burn captions in and export.
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <CreditBadge className="!inline-flex" />
+
+        <div className="glass rounded-2xl px-4 py-3 flex items-center gap-4">
+          <div className="flex items-center gap-2.5">
+            <div className="h-9 w-9 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4 text-primary" />
+            </div>
+            <div>
+              <div className="text-sm font-semibold tabular-nums">
+                {credits ? `${credits.remaining} credits` : "Loading…"}
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                50 per generation
+                {credits ? ` · ${credits.limit}/day` : ""}
+              </div>
+            </div>
+          </div>
           {!canAffordGenerate && credits && (
-            <a
-              href="/billing"
+            <Link
+              to="/billing"
               className="text-xs px-3 py-1.5 rounded-full bg-primary text-primary-foreground font-medium hover:opacity-90 transition"
             >
               Get more
-            </a>
+            </Link>
           )}
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_340px] pb-32">
+
         {/* Left column */}
         <div className="space-y-6">
           {!videoUrl ? (
@@ -1136,10 +1157,46 @@ function CaptionAiPage() {
           </div>
 
           {/* Export settings */}
-          <div className="rounded-2xl border border-border/50 bg-elevated/30 p-4 space-y-3">
-            <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
-              Export quality
+          <div className="rounded-2xl border border-border/50 bg-elevated/30 p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+                Export settings
+              </div>
+              {estMb && (
+                <div className="text-[11px] tabular-nums text-foreground">
+                  ≈ {estMb < 10 ? estMb.toFixed(1) : Math.round(estMb)} MB
+                </div>
+              )}
             </div>
+
+            <div className="grid grid-cols-3 gap-1.5">
+              {(
+                [
+                  ["Small", "720", 3],
+                  ["Balanced", "1080", 6],
+                  ["Max", "source", 12],
+                ] as const
+              ).map(([label, res, br]) => {
+                const active = qualityScale === res && bitrateMbps === br;
+                return (
+                  <button
+                    key={label}
+                    onClick={() => {
+                      setQualityScale(res);
+                      setBitrateMbps(br);
+                    }}
+                    className={`text-[11px] rounded-xl py-2 border transition ${
+                      active
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border/50 hover:border-border text-muted-foreground"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
             <div>
               <div className="text-[11px] text-muted-foreground mb-1.5">Resolution</div>
               <div className="grid grid-cols-4 gap-1.5">
@@ -1165,7 +1222,7 @@ function CaptionAiPage() {
               </div>
               <input
                 type="range"
-                min={2}
+                min={1}
                 max={16}
                 step={1}
                 value={bitrateMbps}
@@ -1173,11 +1230,18 @@ function CaptionAiPage() {
                 className="w-full accent-[hsl(var(--primary))]"
               />
               <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-                <span>Smaller</span>
-                <span>Clearer</span>
+                <span>Smaller file</span>
+                <span>Sharper text</span>
               </div>
+              {bitrateMbps <= 2 && (
+                <div className="mt-2 text-[10px] text-muted-foreground">
+                  Very low bitrate can soften thin caption outlines. Keep 720p or above for readable text.
+                </div>
+              )}
             </div>
           </div>
+
+
 
           <div className="text-xs uppercase tracking-[0.22em] text-muted-foreground px-1">
             Caption style
@@ -1204,7 +1268,9 @@ function CaptionAiPage() {
         </aside>
 
       </div>
-    </PageShell>
+      </main>
+    </div>
+
   );
 }
 
