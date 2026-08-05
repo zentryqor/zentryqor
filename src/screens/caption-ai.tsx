@@ -521,6 +521,9 @@ export function CaptionAiScreen() {
     };
   }, [qualityScale]);
 
+  const drawCaptionRef = useRef(drawCaption);
+  drawCaptionRef.current = drawCaption;
+
   useEffect(() => {
     if (!videoUrl) {
       setPreviewDims(null);
@@ -554,7 +557,7 @@ export function CaptionAiScreen() {
       try {
         if (q >= 0.995) {
           ctx.drawImage(v, 0, 0, dims.w, dims.h);
-          drawCaption(ctx, dims.w, dims.h, v.currentTime * 1000);
+          drawCaptionRef.current(ctx, dims.w, dims.h, v.currentTime * 1000);
         } else {
           const scratch = scratchRef.current ?? document.createElement("canvas");
           scratchRef.current = scratch;
@@ -567,7 +570,7 @@ export function CaptionAiScreen() {
           const sctx = scratch.getContext("2d", { alpha: false });
           if (!sctx) return;
           sctx.drawImage(v, 0, 0, sw, sh);
-          drawCaption(sctx, sw, sh, v.currentTime * 1000);
+          drawCaptionRef.current(sctx, sw, sh, v.currentTime * 1000);
           ctx.imageSmoothingEnabled = true;
           ctx.drawImage(scratch, 0, 0, dims.w, dims.h);
         }
@@ -581,7 +584,7 @@ export function CaptionAiScreen() {
       stopped = true;
       cancelAnimationFrame(raf);
     };
-  }, [videoUrl, qualityScale, bitrateMbps, targetDims, drawCaption]);
+  }, [videoUrl, qualityScale, bitrateMbps, targetDims]);
 
 
   // -------- Export via canvas + MediaRecorder --------
