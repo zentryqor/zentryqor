@@ -500,6 +500,90 @@ export function CaptionAiScreen() {
     });
   };
 
+  // -------- Live export preview (target resolution + bitrate simulation) --------
+  const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const scratchRef = useRef<HTMLCanvasElement | null>(null);
+  const [previewDims, setPreviewDims] = useState<{ w: number; h: number } | null>(null);
+
+  const targetDims = useCallback(() => {
+    const v = videoRef.current;
+    const srcW = v?.videoWidth ?? 0;
+    const srcH = v?.videoHeight ?? 0;
+    if (!srcW || !srcH) return null;
+    let targetH = srcH;
+    if (qualityScale === "1080") targetH = Math.min(srcH, 1080);
+    else if (qualityScale === "720") targetH = Math.min(srcH, 720);
+    else if (qualityScale === "480") targetH = Math.min(srcH, 480);
+    const scale = targetH / srcH;
+    return {
+      w: Math.max(2, Math.round((srcW * scale) / 2) * 2),
+      h: Math.max(2, Math.round((srcH * scale) / 2) * 2),
+    };
+  }, [qualityScale]);
+
+  useEffect(() => {
+    if (!videoUrl) {
+      setPreviewDims(null);
+      return;
+    }
+    let raf = 0;
+    let stopped = false;
+
+    const paint = () => {
+      if (stopped) return;
+      raf = requestAnimationFrame(paint);
+      const v = videoRef.current;
+      const canvas = previewCanvasRef.current;
+      if (!v || !canvas || !v.videoWidth) return;
+      const dims = targetDims();
+      if (!dims) return;
+
+      if (canvas.width !== dims.w || canvas.height !== dims.h) {
+        canvas.width = dims.w;
+        canvas.height = dims.h;
+        setPreviewDims(dims);
+      }
+      const ctx = canvas.getContext("2d", { alpha: false });
+      if (!ctx) return;
+
+      // Approximate encoder softness at the chosen bitrate: bits-per-pixel-per-frame
+      // below ~0.1 starts visibly degrading thin caption outlines.
+      const bpp = (bitrateMbps * 1_000_000) / (dims.w * dims.h * 30);
+      const q = Math.max(0.4, Math.min(1, Math.sqrt(bpp / 0.1)));
+
+      try {
+        if (q >= 0.995) {
+          ctx.drawImage(v, 0, 0, dims.w, dims.h);
+          drawCaption(ctx, dims.w, dims.h, v.currentTime * 1000);
+        } else {
+          const scratch = scratchRef.current ?? document.createElement("canvas");
+          scratchRef.current = scratch;
+          const sw = Math.max(2, Math.round(dims.w * q));
+          const sh = Math.max(2, Math.round(dims.h * q));
+          if (scratch.width !== sw || scratch.height !== sh) {
+            scratch.width = sw;
+            scratch.height = sh;
+          }
+          const sctx = scratch.getContext("2d", { alpha: false });
+          if (!sctx) return;
+          sctx.drawImage(v, 0, 0, sw, sh);
+          drawCaption(sctx, sw, sh, v.currentTime * 1000);
+          ctx.imageSmoothingEnabled = true;
+          ctx.drawImage(scratch, 0, 0, dims.w, dims.h);
+        }
+      } catch {
+        /* frame not decodable yet */
+      }
+    };
+
+    raf = requestAnimationFrame(paint);
+    return () => {
+      stopped = true;
+      cancelAnimationFrame(raf);
+    };
+  }, [videoUrl, qualityScale, bitrateMbps, targetDims, drawCaption]);
+
+
   // -------- Export via canvas + MediaRecorder --------
   const exportExtRef = useRef<string>("mp4");
 
