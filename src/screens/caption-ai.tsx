@@ -987,6 +987,37 @@ export function CaptionAiScreen() {
           )}
 
           {videoUrl && (
+            <div className="rounded-3xl border border-border/50 bg-elevated/30 p-5">
+              <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+                <div>
+                  <div className="text-sm font-semibold">Export preview</div>
+                  <div className="text-xs text-muted-foreground">
+                    Exactly what gets burned in, rendered at your export resolution with the
+                    softening your bitrate introduces. Play the clip to check readability.
+                  </div>
+                </div>
+                <div className="text-[11px] text-muted-foreground tabular-nums">
+                  {previewDims ? `${previewDims.w}×${previewDims.h}` : "—"} · {bitrateMbps} Mbps
+                  {estMb ? ` · ≈ ${estMb < 10 ? estMb.toFixed(1) : Math.round(estMb)} MB` : ""}
+                </div>
+              </div>
+              <div className="relative rounded-2xl overflow-hidden bg-black" style={{ aspectRatio: previewDims ? `${previewDims.w} / ${previewDims.h}` : "16 / 9" }}>
+                <canvas
+                  ref={previewCanvasRef}
+                  className="absolute inset-0 w-full h-full object-contain"
+                />
+                {words.length === 0 && (
+                  <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
+                    Generate captions to preview the burned-in text.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+
+
+          {videoUrl && (
             <div className="rounded-3xl border border-border/50 bg-elevated/30 p-5 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
               <button
                 onClick={generateCaptions}
