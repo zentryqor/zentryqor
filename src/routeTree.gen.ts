@@ -29,6 +29,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as TemplatesSlugRouteImport } from './routes/templates.$slug'
 import { Route as GuidesUgcEssentialsRouteImport } from './routes/guides/ugc-essentials'
 import { Route as GalleryIdRouteImport } from './routes/gallery.$id'
+import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSavedRouteImport } from './routes/_authenticated/saved'
 import { Route as AuthenticatedReferRouteImport } from './routes/_authenticated/refer'
@@ -167,6 +168,11 @@ const GalleryIdRoute = GalleryIdRouteImport.update({
   id: '/$id',
   path: '/$id',
   getParentRoute: () => GalleryRoute,
+} as any)
+const AuthenticatedStudioRoute = AuthenticatedStudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
@@ -414,6 +420,7 @@ export interface FileRoutesByFullPath {
   '/refer': typeof AuthenticatedReferRoute
   '/saved': typeof AuthenticatedSavedRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/studio': typeof AuthenticatedStudioRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/templates/$slug': typeof TemplatesSlugRoute
@@ -473,6 +480,7 @@ export interface FileRoutesByTo {
   '/refer': typeof AuthenticatedReferRoute
   '/saved': typeof AuthenticatedSavedRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/studio': typeof AuthenticatedStudioRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/templates/$slug': typeof TemplatesSlugRoute
@@ -535,6 +543,7 @@ export interface FileRoutesById {
   '/_authenticated/refer': typeof AuthenticatedReferRoute
   '/_authenticated/saved': typeof AuthenticatedSavedRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/studio': typeof AuthenticatedStudioRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
   '/templates/$slug': typeof TemplatesSlugRoute
@@ -597,6 +606,7 @@ export interface FileRouteTypes {
     | '/refer'
     | '/saved'
     | '/settings'
+    | '/studio'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
     | '/templates/$slug'
@@ -656,6 +666,7 @@ export interface FileRouteTypes {
     | '/refer'
     | '/saved'
     | '/settings'
+    | '/studio'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
     | '/templates/$slug'
@@ -717,6 +728,7 @@ export interface FileRouteTypes {
     | '/_authenticated/refer'
     | '/_authenticated/saved'
     | '/_authenticated/settings'
+    | '/_authenticated/studio'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
     | '/templates/$slug'
@@ -918,6 +930,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/gallery/$id'
       preLoaderRoute: typeof GalleryIdRouteImport
       parentRoute: typeof GalleryRoute
+    }
+    '/_authenticated/studio': {
+      id: '/_authenticated/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof AuthenticatedStudioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
@@ -1244,6 +1263,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReferRoute: typeof AuthenticatedReferRoute
   AuthenticatedSavedRoute: typeof AuthenticatedSavedRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
   AuthenticatedAssetsIdRoute: typeof AuthenticatedAssetsIdRoute
   AuthenticatedAssetsIndexRoute: typeof AuthenticatedAssetsIndexRoute
 }
@@ -1266,6 +1286,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReferRoute: AuthenticatedReferRoute,
   AuthenticatedSavedRoute: AuthenticatedSavedRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedStudioRoute: AuthenticatedStudioRoute,
   AuthenticatedAssetsIdRoute: AuthenticatedAssetsIdRoute,
   AuthenticatedAssetsIndexRoute: AuthenticatedAssetsIndexRoute,
 }
