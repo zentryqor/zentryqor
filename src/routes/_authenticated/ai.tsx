@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { z } from "zod";
 import { AiStudioScreen } from "@/screens/ai-studio";
 
 export const Route = createFileRoute("/_authenticated/ai")({

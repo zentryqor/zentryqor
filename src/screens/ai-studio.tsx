@@ -1,9 +1,8 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { z } from "zod";
 import {
   ArrowUpRight,
   BookOpen,
@@ -170,7 +169,7 @@ const TOOLS: Tool[] = [
 type AspectRatio = "16:9" | "9:16" | "4:3" | "3:4";
 
 export function AiStudioScreen() {
-  const { tool: toolParam, prompt: promptParam } = Route.useSearch() as { tool?: string; prompt?: string };
+  const { tool: toolParam, prompt: promptParam } = useSearch({ strict: false }) as { tool?: string; prompt?: string };
   const navigate = useNavigate();
   const [activeId, setActiveId] = useState<ToolId | null>(null);
   const [input, setInput] = useState("");
