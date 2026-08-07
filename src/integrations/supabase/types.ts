@@ -388,39 +388,6 @@ export type Database = {
         }
         Relationships: []
       }
-      credit_purchases: {
-        Row: {
-          amount_cents: number | null
-          created_at: string
-          credits: number
-          currency: string | null
-          environment: string
-          id: string
-          paddle_transaction_id: string
-          user_id: string
-        }
-        Insert: {
-          amount_cents?: number | null
-          created_at?: string
-          credits: number
-          currency?: string | null
-          environment?: string
-          id?: string
-          paddle_transaction_id: string
-          user_id: string
-        }
-        Update: {
-          amount_cents?: number | null
-          created_at?: string
-          credits?: number
-          currency?: string | null
-          environment?: string
-          id?: string
-          paddle_transaction_id?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       gallery_items: {
         Row: {
           created_at: string
@@ -1274,10 +1241,6 @@ export type Database = {
         Returns: {
           display_name: string
         }[]
-      }
-      grant_bonus_credits: {
-        Args: { _amount: number; _user_id: string }
-        Returns: number
       }
       has_active_subscription: {
         Args: { check_env?: string; user_uuid: string }

@@ -1,12 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { ArrowLeft, Check, Sparkles, Loader2, Zap, Minus, Plus } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, Check, Sparkles, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { usePaddleCheckout } from "@/hooks/use-paddle-checkout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
-import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/billing")({
   head: () => ({ meta: [{ title: "Upgrade — Zentry Qor" }] }),
@@ -23,32 +22,11 @@ const PERKS = [
   "Cancel anytime",
 ];
 
-const CREDITS_PER_PACK = 50;
-const PACK_PRICE = 0.99;
-
 function Billing() {
   const { user } = useAuth();
   const { isPremium, isPastDue, isCanceling, subscription } = useSubscription(user?.id);
   const { openCheckout, loading } = usePaddleCheckout();
   const [interval, setInterval] = useState<"month" | "year">("month");
-  const [packs, setPacks] = useState(1);
-  const [bonusCredits, setBonusCredits] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (!user?.id) return;
-    let cancelled = false;
-    supabase
-      .from("profiles")
-      .select("bonus_credits")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!cancelled) setBonusCredits(data?.bonus_credits ?? 0);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
 
   const priceId =
     interval === "month" ? "premium_monthly" : "premium_annual";
@@ -63,17 +41,6 @@ function Billing() {
       customerEmail: user.email ?? undefined,
       customData: { userId: user.id },
       successUrl: `${window.location.origin}/dashboard?checkout=success`,
-    });
-  }
-
-  function handleBuyCredits() {
-    if (!user) return;
-    openCheckout({
-      priceId: "credits_50",
-      quantity: packs,
-      customerEmail: user.email ?? undefined,
-      customData: { userId: user.id },
-      successUrl: `${window.location.origin}/billing?credits=success`,
     });
   }
 
@@ -221,92 +188,7 @@ function Billing() {
             )}
           </div>
         </div>
-
-        {/* Credit packs — no subscription needed */}
-        <div className="mt-8 rounded-3xl p-7 glass-strong border border-border">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="text-xs uppercase tracking-[0.22em] text-accent mb-2 flex items-center gap-1.5">
-                <Zap className="h-3 w-3 icon-fx" /> Credit packs
-              </div>
-              <h2 className="text-xl font-semibold tracking-[-0.02em]">
-                Just need credits? Buy them one-off.
-              </h2>
-              <p className="mt-1.5 text-sm text-muted-foreground">
-                No subscription required — {CREDITS_PER_PACK} AI credits for $
-                {PACK_PRICE.toFixed(2)}. Credits never expire.
-              </p>
-            </div>
-            {bonusCredits !== null && (
-              <div className="shrink-0 text-right">
-                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Balance
-                </div>
-                <div className="text-lg font-semibold">{bonusCredits}</div>
-              </div>
-            )}
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-1 rounded-full glass p-1">
-              <button
-                type="button"
-                aria-label="Fewer packs"
-                onClick={() => setPacks((p) => Math.max(1, p - 1))}
-                className="h-9 w-9 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
-              >
-                <Minus className="h-4 w-4" />
-              </button>
-              <div className="min-w-[104px] text-center text-sm font-medium">
-                {packs * CREDITS_PER_PACK} credits
-              </div>
-              <button
-                type="button"
-                aria-label="More packs"
-                onClick={() => setPacks((p) => Math.min(100, p + 1))}
-                className="h-9 w-9 rounded-full inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
-
-            <div className="flex gap-2">
-              {[1, 5, 10, 20].map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => setPacks(n)}
-                  className={`h-9 px-3 rounded-full text-xs font-medium transition-colors ${
-                    packs === n
-                      ? "bg-primary/25 text-accent"
-                      : "glass text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {n * CREDITS_PER_PACK}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <button
-            onClick={handleBuyCredits}
-            disabled={loading}
-            className="mt-6 w-full h-12 rounded-xl bg-foreground text-background text-sm font-medium magnetic glow-primary disabled:opacity-60 inline-flex items-center justify-center gap-2"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" /> Opening checkout…
-              </>
-            ) : (
-              `Buy ${packs * CREDITS_PER_PACK} credits — $${(packs * PACK_PRICE).toFixed(2)}`
-            )}
-          </button>
-          <p className="mt-3 text-[11px] text-muted-foreground text-center">
-            One-time purchase. Credits are added to your balance right after payment.
-          </p>
-        </div>
       </div>
-
     </div>
   );
 }
