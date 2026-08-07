@@ -78,7 +78,7 @@ function AnalyticsPage() {
       <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 pt-28 pb-40">
         <Link
           to="/poster/youtube"
-          search={accountId ? { accountId } : undefined}
+          search={{ accountId: accountId || undefined }}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-6"
         >
           <ArrowLeft className="w-4 h-4" /> Back to channel
