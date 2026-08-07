@@ -17,20 +17,10 @@ export function WorkspaceDock() {
       search: state.location.search as { screen?: string },
     }),
   });
-  const currentScreen =
-    pathname === "/studio"
-      ? search.screen ?? "dashboard"
-      : pathname === "/dashboard"
-        ? "dashboard"
-        : pathname === "/ai"
-          ? "ai"
-          : pathname === "/caption-ai"
-            ? "caption-ai"
-            : pathname.startsWith("/poster")
-              ? "poster"
-              : pathname.startsWith("/assets")
-                ? "assets"
-                : null;
+  // The dock is only shown on the combined workspace page.
+  if (pathname !== "/studio") return null;
+
+  const currentScreen = search.screen ?? "dashboard";
 
   return (
     <nav

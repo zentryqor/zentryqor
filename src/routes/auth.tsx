@@ -9,14 +9,16 @@ import { Loader2, Eye, EyeOff, Gift, Sparkles } from "lucide-react";
 import authLogo from "@/assets/zentry-auth-logo.png.asset.json";
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
-    ref: typeof search.ref === "string" ? search.ref : undefined,
-    invited:
-      search.invited === 1 || search.invited === "1" || search.invited === true
-        ? 1
-        : undefined,
-  }),
+  validateSearch: (
+    search?: Record<string, unknown>,
+  ): { redirect?: string; ref?: string; invited?: 1 } => {
+    const s = search ?? {};
+    return {
+      redirect: typeof s.redirect === "string" ? s.redirect : undefined,
+      ref: typeof s.ref === "string" ? s.ref : undefined,
+      invited: s.invited === 1 || s.invited === "1" || s.invited === true ? 1 : undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Log in — Zentry Qor" },

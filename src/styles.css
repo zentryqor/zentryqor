@@ -1051,3 +1051,243 @@ html {
     inset 0px -4px 1px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent),
     0px 3px 6px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent);
 }
+
+/* ============ Liquid Glass sliders (range inputs + radix slider) ============ */
+.liquid-slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 26px;
+  touch-action: none;
+  user-select: none;
+}
+.liquid-slider__track {
+  position: relative;
+  height: 10px;
+  width: 100%;
+  flex-grow: 1;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.5),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.08),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+.liquid-slider__range {
+  position: absolute;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, hsl(var(--primary)) 65%, transparent),
+    hsl(var(--primary))
+  );
+  box-shadow:
+    0 0 14px color-mix(in oklab, hsl(var(--primary)) 45%, transparent),
+    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+.liquid-slider__thumb {
+  display: block;
+  height: 20px;
+  width: 20px;
+  border-radius: 999px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(226, 232, 240, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.45),
+    0 0 0 4px color-mix(in oklab, hsl(var(--primary)) 18%, transparent),
+    inset 0 2px 3px rgba(255, 255, 255, 0.9),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.12);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease;
+  outline: none;
+}
+.liquid-slider__thumb:hover {
+  transform: scale(1.08);
+}
+.liquid-slider__thumb:active {
+  transform: scale(0.94);
+}
+.liquid-slider[data-disabled] {
+  opacity: 0.5;
+}
+
+/* Native range inputs get the same liquid glass treatment */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 26px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"]:focus {
+  outline: none;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.5),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.08);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  margin-top: -6px;
+  border-radius: 999px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(226, 232, 240, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.45),
+    0 0 0 4px color-mix(in oklab, hsl(var(--primary)) 18%, transparent),
+    inset 0 2px 3px rgba(255, 255, 255, 0.9);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.08);
+}
+input[type="range"]::-moz-range-track {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+input[type="range"]::-moz-range-progress {
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, hsl(var(--primary)) 65%, transparent),
+    hsl(var(--primary))
+  );
+}
+input[type="range"]::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 999px;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(226, 232, 240, 0.85));
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+input[type="range"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============ Liquid Glass toggle switch (radix Switch) ============ */
+.liquid-switch {
+  --lqs-w: 2.75em;
+  --lqs-h: 1.5em;
+  --lqs-knob: 1.2em;
+  --lqs-offset: 3px;
+  --lqs-hue: 265;
+  --lqs-sat: 85%;
+  --lqs-light: 62%;
+
+  font-size: 15px;
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--lqs-w);
+  height: var(--lqs-h);
+  border-radius: var(--lqs-h);
+  cursor: pointer;
+  outline: none;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+.liquid-switch:focus-visible {
+  outline: 2px solid hsl(var(--lqs-hue), var(--lqs-sat), var(--lqs-light));
+  outline-offset: 3px;
+}
+.liquid-switch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(30%);
+}
+.liquid-switch__track {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  background: linear-gradient(135deg, #3a3a3a, #2a2a2a);
+  transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.05),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+}
+.liquid-switch__track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.15) 100%
+  );
+}
+.liquid-switch__glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  background: hsl(var(--lqs-hue), var(--lqs-sat), var(--lqs-light));
+  opacity: 0;
+  transition: all 0.5s ease;
+}
+.liquid-switch__thumb {
+  position: absolute;
+  top: 50%;
+  left: var(--lqs-offset);
+  z-index: 2;
+  display: block;
+  width: var(--lqs-knob);
+  height: var(--lqs-knob);
+  border-radius: 999px;
+  background: linear-gradient(145deg, #f5f5f5, #e0e0e0);
+  transform: translateY(-50%);
+  pointer-events: none;
+  transition:
+    left 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+    background 0.4s ease,
+    box-shadow 0.4s ease;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.25),
+    inset 0 2px 4px rgba(255, 255, 255, 0.8),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.08);
+}
+.liquid-switch[data-state="checked"] .liquid-switch__track {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--lqs-hue), var(--lqs-sat), calc(var(--lqs-light) + 12%)),
+    hsl(var(--lqs-hue), var(--lqs-sat), var(--lqs-light))
+  );
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.35),
+    0 2px 10px hsla(var(--lqs-hue), var(--lqs-sat), var(--lqs-light), 0.4),
+    0 0 24px hsla(var(--lqs-hue), var(--lqs-sat), var(--lqs-light), 0.2);
+}
+.liquid-switch[data-state="checked"] .liquid-switch__glow {
+  width: 100%;
+  height: 100%;
+  opacity: 0.35;
+}
+.liquid-switch[data-state="checked"] .liquid-switch__thumb {
+  left: calc(100% - var(--lqs-knob) - var(--lqs-offset));
+  background: linear-gradient(145deg, #ffffff, #f5f5f5);
+}
