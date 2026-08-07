@@ -82,6 +82,52 @@ async function handleSubscriptionCanceled(data: any, env: PaddleEnv) {
     .eq("environment", env);
 }
 
+const CREDITS_PER_PACK = 50;
+const CREDIT_PACK_PRICE_ID = "credits_50";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function handleTransactionCompleted(data: any, env: PaddleEnv) {
+  const userId = data?.customData?.userId;
+  if (!userId) return;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const packItems = (data?.items ?? []).filter(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (i: any) => i?.price?.importMeta?.externalId === CREDIT_PACK_PRICE_ID,
+  );
+  if (!packItems.length) return;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const packs = packItems.reduce((n: number, i: any) => n + (Number(i?.quantity) || 1), 0);
+  const credits = packs * CREDITS_PER_PACK;
+  const supabase = getSupabase();
+
+  // Idempotency: one grant per transaction.
+  const { error: insertError } = await supabase.from("credit_purchases").insert({
+    user_id: userId,
+    paddle_transaction_id: data.id,
+    credits,
+    amount_cents: data?.details?.totals?.total ? Number(data.details.totals.total) : null,
+    currency: data?.currencyCode ?? null,
+    environment: env,
+  });
+
+  if (insertError) {
+    // Duplicate transaction — already granted.
+    if (insertError.code === "23505" || insertError.code === "23514") return;
+    if (insertError.message?.includes("duplicate key")) return;
+    console.error("[paddle] credit purchase insert failed:", insertError.message);
+    return;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error: grantError } = await (supabase as any).rpc("grant_bonus_credits", {
+    _user_id: userId,
+    _amount: credits,
+  });
+  if (grantError) console.error("[paddle] grant_bonus_credits failed:", grantError.message);
+}
+
 async function handleWebhook(req: Request, env: PaddleEnv) {
   const event = await verifyWebhook(req, env);
 
@@ -97,6 +143,10 @@ async function handleWebhook(req: Request, env: PaddleEnv) {
     case EventName.SubscriptionCanceled:
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await handleSubscriptionCanceled(event.data as any, env);
+      break;
+    case EventName.TransactionCompleted:
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await handleTransactionCompleted(event.data as any, env);
       break;
     default:
       console.log("[paddle] unhandled event:", event.eventType);
