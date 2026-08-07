@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { ArrowLeft, Check, Sparkles, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Check, Sparkles, Loader2, Zap, Minus, Plus } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { usePaddleCheckout } from "@/hooks/use-paddle-checkout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/billing")({
   head: () => ({ meta: [{ title: "Upgrade — Zentry Qor" }] }),
@@ -22,11 +23,32 @@ const PERKS = [
   "Cancel anytime",
 ];
 
+const CREDITS_PER_PACK = 50;
+const PACK_PRICE = 0.99;
+
 function Billing() {
   const { user } = useAuth();
   const { isPremium, isPastDue, isCanceling, subscription } = useSubscription(user?.id);
   const { openCheckout, loading } = usePaddleCheckout();
   const [interval, setInterval] = useState<"month" | "year">("month");
+  const [packs, setPacks] = useState(1);
+  const [bonusCredits, setBonusCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    supabase
+      .from("profiles")
+      .select("bonus_credits")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setBonusCredits(data?.bonus_credits ?? 0);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   const priceId =
     interval === "month" ? "premium_monthly" : "premium_annual";
@@ -41,6 +63,17 @@ function Billing() {
       customerEmail: user.email ?? undefined,
       customData: { userId: user.id },
       successUrl: `${window.location.origin}/dashboard?checkout=success`,
+    });
+  }
+
+  function handleBuyCredits() {
+    if (!user) return;
+    openCheckout({
+      priceId: "credits_50",
+      quantity: packs,
+      customerEmail: user.email ?? undefined,
+      customData: { userId: user.id },
+      successUrl: `${window.location.origin}/billing?credits=success`,
     });
   }
 
