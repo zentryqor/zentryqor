@@ -1252,7 +1252,8 @@ export function CaptionAiScreen() {
               step={0.05}
               value={sizeMult}
               onChange={(e) => setSizeMult(parseFloat(e.target.value))}
-              className="w-full accent-[hsl(var(--primary))]"
+              style={{ ["--zq-range-progress" as string]: `${((sizeMult - 0.5) / 1.5) * 100}%` }}
+              className="w-full"
             />
             <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
               <span>Small</span>
@@ -1332,7 +1333,8 @@ export function CaptionAiScreen() {
                 step={1}
                 value={bitrateMbps}
                 onChange={(e) => setBitrateMbps(parseInt(e.target.value, 10))}
-                className="w-full accent-[hsl(var(--primary))]"
+                style={{ ["--zq-range-progress" as string]: `${((bitrateMbps - 1) / 15) * 100}%` }}
+                className="w-full"
               />
               <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                 <span>Smaller file</span>

@@ -102,7 +102,8 @@ export function Hero() {
               {user ? (
                 <MagneticButton
                   as={Link as any}
-                  to="/dashboard"
+                  to="/studio"
+                  search={{ screen: "dashboard" as const }}
                   className="btn-donate group inline-flex items-center justify-center gap-2 w-full sm:w-auto"
                 >
                   Browse dashboard

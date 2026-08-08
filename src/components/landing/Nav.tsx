@@ -117,7 +117,8 @@ function ProfilePopover({ initial, email }: { initial: string; email: string }) 
         </div>
         <div className="border-t border-white/10 mt-2 pt-2">
           <Link
-            to="/dashboard"
+            to="/studio"
+            search={{ screen: "dashboard" as const }}
             className="flex items-center justify-center rounded-xl px-3 py-2 text-sm font-semibold bg-gradient-to-r from-primary/20 to-accent/20 hover:from-primary/30 hover:to-accent/30 transition"
           >
             Go to dashboard

@@ -36,7 +36,8 @@ export function CtaFooter() {
             {user ? (
               <MagneticButton
                 as={Link as any}
-                to="/dashboard"
+                to="/studio"
+                search={{ screen: "dashboard" as const }}
                 className="group inline-flex items-center gap-2 h-12 px-6 rounded-xl bg-foreground text-background text-sm font-semibold glow-primary"
               >
                 Browse dashboard
