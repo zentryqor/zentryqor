@@ -30,7 +30,9 @@ import {
 } from "@/lib/social.functions";
 
 export const Route = createFileRoute("/_authenticated/poster/youtube")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { accountId?: string } => ({
     accountId:
       typeof search.accountId === "string" ? search.accountId : undefined,
   }),
