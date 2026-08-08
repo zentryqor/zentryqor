@@ -27,6 +27,19 @@ function Billing() {
   const { isPremium, isPastDue, isCanceling, subscription } = useSubscription(user?.id);
   const { openCheckout, loading } = usePaddleCheckout();
   const [interval, setInterval] = useState<"month" | "year">("month");
+  const [packs, setPacks] = useState(1);
+
+  function handleBuyCredits() {
+    if (!user) return;
+    openCheckout({
+      priceId: "credit_pack_50",
+      quantity: packs,
+      customerEmail: user.email ?? undefined,
+      customData: { userId: user.id },
+      successUrl: `${window.location.origin}/billing?credits=success`,
+    });
+  }
+
 
   const priceId =
     interval === "month" ? "premium_monthly" : "premium_annual";
