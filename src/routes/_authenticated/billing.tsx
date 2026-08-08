@@ -188,7 +188,80 @@ function Billing() {
             )}
           </div>
         </div>
+
+        {/* Credit packs — no subscription required */}
+        <div className="mt-10 rounded-3xl border border-border bg-surface/60 p-6">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight">
+                Just need credits?
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Buy a one-time top-up — no subscription. 50 credits for $0.99.
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-3xl font-semibold tabular-nums text-gradient-brand">
+                {packs * 50}
+              </div>
+              <div className="text-xs text-muted-foreground">credits</div>
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+              <span>Packs of 50</span>
+              <span className="tabular-nums text-foreground">
+                {packs} × $0.99 = ${(packs * 0.99).toFixed(2)}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={40}
+              step={1}
+              value={packs}
+              onChange={(e) => setPacks(parseInt(e.target.value, 10))}
+              style={{ ["--zq-range-progress" as string]: `${((packs - 1) / 39) * 100}%` }}
+              className="w-full"
+              aria-label="Number of 50-credit packs"
+            />
+            <div className="mt-3 flex gap-1.5 flex-wrap">
+              {[1, 5, 10, 20].map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPacks(p)}
+                  className={`text-[11px] rounded-full px-3 py-1.5 border transition ${
+                    packs === p
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border/50 text-muted-foreground hover:border-border"
+                  }`}
+                >
+                  {p * 50} cr
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button
+            onClick={handleBuyCredits}
+            disabled={loading}
+            className="mt-6 w-full h-12 rounded-xl bg-foreground text-background text-sm font-medium magnetic disabled:opacity-60 inline-flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Opening checkout…
+              </>
+            ) : (
+              `Buy ${packs * 50} credits — $${(packs * 0.99).toFixed(2)}`
+            )}
+          </button>
+          <p className="mt-2 text-[11px] text-muted-foreground text-center">
+            Credits never expire and stack on top of your daily allowance.
+          </p>
+        </div>
       </div>
+
     </div>
   );
 }
