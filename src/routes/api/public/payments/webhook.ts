@@ -82,6 +82,45 @@ async function handleSubscriptionCanceled(data: any, env: PaddleEnv) {
     .eq("environment", env);
 }
 
+// One-time AI credit pack purchases: 50 credits per unit.
+const CREDIT_PACK_PRICES: Record<string, number> = { credit_pack_50: 50 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function handleTransactionCompleted(data: any, env: PaddleEnv) {
+  const userId = data?.customData?.userId;
+  if (!userId) return;
+
+  let credits = 0;
+  for (const item of data?.items ?? []) {
+    const externalId = item?.price?.importMeta?.externalId as string | undefined;
+    const perUnit = externalId ? CREDIT_PACK_PRICES[externalId] : undefined;
+    if (perUnit) credits += perUnit * (item?.quantity ?? 1);
+  }
+  if (credits <= 0) return;
+
+  const supabase = getSupabase();
+
+  // Idempotency: unique paddle_transaction_id means a replayed webhook is a no-op.
+  const { error: insertError } = await supabase.from("credit_purchases").insert({
+    user_id: userId,
+    paddle_transaction_id: data.id,
+    credits,
+    amount_cents: data?.details?.totals?.total ? Number(data.details.totals.total) : null,
+    currency: data?.currencyCode ?? null,
+    environment: env,
+  });
+  if (insertError) {
+    console.log("[paddle] credit purchase already recorded or failed:", insertError.message);
+    return;
+  }
+
+  const { error } = await supabase.rpc("grant_bonus_credits", {
+    _user_id: userId,
+    _amount: credits,
+  });
+  if (error) console.error("[paddle] grant_bonus_credits failed:", error.message);
+}
+
 async function handleWebhook(req: Request, env: PaddleEnv) {
   const event = await verifyWebhook(req, env);
 
@@ -97,6 +136,10 @@ async function handleWebhook(req: Request, env: PaddleEnv) {
     case EventName.SubscriptionCanceled:
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await handleSubscriptionCanceled(event.data as any, env);
+      break;
+    case EventName.TransactionCompleted:
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await handleTransactionCompleted(event.data as any, env);
       break;
     default:
       console.log("[paddle] unhandled event:", event.eventType);

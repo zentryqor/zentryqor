@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 type CheckoutOptions = {
   priceId: string;
+  quantity?: number;
   customerEmail?: string;
   customData?: Record<string, string>;
   successUrl?: string;
@@ -19,7 +20,7 @@ export function usePaddleCheckout() {
       const paddlePriceId = await getPaddlePriceId(options.priceId);
 
       window.Paddle.Checkout.open({
-        items: [{ priceId: paddlePriceId, quantity: 1 }],
+        items: [{ priceId: paddlePriceId, quantity: options.quantity ?? 1 }],
         customer: options.customerEmail ? { email: options.customerEmail } : undefined,
         customData: options.customData,
         settings: {
