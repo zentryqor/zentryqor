@@ -52,6 +52,10 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [awaitingCode, setAwaitingCode] = useState(false);
+  const [code, setCode] = useState("");
+  const [resending, setResending] = useState(false);
+
   const [inviterName, setInviterName] = useState<string | null>(null);
 
   const navigate = useNavigate();
