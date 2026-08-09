@@ -4,7 +4,13 @@ import { z } from "zod";
 const signInSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(255),
   password: z.string().min(1).max(128),
+  code: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/)
+    .optional(),
 });
+
 
 const LOCKOUT_LIMIT = 5;
 const LOCKOUT_MINUTES = 15;
