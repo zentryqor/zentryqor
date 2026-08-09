@@ -29,7 +29,7 @@ export const Route = createFileRoute("/api/public/auth/signin")({
         if (!parsed.success) {
           return jsonError(400, "Please enter a valid email and password.");
         }
-        const { email, password } = parsed.data;
+        const { email, password, code } = parsed.data;
 
         const { supabaseAdmin } = await import(
           "@/integrations/supabase/client.server"
