@@ -4,7 +4,13 @@ import { z } from "zod";
 const signInSchema = z.object({
   email: z.string().trim().toLowerCase().email().max(255),
   password: z.string().min(1).max(128),
+  code: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/)
+    .optional(),
 });
+
 
 const LOCKOUT_LIMIT = 5;
 const LOCKOUT_MINUTES = 15;
@@ -23,7 +29,7 @@ export const Route = createFileRoute("/api/public/auth/signin")({
         if (!parsed.success) {
           return jsonError(400, "Please enter a valid email and password.");
         }
-        const { email, password } = parsed.data;
+        const { email, password, code } = parsed.data;
 
         const { supabaseAdmin } = await import(
           "@/integrations/supabase/client.server"
@@ -103,6 +109,28 @@ export const Route = createFileRoute("/api/public/auth/signin")({
 
         // Success — clear failures
         await supabaseAdmin.rpc("clear_signin_failures", { _email: email });
+
+        const { sendEmailOtp, verifyEmailOtp } = await import(
+          "@/lib/email-otp.server"
+        );
+
+        // Credentials are valid — require an emailed 6-digit code before
+        // handing back a session.
+        if (!code) {
+          try {
+            await sendEmailOtp(email, "signin");
+          } catch (e) {
+            return jsonError(
+              502,
+              e instanceof Error ? e.message : "Could not send the code.",
+            );
+          }
+          return Response.json({ verification_required: true, email });
+        }
+
+        const otpError = await verifyEmailOtp(email, "signin", code);
+        if (otpError) return jsonError(401, otpError);
+
 
         return Response.json({
           access_token: signIn.session.access_token,
