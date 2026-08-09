@@ -280,7 +280,71 @@ function AuthPage() {
             </div>
           )}
 
+          {awaitingCode ? (
+            <form onSubmit={handleVerify} className="space-y-4 animate-enter">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                <div className="text-sm font-semibold">Check your inbox</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  We emailed a 6-digit verification code to{" "}
+                  <span className="text-foreground">{email}</span>. It expires in
+                  10 minutes.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] uppercase tracking-widest text-muted-foreground ml-1 font-bold">
+                  Verification code
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  autoFocus
+                  placeholder="000000"
+                  value={code}
+                  onChange={(e) =>
+                    setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  required
+                  className="w-full bg-white/[0.03] border border-white/10 rounded-2xl py-4 px-5 text-center text-2xl font-bold tracking-[0.4em] text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 focus:ring-foreground/30 transition-all"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || code.length !== 6}
+                className="relative w-full mt-2 bg-foreground text-background py-4 rounded-2xl font-bold text-sm uppercase tracking-wider disabled:opacity-60 disabled:cursor-not-allowed hover:bg-foreground/90 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+              >
+                {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+                Verify & continue
+              </button>
+
+              <div className="flex items-center justify-between text-xs">
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resending || loading}
+                  className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                >
+                  {resending ? "Sending…" : "Resend code"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAwaitingCode(false);
+                    setCode("");
+                    setFormError(null);
+                  }}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Use a different email
+                </button>
+              </div>
+            </form>
+          ) : (
+          <>
           <form onSubmit={handleEmail} className="space-y-4">
+
             <div
               className={`transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${
                 isSignin ? "max-h-0 opacity-0" : "max-h-32 opacity-100"
