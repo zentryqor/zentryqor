@@ -5,7 +5,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { usePaddleCheckout } from "@/hooks/use-paddle-checkout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
+import { PurchaseConfirmation } from "@/components/PurchaseConfirmation";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
+
 
 export const Route = createFileRoute("/_authenticated/billing")({
   head: () => ({ meta: [{ title: "Upgrade — Zentry Qor" }] }),
