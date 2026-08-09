@@ -110,6 +110,28 @@ export const Route = createFileRoute("/api/public/auth/signin")({
         // Success — clear failures
         await supabaseAdmin.rpc("clear_signin_failures", { _email: email });
 
+        const { sendEmailOtp, verifyEmailOtp } = await import(
+          "@/lib/email-otp.server"
+        );
+
+        // Credentials are valid — require an emailed 6-digit code before
+        // handing back a session.
+        if (!code) {
+          try {
+            await sendEmailOtp(email, "signin");
+          } catch (e) {
+            return jsonError(
+              502,
+              e instanceof Error ? e.message : "Could not send the code.",
+            );
+          }
+          return Response.json({ verification_required: true, email });
+        }
+
+        const otpError = await verifyEmailOtp(email, "signin", code);
+        if (otpError) return jsonError(401, otpError);
+
+
         return Response.json({
           access_token: signIn.session.access_token,
           refresh_token: signIn.session.refresh_token,
