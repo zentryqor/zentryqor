@@ -477,7 +477,10 @@ function AuthPage() {
             <GoogleIcon />
             Continue with Google
           </button>
+          </>
+          )}
         </div>
+
 
         <p className="mt-7 text-center text-[10px] text-muted-foreground/50 uppercase tracking-[0.28em] font-medium">
           Need assistance?{" "}
