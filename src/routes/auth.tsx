@@ -78,52 +78,61 @@ function AuthPage() {
   }, [navigate, dest]);
 
 
+  async function applySession(payload: {
+    access_token: string;
+    refresh_token: string;
+  }) {
+    const { error } = await supabase.auth.setSession({
+      access_token: payload.access_token,
+      refresh_token: payload.refresh_token,
+    });
+    if (error) throw error;
+    await router.invalidate();
+    navigate({ to: dest });
+  }
+
+  async function submitCredentials(verificationCode?: string) {
+    const endpoint =
+      mode === "signup"
+        ? "/api/public/auth/signup"
+        : "/api/public/auth/signin";
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        password,
+        ...(mode === "signup" ? { name } : {}),
+        ...(verificationCode ? { code: verificationCode } : {}),
+      }),
+    });
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(
+        payload?.error ||
+          (res.status === 401
+            ? "Incorrect email or password."
+            : "Something went wrong. Please try again."),
+      );
+    }
+    if (payload?.verification_required) {
+      setAwaitingCode(true);
+      setCode("");
+      toast.success(`We sent a 6-digit code to ${email}`);
+      return;
+    }
+    await applySession(payload);
+    toast.success(
+      mode === "signup" ? "Welcome to Zentry Qor!" : "Welcome back!",
+    );
+  }
+
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
     setLoading(true);
     try {
-      if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}${dest}`,
-            data: { full_name: name },
-          },
-        });
-        if (error) throw error;
-        if (!data.session) {
-          // Fall back to explicit sign-in in case email confirmation is enforced.
-          const { error: siErr } = await supabase.auth.signInWithPassword({ email, password });
-          if (siErr) throw siErr;
-        }
-        toast.success("Welcome to Zentry Qor!");
-        await router.invalidate();
-        navigate({ to: dest });
-      } else {
-        const res = await fetch("/api/public/auth/signin", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-        const payload = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          const msg =
-            payload?.error ||
-            (res.status === 401
-              ? "Incorrect email or password."
-              : "Log in failed. Please try again.");
-          throw new Error(msg);
-        }
-        const { error: setErr } = await supabase.auth.setSession({
-          access_token: payload.access_token,
-          refresh_token: payload.refresh_token,
-        });
-        if (setErr) throw setErr;
-        await router.invalidate();
-        navigate({ to: dest });
-      }
+      await submitCredentials();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       setFormError(message);
@@ -132,6 +141,36 @@ function AuthPage() {
       setLoading(false);
     }
   }
+
+  async function handleVerify(e: React.FormEvent) {
+    e.preventDefault();
+    setFormError(null);
+    setLoading(true);
+    try {
+      await submitCredentials(code);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Verification failed";
+      setFormError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResend() {
+    setFormError(null);
+    setResending(true);
+    try {
+      await submitCredentials();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Could not resend";
+      setFormError(message);
+      toast.error(message);
+    } finally {
+      setResending(false);
+    }
+  }
+
 
   const isSignin = mode === "signin";
 
