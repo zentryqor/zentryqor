@@ -35,7 +35,13 @@ export async function sendEmailOtp(
     code_hash: hashCode(lower, purpose, code),
     expires_at: new Date(Date.now() + CODE_TTL_MINUTES * 60_000).toISOString(),
   });
-  if (error) throw new Error("Could not create a verification code.");
+  if (error) {
+    console.error("[otp] insert failed", error);
+    throw new Error(
+      `Could not create a verification code (${error.message || error.code || "unknown error"}).`,
+    );
+  }
+
 
   await deliverCode(lower, code, purpose);
 }
