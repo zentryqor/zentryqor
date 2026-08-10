@@ -23,6 +23,8 @@ import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
 
 import { useQuery } from "@tanstack/react-query";
 import { getAiCredits } from "@/lib/ai.functions";
+import { getExportSettings, saveExportSettings } from "@/lib/export-settings.functions";
+
 
 
 
@@ -232,6 +234,36 @@ export function CaptionAiScreen() {
   const [exportUrl, setExportUrl] = useState<string | null>(null);
   const [qualityScale, setQualityScale] = useState<"source" | "1080" | "720" | "480">("source");
   const [bitrateMbps, setBitrateMbps] = useState<number>(6);
+
+  // ---- Persisted export settings (per user) ----
+  const fetchExportSettings = useServerFn(getExportSettings);
+  const persistExportSettings = useServerFn(saveExportSettings);
+  const settingsLoaded = useRef(false);
+  const { data: savedSettings } = useQuery({
+    queryKey: ["export-settings"],
+    queryFn: () => fetchExportSettings(),
+    staleTime: 5 * 60_000,
+  });
+
+  useEffect(() => {
+    if (!savedSettings || settingsLoaded.current) return;
+    settingsLoaded.current = true;
+    setQualityScale(savedSettings.resolution);
+    setBitrateMbps(savedSettings.bitrateMbps);
+  }, [savedSettings]);
+
+  // Debounced write-back so the next export opens with the same choices.
+  useEffect(() => {
+    if (!settingsLoaded.current) return;
+    const t = setTimeout(() => {
+      persistExportSettings({
+        data: { resolution: qualityScale, bitrateMbps },
+      }).catch(() => {});
+    }, 700);
+    return () => clearTimeout(t);
+  }, [qualityScale, bitrateMbps, persistExportSettings]);
+
+
 
   // Live credit balance for the inline CaptionAI badge
   const fetchCredits = useServerFn(getAiCredits);
