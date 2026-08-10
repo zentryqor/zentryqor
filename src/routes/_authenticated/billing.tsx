@@ -5,9 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
 import { usePaddleCheckout } from "@/hooks/use-paddle-checkout";
 import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
-import { PurchaseConfirmation } from "@/components/PurchaseConfirmation";
 import { AnimatedOrbs } from "@/components/landing/AnimatedOrbs";
-
 
 export const Route = createFileRoute("/_authenticated/billing")({
   head: () => ({ meta: [{ title: "Upgrade — Zentry Qor" }] }),
@@ -62,9 +60,7 @@ function Billing() {
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden">
       <PaymentTestModeBanner />
-      <PurchaseConfirmation />
       <AnimatedOrbs />
-
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.04]"
         style={{

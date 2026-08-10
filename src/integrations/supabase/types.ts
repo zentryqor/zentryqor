@@ -421,39 +421,6 @@ export type Database = {
         }
         Relationships: []
       }
-      email_otps: {
-        Row: {
-          attempts: number
-          code_hash: string
-          consumed_at: string | null
-          created_at: string
-          email_lower: string
-          expires_at: string
-          id: string
-          purpose: string
-        }
-        Insert: {
-          attempts?: number
-          code_hash: string
-          consumed_at?: string | null
-          created_at?: string
-          email_lower: string
-          expires_at: string
-          id?: string
-          purpose: string
-        }
-        Update: {
-          attempts?: number
-          code_hash?: string
-          consumed_at?: string | null
-          created_at?: string
-          email_lower?: string
-          expires_at?: string
-          id?: string
-          purpose?: string
-        }
-        Relationships: []
-      }
       gallery_items: {
         Row: {
           created_at: string

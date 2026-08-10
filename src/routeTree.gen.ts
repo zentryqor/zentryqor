@@ -65,7 +65,6 @@ import { Route as ApiPublicV1CreditsRouteImport } from './routes/api/public/v1/c
 import { Route as ApiPublicPaymentsWebhookRouteImport } from './routes/api/public/payments/webhook'
 import { Route as ApiPublicHooksRunScheduledPostsRouteImport } from './routes/api/public/hooks/run-scheduled-posts'
 import { Route as ApiPublicHooksRunScheduledJobsRouteImport } from './routes/api/public/hooks/run-scheduled-jobs'
-import { Route as ApiPublicAuthSignupRouteImport } from './routes/api/public/auth/signup'
 import { Route as ApiPublicAuthSigninRouteImport } from './routes/api/public/auth/signin'
 import { Route as AuthenticatedPosterSeriesNewRouteImport } from './routes/_authenticated/poster.series.new'
 import { Route as ApiPublicOauthYoutubeCallbackRouteImport } from './routes/api/public/oauth/youtube/callback'
@@ -361,11 +360,6 @@ const ApiPublicHooksRunScheduledJobsRoute =
     path: '/api/public/hooks/run-scheduled-jobs',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicAuthSignupRoute = ApiPublicAuthSignupRouteImport.update({
-  id: '/api/public/auth/signup',
-  path: '/api/public/auth/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicAuthSigninRoute = ApiPublicAuthSigninRouteImport.update({
   id: '/api/public/auth/signin',
   path: '/api/public/auth/signin',
@@ -441,7 +435,6 @@ export interface FileRoutesByFullPath {
   '/poster/': typeof AuthenticatedPosterIndexRoute
   '/poster/series/new': typeof AuthenticatedPosterSeriesNewRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
-  '/api/public/auth/signup': typeof ApiPublicAuthSignupRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -502,7 +495,6 @@ export interface FileRoutesByTo {
   '/poster': typeof AuthenticatedPosterIndexRoute
   '/poster/series/new': typeof AuthenticatedPosterSeriesNewRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
-  '/api/public/auth/signup': typeof ApiPublicAuthSignupRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -566,7 +558,6 @@ export interface FileRoutesById {
   '/_authenticated/poster/': typeof AuthenticatedPosterIndexRoute
   '/_authenticated/poster/series/new': typeof AuthenticatedPosterSeriesNewRoute
   '/api/public/auth/signin': typeof ApiPublicAuthSigninRoute
-  '/api/public/auth/signup': typeof ApiPublicAuthSignupRoute
   '/api/public/hooks/run-scheduled-jobs': typeof ApiPublicHooksRunScheduledJobsRoute
   '/api/public/hooks/run-scheduled-posts': typeof ApiPublicHooksRunScheduledPostsRoute
   '/api/public/payments/webhook': typeof ApiPublicPaymentsWebhookRoute
@@ -630,7 +621,6 @@ export interface FileRouteTypes {
     | '/poster/'
     | '/poster/series/new'
     | '/api/public/auth/signin'
-    | '/api/public/auth/signup'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
     | '/api/public/payments/webhook'
@@ -691,7 +681,6 @@ export interface FileRouteTypes {
     | '/poster'
     | '/poster/series/new'
     | '/api/public/auth/signin'
-    | '/api/public/auth/signup'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
     | '/api/public/payments/webhook'
@@ -754,7 +743,6 @@ export interface FileRouteTypes {
     | '/_authenticated/poster/'
     | '/_authenticated/poster/series/new'
     | '/api/public/auth/signin'
-    | '/api/public/auth/signup'
     | '/api/public/hooks/run-scheduled-jobs'
     | '/api/public/hooks/run-scheduled-posts'
     | '/api/public/payments/webhook'
@@ -790,7 +778,6 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicAuthSigninRoute: typeof ApiPublicAuthSigninRoute
-  ApiPublicAuthSignupRoute: typeof ApiPublicAuthSignupRoute
   ApiPublicHooksRunScheduledJobsRoute: typeof ApiPublicHooksRunScheduledJobsRoute
   ApiPublicHooksRunScheduledPostsRoute: typeof ApiPublicHooksRunScheduledPostsRoute
   ApiPublicPaymentsWebhookRoute: typeof ApiPublicPaymentsWebhookRoute
@@ -1196,13 +1183,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksRunScheduledJobsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/auth/signup': {
-      id: '/api/public/auth/signup'
-      path: '/api/public/auth/signup'
-      fullPath: '/api/public/auth/signup'
-      preLoaderRoute: typeof ApiPublicAuthSignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/auth/signin': {
       id: '/api/public/auth/signin'
       path: '/api/public/auth/signin'
@@ -1362,7 +1342,6 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicAuthSigninRoute: ApiPublicAuthSigninRoute,
-  ApiPublicAuthSignupRoute: ApiPublicAuthSignupRoute,
   ApiPublicHooksRunScheduledJobsRoute: ApiPublicHooksRunScheduledJobsRoute,
   ApiPublicHooksRunScheduledPostsRoute: ApiPublicHooksRunScheduledPostsRoute,
   ApiPublicPaymentsWebhookRoute: ApiPublicPaymentsWebhookRoute,
