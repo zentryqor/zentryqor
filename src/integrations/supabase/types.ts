@@ -454,6 +454,27 @@ export type Database = {
         }
         Relationships: []
       }
+      export_settings: {
+        Row: {
+          bitrate_mbps: number
+          resolution: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bitrate_mbps?: number
+          resolution?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bitrate_mbps?: number
+          resolution?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       gallery_items: {
         Row: {
           created_at: string
