@@ -391,66 +391,109 @@ export function AiStudioScreen() {
         />
         
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-28 pb-10 sm:pb-14">
-          {/* Hero */}
-          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
-            <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3 flex items-center justify-center gap-1.5">
-              <Wand2 className="h-3 w-3 text-accent" /> The Creator Toolkit
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 sm:pt-28 pb-10 sm:pb-14">
+          {/* Header — left aligned, editorial */}
+          <div className="max-w-3xl">
+            <div className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground flex items-center gap-2">
+              <Wand2 className="h-3 w-3 text-accent" /> The creator toolkit
             </div>
-            <h1 className="text-4xl sm:text-5xl font-semibold tracking-[-0.03em]">
-              Your unfair{" "}
-              <span className="text-gradient-brand">creative advantage</span>.
+            <h1 className="mt-4 text-4xl sm:text-6xl font-semibold tracking-[-0.035em] leading-[1.02]">
+              Nine tools. One{" "}
+              <span className="text-gradient-brand italic leading-[1.1] pb-1 inline-block">
+                unfair
+              </span>{" "}
+              advantage.
             </h1>
-            <p className="text-sm text-muted-foreground mt-3">
-              Nine AI tools tuned for creators — captions, hooks, scripts, trends, and more.
+            <p className="mt-4 max-w-[52ch] text-sm sm:text-base text-muted-foreground leading-relaxed">
+              Captions, hooks, scripts, thumbnails and trends, generated in seconds.
+              Every run tells you the credit cost before you spend it.
             </p>
-
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                to="/templates"
-                className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-elevated/40 hover:bg-elevated/80 hover:border-foreground/30 px-4 py-2 text-xs font-medium transition-all"
-              >
-                <BookOpen className="h-3.5 w-3.5 text-accent icon-fx" /> Templates
-              </Link>
-              <Link
-                to="/gallery"
-                className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-elevated/40 hover:bg-elevated/80 hover:border-foreground/30 px-4 py-2 text-xs font-medium transition-all"
-              >
-                <Grid3X3 className="h-3.5 w-3.5 text-primary icon-fx" /> Community Gallery
-              </Link>
-              <Link
-                to="/library"
-                className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-elevated/40 hover:bg-elevated/80 hover:border-foreground/30 px-4 py-2 text-xs font-medium transition-all"
-              >
-                <FolderHeart className="h-3.5 w-3.5 text-rose-400 icon-fx" /> My Library
-              </Link>
-
-            </div>
           </div>
 
-          {/* Tool grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {TOOLS.map((t) => {
+          {/* Tool bento — featured tile spans two columns, closing tile links out */}
+          <div className="mt-10 sm:mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {TOOLS.map((t, i) => {
               const Icon = t.icon;
+              const featured = i === 0;
               return (
                 <button
                   key={t.id}
                   onClick={() => openTool(t.id)}
-                  className="group text-left glass rounded-2xl p-5 hover:border-foreground/30 border border-border/60 transition-all hover:-translate-y-0.5"
+                  className={`group relative overflow-hidden text-left rounded-3xl border border-border/60 bg-elevated/25 hover:bg-elevated/50 hover:border-foreground/25 transition-all duration-300 ${
+                    featured
+                      ? "sm:col-span-2 p-6 sm:p-8 min-h-[220px] flex flex-col justify-between bg-gradient-to-br from-primary/12 via-elevated/30 to-accent/10"
+                      : "p-5 sm:p-6"
+                  }`}
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="h-10 w-10 rounded-xl bg-elevated/50 border border-border/60 flex items-center justify-center">
-                      <Icon className={`h-5 w-5 ${t.accent}`} />
-                    </div>
-                    <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors icon-fx" />
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-primary/15 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  />
+                  <div className="relative flex items-start justify-between gap-4">
+                    <span
+                      className={`rounded-2xl bg-background/50 border border-border/60 flex items-center justify-center ${
+                        featured ? "h-12 w-12" : "h-10 w-10"
+                      }`}
+                    >
+                      <Icon className={`${featured ? "h-6 w-6" : "h-5 w-5"} ${t.accent}`} />
+                    </span>
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all" />
                   </div>
-                  <div className="text-base font-medium tracking-tight">{t.name}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{t.tagline}</div>
+                  <div className={featured ? "relative mt-8" : "relative mt-5"}>
+                    <div
+                      className={`font-medium tracking-[-0.02em] ${
+                        featured ? "text-2xl sm:text-3xl" : "text-base"
+                      }`}
+                    >
+                      {t.name}
+                    </div>
+                    <div
+                      className={`text-muted-foreground mt-1.5 ${
+                        featured ? "text-sm max-w-[40ch]" : "text-xs"
+                      }`}
+                    >
+                      {t.tagline}
+                    </div>
+                  </div>
                 </button>
               );
             })}
+
+            {/* Closing tile — keeps the grid full and routes to the surrounding surfaces */}
+            <div className="sm:col-span-2 rounded-3xl border border-border/60 bg-background/40 p-6 sm:p-8 flex flex-col justify-between gap-6">
+              <div>
+                <div className="text-lg font-medium tracking-[-0.02em]">
+                  Not sure where to start?
+                </div>
+                <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground max-w-[46ch]">
+                  Open a ready-made prompt template, see what other creators made,
+                  or pick up a generation you saved earlier.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  to="/templates"
+                  className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-elevated/40 hover:bg-elevated/80 hover:border-foreground/30 px-4 py-2 text-xs font-medium transition-all"
+                >
+                  <BookOpen className="h-3.5 w-3.5 text-accent icon-fx" /> Templates
+                </Link>
+                <Link
+                  to="/gallery"
+                  className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-elevated/40 hover:bg-elevated/80 hover:border-foreground/30 px-4 py-2 text-xs font-medium transition-all"
+                >
+                  <Grid3X3 className="h-3.5 w-3.5 text-primary icon-fx" /> Gallery
+                </Link>
+                <Link
+                  to="/library"
+                  className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-elevated/40 hover:bg-elevated/80 hover:border-foreground/30 px-4 py-2 text-xs font-medium transition-all"
+                >
+                  <FolderHeart className="h-3.5 w-3.5 text-rose-400 icon-fx" /> My library
+                </Link>
+              </div>
+            </div>
           </div>
         </main>
+
       </div>
 
       {/* Tool drawer/modal */}
