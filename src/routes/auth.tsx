@@ -375,6 +375,8 @@ function AuthPage() {
                     setAwaitingCode(false);
                     setCode("");
                     setFormError(null);
+                    setExpiresAt(null);
+                    setCooldownUntil(null);
                   }}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
