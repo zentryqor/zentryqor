@@ -33,6 +33,19 @@ function Billing() {
   const [interval, setInterval] = useState<"month" | "year">("month");
   const [packs, setPacks] = useState(1);
 
+  const search = useSearch({ strict: false }) as { credits?: string; checkout?: string };
+  const justPurchased = search.credits === "success" || search.checkout === "success";
+  const fetchReceipt = useServerFn(getLatestPurchase);
+  const { data: receipt } = useQuery({
+    queryKey: ["latest-purchase"],
+    queryFn: () => fetchReceipt(),
+    enabled: justPurchased,
+    // Webhook credit grants land a moment after checkout closes.
+    refetchInterval: (q) => (q.state.data?.purchase ? false : 3000),
+  });
+
+
+
   function handleBuyCredits() {
     if (!user) return;
     openCheckout({
