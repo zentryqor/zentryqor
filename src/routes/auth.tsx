@@ -55,6 +55,24 @@ function AuthPage() {
   const [awaitingCode, setAwaitingCode] = useState(false);
   const [code, setCode] = useState("");
   const [resending, setResending] = useState(false);
+  const [expiresAt, setExpiresAt] = useState<number | null>(null);
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!awaitingCode) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [awaitingCode]);
+
+  const expiresIn = expiresAt ? Math.max(0, Math.ceil((expiresAt - now) / 1000)) : 0;
+  const cooldownLeft = cooldownUntil
+    ? Math.max(0, Math.ceil((cooldownUntil - now) / 1000))
+    : 0;
+  const expired = !!expiresAt && expiresIn === 0;
+  const formatTime = (s: number) =>
+    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
 
   const [inviterName, setInviterName] = useState<string | null>(null);
 
