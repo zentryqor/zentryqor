@@ -81,7 +81,7 @@ export const Route = createFileRoute("/api/public/auth/signup")({
               e instanceof Error ? e.message : "Could not send the code.",
             );
           }
-          return Response.json({ verification_required: true, email });
+          return Response.json({ verification_required: true, email, expires_in: 600 });
         }
 
         // Step 2 — verify the code, then create the account.
