@@ -138,11 +138,16 @@ function AuthPage() {
       );
     }
     if (payload?.verification_required) {
+      const ttl = Number(payload.expires_in) || 600;
       setAwaitingCode(true);
       setCode("");
+      setNow(Date.now());
+      setExpiresAt(Date.now() + ttl * 1000);
+      setCooldownUntil(Date.now() + 45_000);
       toast.success(`We sent a 6-digit code to ${email}`);
       return;
     }
+
     await applySession(payload);
     toast.success(
       mode === "signup" ? "Welcome to Zentry Qor!" : "Welcome back!",
