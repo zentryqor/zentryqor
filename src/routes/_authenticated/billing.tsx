@@ -97,6 +97,62 @@ function Billing() {
           <ArrowLeft className="h-3.5 w-3.5 icon-fx" /> Back to dashboard
         </Link>
 
+        {justPurchased && (
+          <div className="mb-10 rounded-3xl border border-primary/40 bg-gradient-to-br from-primary/12 via-surface to-accent/10 p-6">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <PartyPopper className="h-4 w-4 text-accent" />
+              Payment confirmed
+            </div>
+
+            {receipt?.purchase ? (
+              <>
+                <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                      Credits added
+                    </div>
+                    <div className="mt-1 text-2xl font-semibold tabular-nums text-gradient-brand">
+                      +{receipt.purchase.credits}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                      Amount paid
+                    </div>
+                    <div className="mt-1 text-2xl font-semibold tabular-nums">
+                      {receipt.purchase.amount_cents != null
+                        ? `$${(receipt.purchase.amount_cents / 100).toFixed(2)}`
+                        : "—"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                      Credit balance
+                    </div>
+                    <div className="mt-1 text-2xl font-semibold tabular-nums">
+                      {receipt.bonusCredits}
+                    </div>
+                  </div>
+                </div>
+                <p className="mt-4 text-xs text-muted-foreground">
+                  Purchased{" "}
+                  {new Date(receipt.purchase.created_at).toLocaleString()}.{" "}
+                  {receipt.nextBillingDate
+                    ? `Your subscription renews on ${new Date(receipt.nextBillingDate).toLocaleDateString()}.`
+                    : "One-time purchase — nothing recurring, and credits never expire."}
+                </p>
+              </>
+            ) : (
+              <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Finalizing your receipt and adding credits to your balance…
+              </p>
+            )}
+          </div>
+        )}
+
+
+
         <div className="text-center mb-10">
           <div className="text-xs uppercase tracking-[0.3em] text-accent mb-3 flex items-center justify-center gap-1.5">
             <Sparkles className="h-3 w-3 icon-fx" /> Premium
