@@ -125,7 +125,7 @@ export const Route = createFileRoute("/api/public/auth/signin")({
               e instanceof Error ? e.message : "Could not send the code.",
             );
           }
-          return Response.json({ verification_required: true, email });
+          return Response.json({ verification_required: true, email, expires_in: 600 });
         }
 
         const otpError = await verifyEmailOtp(email, "signin", code);

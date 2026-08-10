@@ -55,6 +55,24 @@ function AuthPage() {
   const [awaitingCode, setAwaitingCode] = useState(false);
   const [code, setCode] = useState("");
   const [resending, setResending] = useState(false);
+  const [expiresAt, setExpiresAt] = useState<number | null>(null);
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!awaitingCode) return;
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, [awaitingCode]);
+
+  const expiresIn = expiresAt ? Math.max(0, Math.ceil((expiresAt - now) / 1000)) : 0;
+  const cooldownLeft = cooldownUntil
+    ? Math.max(0, Math.ceil((cooldownUntil - now) / 1000))
+    : 0;
+  const expired = !!expiresAt && expiresIn === 0;
+  const formatTime = (s: number) =>
+    `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+
 
   const [inviterName, setInviterName] = useState<string | null>(null);
 
@@ -120,11 +138,16 @@ function AuthPage() {
       );
     }
     if (payload?.verification_required) {
+      const ttl = Number(payload.expires_in) || 600;
       setAwaitingCode(true);
       setCode("");
+      setNow(Date.now());
+      setExpiresAt(Date.now() + ttl * 1000);
+      setCooldownUntil(Date.now() + 45_000);
       toast.success(`We sent a 6-digit code to ${email}`);
       return;
     }
+
     await applySession(payload);
     toast.success(
       mode === "signup" ? "Welcome to Zentry Qor!" : "Welcome back!",
@@ -283,11 +306,24 @@ function AuthPage() {
           {awaitingCode ? (
             <form onSubmit={handleVerify} className="space-y-4 animate-enter">
               <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-                <div className="text-sm font-semibold">Check your inbox</div>
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-sm font-semibold">Check your inbox</div>
+                  <span
+                    className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-bold tabular-nums ${
+                      expired
+                        ? "border-destructive/40 bg-destructive/10 text-destructive"
+                        : "border-primary/40 bg-primary/10 text-primary"
+                    }`}
+                  >
+                    {expired ? "Expired" : `Expires in ${formatTime(expiresIn)}`}
+                  </span>
+                </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   We emailed a 6-digit verification code to{" "}
-                  <span className="text-foreground">{email}</span>. It expires in
-                  10 minutes.
+                  <span className="text-foreground">{email}</span>.
+                  {expired
+                    ? " Request a new code to continue."
+                    : " Enter it below before the timer runs out."}
                 </p>
               </div>
 
@@ -312,7 +348,7 @@ function AuthPage() {
 
               <button
                 type="submit"
-                disabled={loading || code.length !== 6}
+                disabled={loading || code.length !== 6 || expired}
                 className="relative w-full mt-2 bg-foreground text-background py-4 rounded-2xl font-bold text-sm uppercase tracking-wider disabled:opacity-60 disabled:cursor-not-allowed hover:bg-foreground/90 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
               >
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -323,17 +359,24 @@ function AuthPage() {
                 <button
                   type="button"
                   onClick={handleResend}
-                  disabled={resending || loading}
-                  className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                  disabled={resending || loading || cooldownLeft > 0}
+                  className="text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 tabular-nums"
                 >
-                  {resending ? "Sending…" : "Resend code"}
+                  {resending
+                    ? "Sending…"
+                    : cooldownLeft > 0
+                      ? `Resend code in ${cooldownLeft}s`
+                      : "Resend code"}
                 </button>
+
                 <button
                   type="button"
                   onClick={() => {
                     setAwaitingCode(false);
                     setCode("");
                     setFormError(null);
+                    setExpiresAt(null);
+                    setCooldownUntil(null);
                   }}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
