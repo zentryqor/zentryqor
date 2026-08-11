@@ -481,18 +481,30 @@ export function CaptionAiScreen() {
     }
   };
 
-  // Keep currentMs in sync with the preview video.
+  // Keep currentMs in sync with the preview video, on the *edited* timeline,
+  // and skip over any cut regions during playback.
+  const cutsRef = useRef<CaptionCut[]>([]);
+  cutsRef.current = cuts;
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     let raf = 0;
     const tick = () => {
-      setCurrentMs(v.currentTime * 1000);
+      const ms = v.currentTime * 1000;
+      const inside = cutsRef.current.find((c) => ms >= c.start && ms < c.end - 30);
+      if (inside) {
+        v.currentTime = inside.end / 1000;
+      } else {
+        let shift = 0;
+        for (const c of cutsRef.current) if (ms >= c.end) shift += c.end - c.start;
+        setCurrentMs(Math.max(0, ms - shift));
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [videoUrl]);
+
 
   // -------- Transcript editor helpers --------
   const updateWord = (i: number, patch: Partial<EditWord>) => {
