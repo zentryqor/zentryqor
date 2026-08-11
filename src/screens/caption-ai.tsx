@@ -1070,11 +1070,26 @@ export function CaptionAiScreen() {
       const guard = setTimeout(() => void finish(), (duration + 5) * 1000);
 
       const useRVFC = typeof (src as any).requestVideoFrameCallback === "function";
+      const sortedCuts = [...cuts].sort((a, b) => a.start - b.start);
+      const toEdited = (ms: number) => {
+        let shift = 0;
+        for (const c of sortedCuts) if (ms >= c.end) shift += c.end - c.start;
+        return Math.max(0, ms - shift);
+      };
       const paint = () => {
         if (stopped) return;
+        const ms = src.currentTime * 1000;
+        // Jump over cut regions so they never make it into the recording.
+        const inside = sortedCuts.find((c) => ms >= c.start && ms < c.end - 30);
+        if (inside) {
+          src.currentTime = inside.end / 1000;
+          if (useRVFC) (src as any).requestVideoFrameCallback(paint);
+          else requestAnimationFrame(paint);
+          return;
+        }
         try {
           ctx.drawImage(src, 0, 0, width, height);
-          drawCaption(ctx, width, height, src.currentTime * 1000);
+          drawCaption(ctx, width, height, toEdited(ms));
         } catch {}
         setExportProgress(Math.min(0.99, src.currentTime / duration));
         if (src.ended || src.currentTime >= duration - 0.02) {
@@ -1084,6 +1099,7 @@ export function CaptionAiScreen() {
         if (useRVFC) (src as any).requestVideoFrameCallback(paint);
         else requestAnimationFrame(paint);
       };
+
       if (useRVFC) (src as any).requestVideoFrameCallback(paint);
       else requestAnimationFrame(paint);
 
