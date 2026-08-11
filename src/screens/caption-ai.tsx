@@ -316,6 +316,8 @@ export function CaptionAiScreen() {
 
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const timelineRef = useRef<HTMLDivElement | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const style = STYLES.find((s) => s.id === styleId) ?? STYLES[0];
