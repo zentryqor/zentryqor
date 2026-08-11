@@ -1364,13 +1364,20 @@ export function CaptionAiScreen() {
                   </div>
                 )}
               </div>
-              <div className="flex items-center justify-between p-4 border-t border-border/40 gap-3 flex-wrap">
-                <div className="text-sm text-muted-foreground truncate">
-                  <span className="text-foreground font-medium">{file?.name}</span>
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-4 border-t border-border/40 sm:flex sm:flex-wrap sm:justify-between">
+                <div className="min-w-0 text-sm text-muted-foreground truncate">
+                  <span className="text-foreground font-medium">
+                    {file?.name ?? projectName ?? "Project video"}
+                  </span>
                   {durationSec && (
-                    <> · {durationSec.toFixed(1)}s · {(file!.size / (1024 * 1024)).toFixed(1)}MB</>
+                    <>
+                      {" · "}
+                      {durationSec.toFixed(1)}s
+                      {file ? ` · ${(file.size / (1024 * 1024)).toFixed(1)}MB` : ""}
+                    </>
                   )}
                 </div>
+
                 <button
                   onClick={clearAll}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/60 text-sm hover:bg-elevated/50 transition"
