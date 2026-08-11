@@ -1554,30 +1554,196 @@ export function CaptionAiScreen() {
 
 
 
-          {/* Transcript editor */}
-          {words.length > 0 && (
-            <div className="rounded-3xl border border-border/50 bg-elevated/30 p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <div className="text-sm font-semibold">Transcript editor</div>
+          {/* Timeline + cutting */}
+          {words.length > 0 && totalMs > 0 && (
+            <div className="rounded-3xl border border-border/50 bg-elevated/30 p-4 sm:p-5">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:flex-wrap sm:justify-between">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold">Timeline</div>
                   <div className="text-xs text-muted-foreground">
-                    Edit the word, tweak start/end timings, or delete. Changes apply live to the preview and export.
+                    Drag across the track to select a range, then cut it. Words inside are removed
+                    and everything after shifts left.
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground">{words.length} words</div>
+                <div className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+                  {(totalMs / 1000).toFixed(2)}s
+                  {cutMs > 0 ? ` · −${(cutMs / 1000).toFixed(2)}s cut` : ""}
+                </div>
               </div>
-              <div className="max-h-[420px] overflow-y-auto pr-2 space-y-1.5">
+
+              <div
+                ref={timelineRef}
+                onPointerDown={(e) => {
+                  const el = e.currentTarget;
+                  el.setPointerCapture(e.pointerId);
+                  const at = (clientX: number) => {
+                    const r = el.getBoundingClientRect();
+                    return Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * totalMs;
+                  };
+                  const startMs = at(e.clientX);
+                  setSelection({ start: startMs, end: startMs });
+                  seekEdited(startMs);
+                  const move = (ev: PointerEvent) =>
+                    setSelection({ start: startMs, end: at(ev.clientX) });
+                  const up = () => {
+                    el.removeEventListener("pointermove", move);
+                    el.removeEventListener("pointerup", up);
+                  };
+                  el.addEventListener("pointermove", move);
+                  el.addEventListener("pointerup", up);
+                }}
+                className="relative mt-4 h-16 w-full cursor-crosshair overflow-hidden rounded-2xl border border-border/40 bg-background/50 touch-none select-none"
+              >
+                {words.map((w, i) => (
+                  <div
+                    key={i}
+                    className={`absolute top-2 bottom-6 rounded-[4px] ${
+                      i === selectedWord ? "bg-primary" : "bg-primary/35"
+                    }`}
+                    style={{
+                      left: `${(w.start / totalMs) * 100}%`,
+                      width: `${Math.max(0.4, ((w.end - w.start) / totalMs) * 100)}%`,
+                    }}
+                    title={w.text}
+                  />
+                ))}
+                {selection && (
+                  <div
+                    className="absolute inset-y-0 border-x border-primary bg-primary/20"
+                    style={{
+                      left: `${(Math.min(selection.start, selection.end) / totalMs) * 100}%`,
+                      width: `${(Math.abs(selection.end - selection.start) / totalMs) * 100}%`,
+                    }}
+                  />
+                )}
+                <div
+                  className="absolute inset-y-0 w-[2px] bg-foreground"
+                  style={{ left: `${Math.min(100, (currentMs / totalMs) * 100)}%` }}
+                />
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => selection && cutRange(selection.start, selection.end)}
+                  disabled={!selection || Math.abs(selection.end - selection.start) < 40}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground disabled:opacity-50 hover:opacity-90 transition"
+                >
+                  <Scissors className="w-3.5 h-3.5" />
+                  Cut selection
+                </button>
+                {selection && (
+                  <button
+                    onClick={() => setSelection(null)}
+                    className="rounded-full border border-border/60 px-3 py-1.5 text-xs hover:bg-elevated/60"
+                  >
+                    Clear selection
+                  </button>
+                )}
+                {cuts.map((c, i) => (
+                  <button
+                    key={i}
+                    onClick={() => removeCut(i)}
+                    className="inline-flex items-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-[11px] text-destructive"
+                    title="Restore this cut (word timings stay as edited)"
+                  >
+                    <X className="w-3 h-3" />
+                    {(c.start / 1000).toFixed(2)}–{(c.end / 1000).toFixed(2)}s
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Word inspector */}
+          {selectedWord !== null && words[selectedWord] && (
+            <div className="rounded-3xl border border-primary/40 bg-primary/5 p-4 sm:p-5">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold truncate">
+                    Word: “{words[selectedWord].text}”
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Give this single word its own font and colour.
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedWord(null)}
+                  className="shrink-0 rounded-full border border-border/60 p-1.5 hover:bg-elevated/60"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div>
+                  <div className="mb-1.5 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Word colour
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={words[selectedWord].color ?? colorOverride ?? "#ffffff"}
+                      onChange={(e) => updateWord(selectedWord, { color: e.target.value })}
+                      className="h-9 w-12 rounded-lg border border-border/50 bg-transparent"
+                    />
+                    <button
+                      onClick={() => updateWord(selectedWord, { color: undefined })}
+                      className="rounded-full border border-border/60 px-3 py-1.5 text-xs hover:bg-elevated/60"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <div className="mb-1.5 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Word font
+                  </div>
+                  <select
+                    value={words[selectedWord].font ?? ""}
+                    onChange={(e) =>
+                      updateWord(selectedWord, { font: e.target.value || undefined })
+                    }
+                    className="w-full rounded-full border border-border/50 bg-background/60 px-3 py-2 text-xs outline-none focus:border-primary"
+                  >
+                    <option value="">Same as caption style</option>
+                    {(fonts ?? []).map((f) => (
+                      <option key={f.id} value={f.family}>
+                        {f.family}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Transcript editor */}
+          {words.length > 0 && (
+            <div className="rounded-3xl border border-border/50 bg-elevated/30 p-4 sm:p-5">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 mb-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold">Transcript editor</div>
+                  <div className="text-xs text-muted-foreground">
+                    Edit the word, tweak start/end timings, or delete. Tap a word to style it on its own.
+                  </div>
+                </div>
+                <div className="shrink-0 text-xs text-muted-foreground">{words.length} words</div>
+              </div>
+              <div className="max-h-[420px] overflow-y-auto pr-1 sm:pr-2 space-y-1.5">
                 {words.map((w, i) => {
                   const active = i === findActiveIndex(words, currentMs);
                   return (
                     <div
                       key={i}
-                      className={`grid grid-cols-[1fr_84px_84px_auto_auto] gap-2 items-center rounded-xl border p-2 text-xs transition ${
-                        active
-                          ? "border-primary bg-primary/10"
-                          : "border-border/40 bg-background/40"
+                      onClick={() => setSelectedWord(i)}
+                      className={`grid grid-cols-[minmax(0,1fr)_64px_64px] sm:grid-cols-[minmax(0,1fr)_84px_84px_auto_auto] gap-2 items-center rounded-xl border p-2 text-xs transition ${
+                        i === selectedWord
+                          ? "border-primary bg-primary/15"
+                          : active
+                            ? "border-primary bg-primary/10"
+                            : "border-border/40 bg-background/40"
                       }`}
                     >
+
                       <input
                         value={w.text}
                         onChange={(e) => updateWord(i, { text: e.target.value })}
