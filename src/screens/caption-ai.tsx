@@ -893,7 +893,7 @@ export function CaptionAiScreen() {
   const exportExtRef = useRef<string>("mp4");
 
   const exportVideo = async () => {
-    if (!file || words.length === 0) return;
+    if ((!file && !videoUrl) || words.length === 0) return;
     setPhase("exporting");
     setExportProgress(0);
     setExportError(null);
@@ -909,8 +909,10 @@ export function CaptionAiScreen() {
     try {
       const src = document.createElement("video");
       tempSrc = src;
-      srcUrl = URL.createObjectURL(file);
-      src.src = srcUrl;
+      srcUrl = file ? URL.createObjectURL(file) : null;
+      src.crossOrigin = "anonymous";
+      src.src = srcUrl ?? videoUrl!;
+
       src.playsInline = true;
       src.preload = "auto";
       // Keep it out of view but attached so decoding is not throttled.
