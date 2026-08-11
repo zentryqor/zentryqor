@@ -200,13 +200,14 @@ function findActiveIndex(words: CaptionWord[], currentMs: number) {
   return -1;
 }
 
-function currentPhrase(words: CaptionWord[], currentMs: number, windowMs = 2600) {
+function currentPhrase<T extends CaptionWord>(words: T[], currentMs: number, windowMs = 2600) {
   const active = findActiveIndex(words, currentMs);
   if (active === -1) {
     const near = words.find(
       (w) => Math.abs(w.start - currentMs) < 400 || Math.abs(w.end - currentMs) < 400,
     );
-    if (!near) return { phrase: [] as CaptionWord[], activeInPhrase: -1 };
+    if (!near) return { phrase: [] as T[], activeInPhrase: -1 };
+
     const startIdx = Math.max(0, words.indexOf(near) - 2);
     const endIdx = Math.min(words.length, startIdx + 8);
     return { phrase: words.slice(startIdx, endIdx), activeInPhrase: -1 };
