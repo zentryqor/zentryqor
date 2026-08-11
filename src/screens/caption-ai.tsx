@@ -4,10 +4,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Download,
+  FolderOpen,
   Loader2,
+  Palette,
   Plus,
+  Save,
+  Scissors,
   Sparkles,
   Trash2,
+  Type,
   Upload,
   Wand2,
   X,
@@ -24,6 +29,25 @@ import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
 import { useQuery } from "@tanstack/react-query";
 import { getAiCredits } from "@/lib/ai.functions";
 import { getExportSettings, saveExportSettings } from "@/lib/export-settings.functions";
+import {
+  deleteCaptionFont,
+  deleteCaptionProject,
+  ensureFontLoaded,
+  listCaptionFonts,
+  listCaptionProjects,
+  saveCaptionProject,
+  signedFontUrl,
+  signedVideoUrl,
+  uploadCaptionFont,
+  uploadProjectVideo,
+  type CaptionCut,
+  type CaptionFontRow,
+  type CaptionProjectRow,
+} from "@/lib/caption-projects";
+
+/** A transcript word plus optional per-word font/colour overrides. */
+type EditWord = CaptionWord & { font?: string; color?: string };
+
 
 
 
