@@ -1833,6 +1833,114 @@ export function CaptionAiScreen() {
             </div>
           </div>
 
+          {/* Caption colour */}
+          <div className="rounded-2xl border border-border/50 bg-elevated/30 p-4">
+            <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              <Palette className="w-3.5 h-3.5" />
+              Caption colour
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={colorOverride ?? "#ffffff"}
+                onChange={(e) => setColorOverride(e.target.value)}
+                className="h-9 w-12 shrink-0 rounded-lg border border-border/50 bg-transparent"
+              />
+              <button
+                onClick={() => setColorOverride(null)}
+                className="rounded-full border border-border/60 px-3 py-1.5 text-xs hover:bg-elevated/60"
+              >
+                Use style colour
+              </button>
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Applies to every word. Tap a word in the transcript to colour just that one.
+            </p>
+          </div>
+
+          {/* Fonts */}
+          <div className="rounded-2xl border border-border/50 bg-elevated/30 p-4">
+            <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              <Type className="w-3.5 h-3.5" />
+              Fonts
+            </div>
+            <div className="space-y-1.5">
+              <button
+                onClick={() => void pickFont(null)}
+                className={`w-full rounded-xl border px-3 py-2 text-left text-xs transition ${
+                  fontFamily === null
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border/40 hover:bg-elevated/60"
+                }`}
+              >
+                Style default
+              </button>
+              {(fonts ?? []).map((f) => (
+                <div
+                  key={f.id}
+                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2"
+                >
+                  <button
+                    onClick={() => void pickFont(f)}
+                    style={{ fontFamily: `"${f.family}", ${SANS}` }}
+                    className={`min-w-0 truncate rounded-xl border px-3 py-2 text-left text-xs transition ${
+                      fontFamily === f.family
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border/40 hover:bg-elevated/60"
+                    }`}
+                  >
+                    {f.family}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        await deleteCaptionFont(f);
+                        if (fontFamily === f.family) void pickFont(null);
+                        void refetchFonts();
+                      } catch (e: any) {
+                        toast.error(e?.message ?? "Could not delete font");
+                      }
+                    }}
+                    className="shrink-0 rounded-md border border-border/40 p-1.5 text-destructive hover:bg-destructive/15"
+                    title="Delete font"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <input
+              ref={fontInputRef}
+              type="file"
+              accept=".ttf,.otf,.woff,.woff2,font/*"
+              className="hidden"
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (!f) return;
+                const family = f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
+                try {
+                  const row = await uploadCaptionFont(f, family || "Custom font");
+                  await refetchFonts();
+                  await pickFont(row);
+                  toast.success(`Added ${row.family}`);
+                } catch (err: any) {
+                  toast.error(err?.message ?? "Could not upload font");
+                }
+              }}
+            />
+            <button
+              onClick={() => fontInputRef.current?.click()}
+              className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-border/60 px-3 py-2 text-xs hover:bg-elevated/60 transition"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Upload font (TTF/OTF/WOFF)
+            </button>
+          </div>
+
+
+
           {/* Export settings */}
           <div className="rounded-2xl border border-border/50 bg-elevated/30 p-4 space-y-4">
             <div className="flex items-center justify-between">
