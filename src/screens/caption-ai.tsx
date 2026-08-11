@@ -759,6 +759,7 @@ export function CaptionAiScreen() {
         }
         const cx = x + ww / 2;
         const cy = y + bounce;
+        ctx.font = fontFor(w);
 
         // Active-word box (highlight background)
         if (isActive && s.activeBoxColor) {
@@ -783,13 +784,16 @@ export function CaptionAiScreen() {
           ctx.strokeText(wtxt, cx, cy);
         }
 
-        // color: second word onwards uses secondColor if set
-        const baseColor = flatIdx > 0 && s.secondColor ? s.secondColor : s.color;
+        // colour: per-word override wins, then two-tone, then style colour
+        const baseColor = w.color ?? (flatIdx > 0 && s.secondColor ? s.secondColor : s.color);
         ctx.fillStyle =
-          s.highlight === "word" && isActive && s.highlightColor
-            ? s.highlightColor
-            : baseColor;
+          w.color
+            ? w.color
+            : s.highlight === "word" && isActive && s.highlightColor
+              ? s.highlightColor
+              : baseColor;
         ctx.fillText(wtxt, cx, cy);
+
 
         ctx.shadowBlur = 0;
         x += ww + gap;
