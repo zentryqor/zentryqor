@@ -495,11 +495,12 @@ export function CaptionAiScreen() {
   }, [videoUrl]);
 
   // -------- Transcript editor helpers --------
-  const updateWord = (i: number, patch: Partial<CaptionWord>) => {
+  const updateWord = (i: number, patch: Partial<EditWord>) => {
     setWords((prev) => prev.map((w, idx) => (idx === i ? { ...w, ...patch } : w)));
   };
   const deleteWord = (i: number) => {
     setWords((prev) => prev.filter((_, idx) => idx !== i));
+    setSelectedWord(null);
   };
   const addWordAfter = (i: number) => {
     setWords((prev) => {
@@ -507,10 +508,147 @@ export function CaptionAiScreen() {
       const next = prev[i + 1];
       const start = cur ? cur.end + 20 : 0;
       const end = next ? Math.max(start + 100, (start + next.start) / 2) : start + 400;
-      const nw: CaptionWord = { text: "new", start, end };
+      const nw: EditWord = { text: "new", start, end };
       return [...prev.slice(0, i + 1), nw, ...prev.slice(i + 1)];
     });
   };
+
+  // -------- Cutting --------
+  const totalMs = (durationSec ?? 0) * 1000;
+
+  /** Removes a time range: words inside are dropped, later words shift left. */
+  const cutRange = (startMs: number, endMs: number) => {
+    const a = Math.max(0, Math.min(startMs, endMs));
+    const b = Math.max(0, Math.max(startMs, endMs));
+    if (b - a < 40) {
+      toast.error("Select a longer range to cut.");
+      return;
+    }
+    setCuts((prev) => [...prev, { start: a, end: b }].sort((x, y) => x.start - y.start));
+    setWords((prev) =>
+      prev
+        .filter((w) => !(w.start >= a - 1 && w.end <= b + 1))
+        .map((w) => (w.start >= b ? { ...w, start: w.start - (b - a), end: w.end - (b - a) } : w)),
+    );
+    setSelection(null);
+    setSelectedWord(null);
+    toast.success(`Cut ${((b - a) / 1000).toFixed(2)}s`);
+  };
+
+  const removeCut = (i: number) => setCuts((prev) => prev.filter((_, idx) => idx !== i));
+
+  /** Maps an edited-timeline position back to a source video time (cuts re-added). */
+  const editedToSource = useCallback(
+    (ms: number) => {
+      let out = ms;
+      for (const c of [...cuts].sort((a, b) => a.start - b.start)) {
+        if (out >= c.start) out += c.end - c.start;
+      }
+      return out;
+    },
+    [cuts],
+  );
+
+  const seekEdited = (ms: number) => {
+    const v = videoRef.current;
+    if (v) v.currentTime = editedToSource(ms) / 1000;
+  };
+
+  // -------- Projects --------
+  const { data: projects, refetch: refetchProjects } = useQuery({
+    queryKey: ["caption-projects"],
+    queryFn: listCaptionProjects,
+    staleTime: 30_000,
+  });
+
+  const persistProject = useCallback(
+    async (opts?: { silent?: boolean; nameHint?: string }) => {
+      if (!file && !videoPath) return;
+      setSavingProject(true);
+      try {
+        let path = videoPath;
+        if (!path && file) {
+          path = await uploadProjectVideo(file);
+          setVideoPath(path);
+        }
+        const name = projectName || opts?.nameHint || file?.name || "Untitled project";
+        const id = await saveCaptionProject({
+          id: projectId,
+          name,
+          videoPath: path,
+          videoName: file?.name ?? null,
+          durationSec: durationSec,
+          words,
+          cuts,
+          styleId,
+          sizeMult,
+          colorOverride,
+          fontUrl,
+          fontFamily,
+        });
+        setProjectId(id);
+        setProjectName(name);
+        void refetchProjects();
+        if (!opts?.silent) toast.success("Project saved — you can edit it later.");
+      } catch (e: any) {
+        toast.error(e?.message ?? "Could not save project");
+      } finally {
+        setSavingProject(false);
+      }
+    },
+    [
+      file,
+      videoPath,
+      projectId,
+      projectName,
+      durationSec,
+      words,
+      cuts,
+      styleId,
+      sizeMult,
+      colorOverride,
+      fontUrl,
+      fontFamily,
+      refetchProjects,
+    ],
+  );
+
+  const openProject = async (p: CaptionProjectRow) => {
+    try {
+      if (!p.video_path) throw new Error("This project has no video attached.");
+      const url = await signedVideoUrl(p.video_path);
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+      if (exportUrl) URL.revokeObjectURL(exportUrl);
+      setExportUrl(null);
+      setFile(null);
+      setVideoPath(p.video_path);
+      setVideoUrl(url);
+      setDurationSec(p.duration_sec ? Number(p.duration_sec) : null);
+      setWords(Array.isArray(p.words) ? (p.words as EditWord[]) : []);
+      setCuts(Array.isArray(p.cuts) ? (p.cuts as CaptionCut[]) : []);
+      setStyleId(p.style_id ?? "tiktok-bold");
+      setSizeMult(Number(p.size_mult ?? 1));
+      setColorOverride(p.color_override);
+      setFontFamily(p.font_family);
+      setFontUrl(p.font_url);
+      if (p.font_family) {
+        const match = fonts?.find((f) => f.family === p.font_family);
+        if (match) {
+          try {
+            await ensureFontLoaded(match.family, await signedFontUrl(match.storage_path));
+          } catch {}
+        }
+      }
+      setProjectId(p.id);
+      setProjectName(p.name);
+      setPhase(Array.isArray(p.words) && p.words.length > 0 ? "ready" : "idle");
+      setProjectsOpen(false);
+      toast.success(`Opened “${p.name}”`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not open project");
+    }
+  };
+
 
   // -------- Canvas caption drawing (shared by export) --------
   const drawCaption = (
