@@ -1271,7 +1271,7 @@ export function CaptionAiScreen() {
                 <button
                   onClick={async () => {
                     try {
-                      await deleteCaptionProject(p.id);
+                      await deleteCaptionProject(p);
                       if (projectId === p.id) setProjectId(null);
                       void refetchProjects();
                       toast.success("Project deleted");
