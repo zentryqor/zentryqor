@@ -526,9 +526,23 @@ export function CaptionAiScreen() {
   };
 
   // -------- Cutting --------
-  const totalMs = (durationSec ?? 0) * 1000;
+  const cutMs = cuts.reduce((a, c) => a + (c.end - c.start), 0);
+  /** Length of the timeline after cuts (what the export will be). */
+  const totalMs = Math.max(0, (durationSec ?? 0) * 1000 - cutMs);
 
-  /** Removes a time range: words inside are dropped, later words shift left. */
+  /** Maps an edited-timeline position back to a source video time (cuts re-added). */
+  const editedToSource = useCallback(
+    (ms: number) => {
+      let out = ms;
+      for (const c of [...cuts].sort((a, b) => a.start - b.start)) {
+        if (out >= c.start) out += c.end - c.start;
+      }
+      return out;
+    },
+    [cuts],
+  );
+
+  /** Removes a range of the edited timeline: words inside go, later words shift left. */
   const cutRange = (startMs: number, endMs: number) => {
     const a = Math.max(0, Math.min(startMs, endMs));
     const b = Math.max(0, Math.max(startMs, endMs));
@@ -536,16 +550,19 @@ export function CaptionAiScreen() {
       toast.error("Select a longer range to cut.");
       return;
     }
-    setCuts((prev) => [...prev, { start: a, end: b }].sort((x, y) => x.start - y.start));
+    const srcA = editedToSource(a);
+    const srcB = editedToSource(b);
+    setCuts((prev) => [...prev, { start: srcA, end: srcB }].sort((x, y) => x.start - y.start));
     setWords((prev) =>
       prev
-        .filter((w) => !(w.start >= a - 1 && w.end <= b + 1))
+        .filter((w) => !(w.end > a && w.start < b))
         .map((w) => (w.start >= b ? { ...w, start: w.start - (b - a), end: w.end - (b - a) } : w)),
     );
     setSelection(null);
     setSelectedWord(null);
     toast.success(`Cut ${((b - a) / 1000).toFixed(2)}s`);
   };
+
 
   const removeCut = (i: number) => setCuts((prev) => prev.filter((_, idx) => idx !== i));
 
