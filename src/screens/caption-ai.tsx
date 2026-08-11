@@ -246,7 +246,22 @@ export function CaptionAiScreen() {
   const [durationSec, setDurationSec] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [phase, setPhase] = useState<"idle" | "transcribing" | "ready" | "exporting">("idle");
-  const [words, setWords] = useState<CaptionWord[]>([]);
+  const [words, setWords] = useState<EditWord[]>([]);
+  // Timeline / cutting
+  const [cuts, setCuts] = useState<CaptionCut[]>([]);
+  const [selection, setSelection] = useState<{ start: number; end: number } | null>(null);
+  const [selectedWord, setSelectedWord] = useState<number | null>(null);
+  // Colour + font customisation
+  const [colorOverride, setColorOverride] = useState<string | null>(null);
+  const [fontFamily, setFontFamily] = useState<string | null>(null);
+  const [fontUrl, setFontUrl] = useState<string | null>(null);
+  // Projects
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [projectName, setProjectName] = useState("");
+  const [videoPath, setVideoPath] = useState<string | null>(null);
+  const [savingProject, setSavingProject] = useState(false);
+  const [projectsOpen, setProjectsOpen] = useState(false);
+
   const [styleId, setStyleId] = useState<StyleId>("tiktok-bold");
   const [sizeMult, setSizeMult] = useState(1);
   const [currentMs, setCurrentMs] = useState(0);
