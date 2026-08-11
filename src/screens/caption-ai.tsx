@@ -4,10 +4,15 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Download,
+  FolderOpen,
   Loader2,
+  Palette,
   Plus,
+  Save,
+  Scissors,
   Sparkles,
   Trash2,
+  Type,
   Upload,
   Wand2,
   X,
@@ -24,6 +29,25 @@ import { FirstVisitTutorial } from "@/components/FirstVisitTutorial";
 import { useQuery } from "@tanstack/react-query";
 import { getAiCredits } from "@/lib/ai.functions";
 import { getExportSettings, saveExportSettings } from "@/lib/export-settings.functions";
+import {
+  deleteCaptionFont,
+  deleteCaptionProject,
+  ensureFontLoaded,
+  listCaptionFonts,
+  listCaptionProjects,
+  saveCaptionProject,
+  signedFontUrl,
+  signedVideoUrl,
+  uploadCaptionFont,
+  uploadProjectVideo,
+  type CaptionCut,
+  type CaptionFontRow,
+  type CaptionProjectRow,
+} from "@/lib/caption-projects";
+
+/** A transcript word plus optional per-word font/colour overrides. */
+type EditWord = CaptionWord & { font?: string; color?: string };
+
 
 
 
@@ -176,13 +200,14 @@ function findActiveIndex(words: CaptionWord[], currentMs: number) {
   return -1;
 }
 
-function currentPhrase(words: CaptionWord[], currentMs: number, windowMs = 2600) {
+function currentPhrase<T extends CaptionWord>(words: T[], currentMs: number, windowMs = 2600) {
   const active = findActiveIndex(words, currentMs);
   if (active === -1) {
     const near = words.find(
       (w) => Math.abs(w.start - currentMs) < 400 || Math.abs(w.end - currentMs) < 400,
     );
-    if (!near) return { phrase: [] as CaptionWord[], activeInPhrase: -1 };
+    if (!near) return { phrase: [] as T[], activeInPhrase: -1 };
+
     const startIdx = Math.max(0, words.indexOf(near) - 2);
     const endIdx = Math.min(words.length, startIdx + 8);
     return { phrase: words.slice(startIdx, endIdx), activeInPhrase: -1 };
@@ -222,7 +247,22 @@ export function CaptionAiScreen() {
   const [durationSec, setDurationSec] = useState<number | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [phase, setPhase] = useState<"idle" | "transcribing" | "ready" | "exporting">("idle");
-  const [words, setWords] = useState<CaptionWord[]>([]);
+  const [words, setWords] = useState<EditWord[]>([]);
+  // Timeline / cutting
+  const [cuts, setCuts] = useState<CaptionCut[]>([]);
+  const [selection, setSelection] = useState<{ start: number; end: number } | null>(null);
+  const [selectedWord, setSelectedWord] = useState<number | null>(null);
+  // Colour + font customisation
+  const [colorOverride, setColorOverride] = useState<string | null>(null);
+  const [fontFamily, setFontFamily] = useState<string | null>(null);
+  const [fontUrl, setFontUrl] = useState<string | null>(null);
+  // Projects
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const [projectName, setProjectName] = useState("");
+  const [videoPath, setVideoPath] = useState<string | null>(null);
+  const [savingProject, setSavingProject] = useState(false);
+  const [projectsOpen, setProjectsOpen] = useState(false);
+
   const [styleId, setStyleId] = useState<StyleId>("tiktok-bold");
   const [sizeMult, setSizeMult] = useState(1);
   const [currentMs, setCurrentMs] = useState(0);
@@ -276,17 +316,76 @@ export function CaptionAiScreen() {
 
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const timelineRef = useRef<HTMLDivElement | null>(null);
+  const fontInputRef = useRef<HTMLInputElement | null>(null);
+
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const style = STYLES.find((s) => s.id === styleId) ?? STYLES[0];
   const effectiveStyle: CaptionStyle = useMemo(
-    () => ({ ...style, canvas: { ...style.canvas, fontSizePct: style.canvas.fontSizePct * sizeMult } }),
-    [style, sizeMult],
+    () => ({
+      ...style,
+      canvas: {
+        ...style.canvas,
+        fontSizePct: style.canvas.fontSizePct * sizeMult,
+        ...(fontFamily ? { fontFamily: `"${fontFamily}", ${SANS}` } : {}),
+        ...(colorOverride ? { color: colorOverride, secondColor: undefined } : {}),
+      },
+    }),
+    [style, sizeMult, fontFamily, colorOverride],
   );
   const { phrase, activeInPhrase } = useMemo(
     () => currentPhrase(words, currentMs),
     [words, currentMs],
   );
+
+  // ---- Fonts from storage ----
+  const { data: fonts, refetch: refetchFonts } = useQuery({
+    queryKey: ["caption-fonts"],
+    queryFn: listCaptionFonts,
+    staleTime: 60_000,
+  });
+  useEffect(() => {
+    if (!fonts) return;
+    void (async () => {
+      for (const f of fonts) {
+        try {
+          await ensureFontLoaded(f.family, await signedFontUrl(f.storage_path));
+        } catch {
+          /* ignore a single bad font */
+        }
+      }
+    })();
+  }, [fonts]);
+
+  const pickFont = async (f: CaptionFontRow | null) => {
+    if (!f) {
+      setFontFamily(null);
+      setFontUrl(null);
+      return;
+    }
+    try {
+      const url = await signedFontUrl(f.storage_path);
+      await ensureFontLoaded(f.family, url);
+      setFontFamily(f.family);
+      setFontUrl(url);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not load font");
+    }
+  };
+
+  const applyWordFont = async (i: number, f: CaptionFontRow | null) => {
+    if (f) {
+      try {
+        await ensureFontLoaded(f.family, await signedFontUrl(f.storage_path));
+      } catch {
+        toast.error("Could not load font");
+        return;
+      }
+    }
+    updateWord(i, { font: f ? f.family : undefined });
+  };
 
   const clearAll = () => {
     if (videoUrl) URL.revokeObjectURL(videoUrl);
@@ -295,13 +394,20 @@ export function CaptionAiScreen() {
     setVideoUrl(null);
     setDurationSec(null);
     setWords([]);
+    setCuts([]);
+    setSelection(null);
+    setSelectedWord(null);
     setPhase("idle");
     setCurrentMs(0);
     setExportUrl(null);
     setExportProgress(0);
     setExportStage("idle");
     setExportError(null);
+    setProjectId(null);
+    setProjectName("");
+    setVideoPath(null);
   };
+
 
 
   const acceptFile = useCallback(
@@ -380,25 +486,38 @@ export function CaptionAiScreen() {
     }
   };
 
-  // Keep currentMs in sync with the preview video.
+  // Keep currentMs in sync with the preview video, on the *edited* timeline,
+  // and skip over any cut regions during playback.
+  const cutsRef = useRef<CaptionCut[]>([]);
+  cutsRef.current = cuts;
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
     let raf = 0;
     const tick = () => {
-      setCurrentMs(v.currentTime * 1000);
+      const ms = v.currentTime * 1000;
+      const inside = cutsRef.current.find((c) => ms >= c.start && ms < c.end - 30);
+      if (inside) {
+        v.currentTime = inside.end / 1000;
+      } else {
+        let shift = 0;
+        for (const c of cutsRef.current) if (ms >= c.end) shift += c.end - c.start;
+        setCurrentMs(Math.max(0, ms - shift));
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [videoUrl]);
 
+
   // -------- Transcript editor helpers --------
-  const updateWord = (i: number, patch: Partial<CaptionWord>) => {
+  const updateWord = (i: number, patch: Partial<EditWord>) => {
     setWords((prev) => prev.map((w, idx) => (idx === i ? { ...w, ...patch } : w)));
   };
   const deleteWord = (i: number) => {
     setWords((prev) => prev.filter((_, idx) => idx !== i));
+    setSelectedWord(null);
   };
   const addWordAfter = (i: number) => {
     setWords((prev) => {
@@ -406,10 +525,153 @@ export function CaptionAiScreen() {
       const next = prev[i + 1];
       const start = cur ? cur.end + 20 : 0;
       const end = next ? Math.max(start + 100, (start + next.start) / 2) : start + 400;
-      const nw: CaptionWord = { text: "new", start, end };
+      const nw: EditWord = { text: "new", start, end };
       return [...prev.slice(0, i + 1), nw, ...prev.slice(i + 1)];
     });
   };
+
+  // -------- Cutting --------
+  const cutMs = cuts.reduce((a, c) => a + (c.end - c.start), 0);
+  /** Length of the timeline after cuts (what the export will be). */
+  const totalMs = Math.max(0, (durationSec ?? 0) * 1000 - cutMs);
+
+  /** Maps an edited-timeline position back to a source video time (cuts re-added). */
+  const editedToSource = useCallback(
+    (ms: number) => {
+      let out = ms;
+      for (const c of [...cuts].sort((a, b) => a.start - b.start)) {
+        if (out >= c.start) out += c.end - c.start;
+      }
+      return out;
+    },
+    [cuts],
+  );
+
+  /** Removes a range of the edited timeline: words inside go, later words shift left. */
+  const cutRange = (startMs: number, endMs: number) => {
+    const a = Math.max(0, Math.min(startMs, endMs));
+    const b = Math.max(0, Math.max(startMs, endMs));
+    if (b - a < 40) {
+      toast.error("Select a longer range to cut.");
+      return;
+    }
+    const srcA = editedToSource(a);
+    const srcB = editedToSource(b);
+    setCuts((prev) => [...prev, { start: srcA, end: srcB }].sort((x, y) => x.start - y.start));
+    setWords((prev) =>
+      prev
+        .filter((w) => !(w.end > a && w.start < b))
+        .map((w) => (w.start >= b ? { ...w, start: w.start - (b - a), end: w.end - (b - a) } : w)),
+    );
+    setSelection(null);
+    setSelectedWord(null);
+    toast.success(`Cut ${((b - a) / 1000).toFixed(2)}s`);
+  };
+
+
+  const removeCut = (i: number) => setCuts((prev) => prev.filter((_, idx) => idx !== i));
+
+
+  const seekEdited = (ms: number) => {
+    const v = videoRef.current;
+    if (v) v.currentTime = editedToSource(ms) / 1000;
+  };
+
+  // -------- Projects --------
+  const { data: projects, refetch: refetchProjects } = useQuery({
+    queryKey: ["caption-projects"],
+    queryFn: listCaptionProjects,
+    staleTime: 30_000,
+  });
+
+  const persistProject = useCallback(
+    async (opts?: { silent?: boolean; nameHint?: string }) => {
+      if (!file && !videoPath) return;
+      setSavingProject(true);
+      try {
+        let path = videoPath;
+        if (!path && file) {
+          path = await uploadProjectVideo(file);
+          setVideoPath(path);
+        }
+        const name = projectName || opts?.nameHint || file?.name || "Untitled project";
+        const id = await saveCaptionProject({
+          id: projectId,
+          name,
+          videoPath: path,
+          videoName: file?.name ?? null,
+          durationSec: durationSec,
+          words,
+          cuts,
+          styleId,
+          sizeMult,
+          colorOverride,
+          fontUrl,
+          fontFamily,
+        });
+        setProjectId(id);
+        setProjectName(name);
+        void refetchProjects();
+        if (!opts?.silent) toast.success("Project saved — you can edit it later.");
+      } catch (e: any) {
+        toast.error(e?.message ?? "Could not save project");
+      } finally {
+        setSavingProject(false);
+      }
+    },
+    [
+      file,
+      videoPath,
+      projectId,
+      projectName,
+      durationSec,
+      words,
+      cuts,
+      styleId,
+      sizeMult,
+      colorOverride,
+      fontUrl,
+      fontFamily,
+      refetchProjects,
+    ],
+  );
+
+  const openProject = async (p: CaptionProjectRow) => {
+    try {
+      if (!p.video_path) throw new Error("This project has no video attached.");
+      const url = await signedVideoUrl(p.video_path);
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+      if (exportUrl) URL.revokeObjectURL(exportUrl);
+      setExportUrl(null);
+      setFile(null);
+      setVideoPath(p.video_path);
+      setVideoUrl(url);
+      setDurationSec(p.duration_sec ? Number(p.duration_sec) : null);
+      setWords(Array.isArray(p.words) ? (p.words as EditWord[]) : []);
+      setCuts(Array.isArray(p.cuts) ? (p.cuts as CaptionCut[]) : []);
+      setStyleId(p.style_id ?? "tiktok-bold");
+      setSizeMult(Number(p.size_mult ?? 1));
+      setColorOverride(p.color_override);
+      setFontFamily(p.font_family);
+      setFontUrl(p.font_url);
+      if (p.font_family) {
+        const match = fonts?.find((f) => f.family === p.font_family);
+        if (match) {
+          try {
+            await ensureFontLoaded(match.family, await signedFontUrl(match.storage_path));
+          } catch {}
+        }
+      }
+      setProjectId(p.id);
+      setProjectName(p.name);
+      setPhase(Array.isArray(p.words) && p.words.length > 0 ? "ready" : "idle");
+      setProjectsOpen(false);
+      toast.success(`Opened “${p.name}”`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not open project");
+    }
+  };
+
 
   // -------- Canvas caption drawing (shared by export) --------
   const drawCaption = (
@@ -428,14 +690,22 @@ export function CaptionAiScreen() {
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
 
-    const renderText = (w: CaptionWord) => (s.uppercase ? w.text.toUpperCase() : w.text);
+    const renderText = (w: EditWord) => (s.uppercase ? w.text.toUpperCase() : w.text);
     const gap = fontSize * 0.35;
+    const fontFor = (w: EditWord) =>
+      w.font
+        ? buildFontSpec({ ...s, fontFamily: `"${w.font}", ${SANS}` }, fontSize)
+        : buildFontSpec(s, fontSize);
 
-    const widths = phrase.map((w) => ctx.measureText(renderText(w)).width);
+    const widths = phrase.map((w) => {
+      ctx.font = fontFor(w);
+      return ctx.measureText(renderText(w)).width;
+    });
     const totalWidth = widths.reduce((a, b) => a + b, 0) + gap * (phrase.length - 1);
 
     const maxWidth = width * 0.9;
-    const lines: { words: CaptionWord[]; widths: number[]; total: number; startIdx: number }[] = [];
+    const lines: { words: EditWord[]; widths: number[]; total: number; startIdx: number }[] = [];
+
     if (totalWidth <= maxWidth) {
       lines.push({ words: phrase, widths, total: totalWidth, startIdx: 0 });
     } else {
@@ -494,6 +764,7 @@ export function CaptionAiScreen() {
         }
         const cx = x + ww / 2;
         const cy = y + bounce;
+        ctx.font = fontFor(w);
 
         // Active-word box (highlight background)
         if (isActive && s.activeBoxColor) {
@@ -518,13 +789,16 @@ export function CaptionAiScreen() {
           ctx.strokeText(wtxt, cx, cy);
         }
 
-        // color: second word onwards uses secondColor if set
-        const baseColor = flatIdx > 0 && s.secondColor ? s.secondColor : s.color;
+        // colour: per-word override wins, then two-tone, then style colour
+        const baseColor = w.color ?? (flatIdx > 0 && s.secondColor ? s.secondColor : s.color);
         ctx.fillStyle =
-          s.highlight === "word" && isActive && s.highlightColor
-            ? s.highlightColor
-            : baseColor;
+          w.color
+            ? w.color
+            : s.highlight === "word" && isActive && s.highlightColor
+              ? s.highlightColor
+              : baseColor;
         ctx.fillText(wtxt, cx, cy);
+
 
         ctx.shadowBlur = 0;
         x += ww + gap;
@@ -623,7 +897,7 @@ export function CaptionAiScreen() {
   const exportExtRef = useRef<string>("mp4");
 
   const exportVideo = async () => {
-    if (!file || words.length === 0) return;
+    if ((!file && !videoUrl) || words.length === 0) return;
     setPhase("exporting");
     setExportProgress(0);
     setExportError(null);
@@ -639,8 +913,10 @@ export function CaptionAiScreen() {
     try {
       const src = document.createElement("video");
       tempSrc = src;
-      srcUrl = URL.createObjectURL(file);
-      src.src = srcUrl;
+      srcUrl = file ? URL.createObjectURL(file) : null;
+      src.crossOrigin = "anonymous";
+      src.src = srcUrl ?? videoUrl!;
+
       src.playsInline = true;
       src.preload = "auto";
       // Keep it out of view but attached so decoding is not throttled.
@@ -800,11 +1076,26 @@ export function CaptionAiScreen() {
       const guard = setTimeout(() => void finish(), (duration + 5) * 1000);
 
       const useRVFC = typeof (src as any).requestVideoFrameCallback === "function";
+      const sortedCuts = [...cuts].sort((a, b) => a.start - b.start);
+      const toEdited = (ms: number) => {
+        let shift = 0;
+        for (const c of sortedCuts) if (ms >= c.end) shift += c.end - c.start;
+        return Math.max(0, ms - shift);
+      };
       const paint = () => {
         if (stopped) return;
+        const ms = src.currentTime * 1000;
+        // Jump over cut regions so they never make it into the recording.
+        const inside = sortedCuts.find((c) => ms >= c.start && ms < c.end - 30);
+        if (inside) {
+          src.currentTime = inside.end / 1000;
+          if (useRVFC) (src as any).requestVideoFrameCallback(paint);
+          else requestAnimationFrame(paint);
+          return;
+        }
         try {
           ctx.drawImage(src, 0, 0, width, height);
-          drawCaption(ctx, width, height, src.currentTime * 1000);
+          drawCaption(ctx, width, height, toEdited(ms));
         } catch {}
         setExportProgress(Math.min(0.99, src.currentTime / duration));
         if (src.ended || src.currentTime >= duration - 0.02) {
@@ -814,6 +1105,7 @@ export function CaptionAiScreen() {
         if (useRVFC) (src as any).requestVideoFrameCallback(paint);
         else requestAnimationFrame(paint);
       };
+
       if (useRVFC) (src as any).requestVideoFrameCallback(paint);
       else requestAnimationFrame(paint);
 
@@ -927,7 +1219,83 @@ export function CaptionAiScreen() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px] pb-32">
+      {/* Projects bar */}
+      <div className="mb-6 rounded-2xl border border-border/50 bg-elevated/30 p-3 sm:p-4">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap sm:justify-between">
+          <div className="flex min-w-0 items-center gap-2">
+            <FolderOpen className="w-4 h-4 shrink-0 text-primary" />
+            <input
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              placeholder="Untitled project"
+              className="min-w-0 flex-1 bg-transparent border border-border/40 rounded-full px-3 py-1.5 text-sm outline-none focus:border-primary"
+            />
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              onClick={() => setProjectsOpen((o) => !o)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/60 text-xs hover:bg-elevated/60 transition"
+            >
+              <FolderOpen className="w-3.5 h-3.5" />
+              Projects{projects?.length ? ` (${projects.length})` : ""}
+            </button>
+            <button
+              onClick={() => void persistProject()}
+              disabled={savingProject || (!file && !videoPath)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50 hover:opacity-90 transition"
+            >
+              {savingProject ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+              Save
+            </button>
+          </div>
+        </div>
+
+        {projectsOpen && (
+          <div className="mt-3 space-y-1.5 max-h-64 overflow-y-auto">
+            {(projects ?? []).length === 0 && (
+              <div className="text-xs text-muted-foreground px-1 py-2">
+                No saved projects yet — transcribe a clip and hit Save.
+              </div>
+            )}
+            {(projects ?? []).map((p) => (
+              <div
+                key={p.id}
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border/40 bg-background/40 px-3 py-2"
+              >
+                <button
+                  onClick={() => void openProject(p)}
+                  className="min-w-0 text-left"
+                >
+                  <div className="truncate text-sm font-medium">{p.name}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {new Date(p.updated_at).toLocaleString()}
+                    {p.duration_sec ? ` · ${Number(p.duration_sec).toFixed(1)}s` : ""}
+                  </div>
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await deleteCaptionProject(p);
+                      if (projectId === p.id) setProjectId(null);
+                      void refetchProjects();
+                      toast.success("Project deleted");
+                    } catch (e: any) {
+                      toast.error(e?.message ?? "Could not delete");
+                    }
+                  }}
+                  className="shrink-0 p-1.5 rounded-md border border-border/40 text-destructive hover:bg-destructive/15"
+                  title="Delete project"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] pb-32">
+
 
         {/* Left column */}
         <div className="space-y-6">
@@ -1000,13 +1368,20 @@ export function CaptionAiScreen() {
                   </div>
                 )}
               </div>
-              <div className="flex items-center justify-between p-4 border-t border-border/40 gap-3 flex-wrap">
-                <div className="text-sm text-muted-foreground truncate">
-                  <span className="text-foreground font-medium">{file?.name}</span>
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 p-4 border-t border-border/40 sm:flex sm:flex-wrap sm:justify-between">
+                <div className="min-w-0 text-sm text-muted-foreground truncate">
+                  <span className="text-foreground font-medium">
+                    {file?.name ?? projectName ?? "Project video"}
+                  </span>
                   {durationSec && (
-                    <> · {durationSec.toFixed(1)}s · {(file!.size / (1024 * 1024)).toFixed(1)}MB</>
+                    <>
+                      {" · "}
+                      {durationSec.toFixed(1)}s
+                      {file ? ` · ${(file.size / (1024 * 1024)).toFixed(1)}MB` : ""}
+                    </>
                   )}
                 </div>
+
                 <button
                   onClick={clearAll}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/60 text-sm hover:bg-elevated/50 transition"
@@ -1183,30 +1558,196 @@ export function CaptionAiScreen() {
 
 
 
-          {/* Transcript editor */}
-          {words.length > 0 && (
-            <div className="rounded-3xl border border-border/50 bg-elevated/30 p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <div className="text-sm font-semibold">Transcript editor</div>
+          {/* Timeline + cutting */}
+          {words.length > 0 && totalMs > 0 && (
+            <div className="rounded-3xl border border-border/50 bg-elevated/30 p-4 sm:p-5">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:flex sm:flex-wrap sm:justify-between">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold">Timeline</div>
                   <div className="text-xs text-muted-foreground">
-                    Edit the word, tweak start/end timings, or delete. Changes apply live to the preview and export.
+                    Drag across the track to select a range, then cut it. Words inside are removed
+                    and everything after shifts left.
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground">{words.length} words</div>
+                <div className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+                  {(totalMs / 1000).toFixed(2)}s
+                  {cutMs > 0 ? ` · −${(cutMs / 1000).toFixed(2)}s cut` : ""}
+                </div>
               </div>
-              <div className="max-h-[420px] overflow-y-auto pr-2 space-y-1.5">
+
+              <div
+                ref={timelineRef}
+                onPointerDown={(e) => {
+                  const el = e.currentTarget;
+                  el.setPointerCapture(e.pointerId);
+                  const at = (clientX: number) => {
+                    const r = el.getBoundingClientRect();
+                    return Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * totalMs;
+                  };
+                  const startMs = at(e.clientX);
+                  setSelection({ start: startMs, end: startMs });
+                  seekEdited(startMs);
+                  const move = (ev: PointerEvent) =>
+                    setSelection({ start: startMs, end: at(ev.clientX) });
+                  const up = () => {
+                    el.removeEventListener("pointermove", move);
+                    el.removeEventListener("pointerup", up);
+                  };
+                  el.addEventListener("pointermove", move);
+                  el.addEventListener("pointerup", up);
+                }}
+                className="relative mt-4 h-16 w-full cursor-crosshair overflow-hidden rounded-2xl border border-border/40 bg-background/50 touch-none select-none"
+              >
+                {words.map((w, i) => (
+                  <div
+                    key={i}
+                    className={`absolute top-2 bottom-6 rounded-[4px] ${
+                      i === selectedWord ? "bg-primary" : "bg-primary/35"
+                    }`}
+                    style={{
+                      left: `${(w.start / totalMs) * 100}%`,
+                      width: `${Math.max(0.4, ((w.end - w.start) / totalMs) * 100)}%`,
+                    }}
+                    title={w.text}
+                  />
+                ))}
+                {selection && (
+                  <div
+                    className="absolute inset-y-0 border-x border-primary bg-primary/20"
+                    style={{
+                      left: `${(Math.min(selection.start, selection.end) / totalMs) * 100}%`,
+                      width: `${(Math.abs(selection.end - selection.start) / totalMs) * 100}%`,
+                    }}
+                  />
+                )}
+                <div
+                  className="absolute inset-y-0 w-[2px] bg-foreground"
+                  style={{ left: `${Math.min(100, (currentMs / totalMs) * 100)}%` }}
+                />
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => selection && cutRange(selection.start, selection.end)}
+                  disabled={!selection || Math.abs(selection.end - selection.start) < 40}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground disabled:opacity-50 hover:opacity-90 transition"
+                >
+                  <Scissors className="w-3.5 h-3.5" />
+                  Cut selection
+                </button>
+                {selection && (
+                  <button
+                    onClick={() => setSelection(null)}
+                    className="rounded-full border border-border/60 px-3 py-1.5 text-xs hover:bg-elevated/60"
+                  >
+                    Clear selection
+                  </button>
+                )}
+                {cuts.map((c, i) => (
+                  <button
+                    key={i}
+                    onClick={() => removeCut(i)}
+                    className="inline-flex items-center gap-1 rounded-full border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-[11px] text-destructive"
+                    title="Restore this cut (word timings stay as edited)"
+                  >
+                    <X className="w-3 h-3" />
+                    {(c.start / 1000).toFixed(2)}–{(c.end / 1000).toFixed(2)}s
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Word inspector */}
+          {selectedWord !== null && words[selectedWord] && (
+            <div className="rounded-3xl border border-primary/40 bg-primary/5 p-4 sm:p-5">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold truncate">
+                    Word: “{words[selectedWord].text}”
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Give this single word its own font and colour.
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedWord(null)}
+                  className="shrink-0 rounded-full border border-border/60 p-1.5 hover:bg-elevated/60"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div>
+                  <div className="mb-1.5 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Word colour
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={words[selectedWord].color ?? colorOverride ?? "#ffffff"}
+                      onChange={(e) => updateWord(selectedWord, { color: e.target.value })}
+                      className="h-9 w-12 rounded-lg border border-border/50 bg-transparent"
+                    />
+                    <button
+                      onClick={() => updateWord(selectedWord, { color: undefined })}
+                      className="rounded-full border border-border/60 px-3 py-1.5 text-xs hover:bg-elevated/60"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <div className="mb-1.5 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                    Word font
+                  </div>
+                  <select
+                    value={words[selectedWord].font ?? ""}
+                    onChange={(e) =>
+                      updateWord(selectedWord, { font: e.target.value || undefined })
+                    }
+                    className="w-full rounded-full border border-border/50 bg-background/60 px-3 py-2 text-xs outline-none focus:border-primary"
+                  >
+                    <option value="">Same as caption style</option>
+                    {(fonts ?? []).map((f) => (
+                      <option key={f.id} value={f.family}>
+                        {f.family}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Transcript editor */}
+          {words.length > 0 && (
+            <div className="rounded-3xl border border-border/50 bg-elevated/30 p-4 sm:p-5">
+              <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 mb-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold">Transcript editor</div>
+                  <div className="text-xs text-muted-foreground">
+                    Edit the word, tweak start/end timings, or delete. Tap a word to style it on its own.
+                  </div>
+                </div>
+                <div className="shrink-0 text-xs text-muted-foreground">{words.length} words</div>
+              </div>
+              <div className="max-h-[420px] overflow-y-auto pr-1 sm:pr-2 space-y-1.5">
                 {words.map((w, i) => {
                   const active = i === findActiveIndex(words, currentMs);
                   return (
                     <div
                       key={i}
-                      className={`grid grid-cols-[1fr_84px_84px_auto_auto] gap-2 items-center rounded-xl border p-2 text-xs transition ${
-                        active
-                          ? "border-primary bg-primary/10"
-                          : "border-border/40 bg-background/40"
+                      onClick={() => setSelectedWord(i)}
+                      className={`grid grid-cols-[minmax(0,1fr)_64px_64px] sm:grid-cols-[minmax(0,1fr)_84px_84px_auto_auto] gap-2 items-center rounded-xl border p-2 text-xs transition ${
+                        i === selectedWord
+                          ? "border-primary bg-primary/15"
+                          : active
+                            ? "border-primary bg-primary/10"
+                            : "border-border/40 bg-background/40"
                       }`}
                     >
+
                       <input
                         value={w.text}
                         onChange={(e) => updateWord(i, { text: e.target.value })}
@@ -1293,6 +1834,114 @@ export function CaptionAiScreen() {
               <span>Huge</span>
             </div>
           </div>
+
+          {/* Caption colour */}
+          <div className="rounded-2xl border border-border/50 bg-elevated/30 p-4">
+            <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              <Palette className="w-3.5 h-3.5" />
+              Caption colour
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={colorOverride ?? "#ffffff"}
+                onChange={(e) => setColorOverride(e.target.value)}
+                className="h-9 w-12 shrink-0 rounded-lg border border-border/50 bg-transparent"
+              />
+              <button
+                onClick={() => setColorOverride(null)}
+                className="rounded-full border border-border/60 px-3 py-1.5 text-xs hover:bg-elevated/60"
+              >
+                Use style colour
+              </button>
+            </div>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Applies to every word. Tap a word in the transcript to colour just that one.
+            </p>
+          </div>
+
+          {/* Fonts */}
+          <div className="rounded-2xl border border-border/50 bg-elevated/30 p-4">
+            <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted-foreground">
+              <Type className="w-3.5 h-3.5" />
+              Fonts
+            </div>
+            <div className="space-y-1.5">
+              <button
+                onClick={() => void pickFont(null)}
+                className={`w-full rounded-xl border px-3 py-2 text-left text-xs transition ${
+                  fontFamily === null
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border/40 hover:bg-elevated/60"
+                }`}
+              >
+                Style default
+              </button>
+              {(fonts ?? []).map((f) => (
+                <div
+                  key={f.id}
+                  className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2"
+                >
+                  <button
+                    onClick={() => void pickFont(f)}
+                    style={{ fontFamily: `"${f.family}", ${SANS}` }}
+                    className={`min-w-0 truncate rounded-xl border px-3 py-2 text-left text-xs transition ${
+                      fontFamily === f.family
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border/40 hover:bg-elevated/60"
+                    }`}
+                  >
+                    {f.family}
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        await deleteCaptionFont(f);
+                        if (fontFamily === f.family) void pickFont(null);
+                        void refetchFonts();
+                      } catch (e: any) {
+                        toast.error(e?.message ?? "Could not delete font");
+                      }
+                    }}
+                    className="shrink-0 rounded-md border border-border/40 p-1.5 text-destructive hover:bg-destructive/15"
+                    title="Delete font"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <input
+              ref={fontInputRef}
+              type="file"
+              accept=".ttf,.otf,.woff,.woff2,font/*"
+              className="hidden"
+              onChange={async (e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (!f) return;
+                const family = f.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim();
+                try {
+                  const row = await uploadCaptionFont(f, family || "Custom font");
+                  await refetchFonts();
+                  await pickFont(row);
+                  toast.success(`Added ${row.family}`);
+                } catch (err: any) {
+                  toast.error(err?.message ?? "Could not upload font");
+                }
+              }}
+            />
+            <button
+              onClick={() => fontInputRef.current?.click()}
+              className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-border/60 px-3 py-2 text-xs hover:bg-elevated/60 transition"
+            >
+              <Upload className="w-3.5 h-3.5" />
+              Upload font (TTF/OTF/WOFF)
+            </button>
+          </div>
+
+
 
           {/* Export settings */}
           <div className="rounded-2xl border border-border/50 bg-elevated/30 p-4 space-y-4">

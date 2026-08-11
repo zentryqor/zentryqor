@@ -352,6 +352,84 @@ export type Database = {
         }
         Relationships: []
       }
+      caption_fonts: {
+        Row: {
+          created_at: string
+          family: string
+          id: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          family: string
+          id?: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          family?: string
+          id?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      caption_projects: {
+        Row: {
+          color_override: string | null
+          created_at: string
+          cuts: Json
+          duration_sec: number | null
+          font_family: string | null
+          font_url: string | null
+          id: string
+          name: string
+          size_mult: number
+          style_id: string | null
+          updated_at: string
+          user_id: string
+          video_name: string | null
+          video_path: string | null
+          words: Json
+        }
+        Insert: {
+          color_override?: string | null
+          created_at?: string
+          cuts?: Json
+          duration_sec?: number | null
+          font_family?: string | null
+          font_url?: string | null
+          id?: string
+          name: string
+          size_mult?: number
+          style_id?: string | null
+          updated_at?: string
+          user_id: string
+          video_name?: string | null
+          video_path?: string | null
+          words?: Json
+        }
+        Update: {
+          color_override?: string | null
+          created_at?: string
+          cuts?: Json
+          duration_sec?: number | null
+          font_family?: string | null
+          font_url?: string | null
+          id?: string
+          name?: string
+          size_mult?: number
+          style_id?: string | null
+          updated_at?: string
+          user_id?: string
+          video_name?: string | null
+          video_path?: string | null
+          words?: Json
+        }
+        Relationships: []
+      }
       creator_preferences: {
         Row: {
           created_at: string
