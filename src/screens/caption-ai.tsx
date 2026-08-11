@@ -1215,7 +1215,83 @@ export function CaptionAiScreen() {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px] pb-32">
+      {/* Projects bar */}
+      <div className="mb-6 rounded-2xl border border-border/50 bg-elevated/30 p-3 sm:p-4">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:flex-wrap sm:justify-between">
+          <div className="flex min-w-0 items-center gap-2">
+            <FolderOpen className="w-4 h-4 shrink-0 text-primary" />
+            <input
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              placeholder="Untitled project"
+              className="min-w-0 flex-1 bg-transparent border border-border/40 rounded-full px-3 py-1.5 text-sm outline-none focus:border-primary"
+            />
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              onClick={() => setProjectsOpen((o) => !o)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/60 text-xs hover:bg-elevated/60 transition"
+            >
+              <FolderOpen className="w-3.5 h-3.5" />
+              Projects{projects?.length ? ` (${projects.length})` : ""}
+            </button>
+            <button
+              onClick={() => void persistProject()}
+              disabled={savingProject || (!file && !videoPath)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-semibold disabled:opacity-50 hover:opacity-90 transition"
+            >
+              {savingProject ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+              Save
+            </button>
+          </div>
+        </div>
+
+        {projectsOpen && (
+          <div className="mt-3 space-y-1.5 max-h-64 overflow-y-auto">
+            {(projects ?? []).length === 0 && (
+              <div className="text-xs text-muted-foreground px-1 py-2">
+                No saved projects yet — transcribe a clip and hit Save.
+              </div>
+            )}
+            {(projects ?? []).map((p) => (
+              <div
+                key={p.id}
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border/40 bg-background/40 px-3 py-2"
+              >
+                <button
+                  onClick={() => void openProject(p)}
+                  className="min-w-0 text-left"
+                >
+                  <div className="truncate text-sm font-medium">{p.name}</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {new Date(p.updated_at).toLocaleString()}
+                    {p.duration_sec ? ` · ${Number(p.duration_sec).toFixed(1)}s` : ""}
+                  </div>
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await deleteCaptionProject(p.id);
+                      if (projectId === p.id) setProjectId(null);
+                      void refetchProjects();
+                      toast.success("Project deleted");
+                    } catch (e: any) {
+                      toast.error(e?.message ?? "Could not delete");
+                    }
+                  }}
+                  className="shrink-0 p-1.5 rounded-md border border-border/40 text-destructive hover:bg-destructive/15"
+                  title="Delete project"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] pb-32">
+
 
         {/* Left column */}
         <div className="space-y-6">
