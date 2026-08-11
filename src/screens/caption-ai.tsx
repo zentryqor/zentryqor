@@ -685,14 +685,22 @@ export function CaptionAiScreen() {
     ctx.textBaseline = "middle";
     ctx.textAlign = "center";
 
-    const renderText = (w: CaptionWord) => (s.uppercase ? w.text.toUpperCase() : w.text);
+    const renderText = (w: EditWord) => (s.uppercase ? w.text.toUpperCase() : w.text);
     const gap = fontSize * 0.35;
+    const fontFor = (w: EditWord) =>
+      w.font
+        ? buildFontSpec({ ...s, fontFamily: `"${w.font}", ${SANS}` }, fontSize)
+        : buildFontSpec(s, fontSize);
 
-    const widths = phrase.map((w) => ctx.measureText(renderText(w)).width);
+    const widths = phrase.map((w) => {
+      ctx.font = fontFor(w);
+      return ctx.measureText(renderText(w)).width;
+    });
     const totalWidth = widths.reduce((a, b) => a + b, 0) + gap * (phrase.length - 1);
 
     const maxWidth = width * 0.9;
-    const lines: { words: CaptionWord[]; widths: number[]; total: number; startIdx: number }[] = [];
+    const lines: { words: EditWord[]; widths: number[]; total: number; startIdx: number }[] = [];
+
     if (totalWidth <= maxWidth) {
       lines.push({ words: phrase, widths, total: totalWidth, startIdx: 0 });
     } else {
