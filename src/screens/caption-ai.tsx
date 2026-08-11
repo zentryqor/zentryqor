@@ -566,17 +566,6 @@ export function CaptionAiScreen() {
 
   const removeCut = (i: number) => setCuts((prev) => prev.filter((_, idx) => idx !== i));
 
-  /** Maps an edited-timeline position back to a source video time (cuts re-added). */
-  const editedToSource = useCallback(
-    (ms: number) => {
-      let out = ms;
-      for (const c of [...cuts].sort((a, b) => a.start - b.start)) {
-        if (out >= c.start) out += c.end - c.start;
-      }
-      return out;
-    },
-    [cuts],
-  );
 
   const seekEdited = (ms: number) => {
     const v = videoRef.current;
