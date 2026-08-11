@@ -319,13 +319,68 @@ export function CaptionAiScreen() {
 
   const style = STYLES.find((s) => s.id === styleId) ?? STYLES[0];
   const effectiveStyle: CaptionStyle = useMemo(
-    () => ({ ...style, canvas: { ...style.canvas, fontSizePct: style.canvas.fontSizePct * sizeMult } }),
-    [style, sizeMult],
+    () => ({
+      ...style,
+      canvas: {
+        ...style.canvas,
+        fontSizePct: style.canvas.fontSizePct * sizeMult,
+        ...(fontFamily ? { fontFamily: `"${fontFamily}", ${SANS}` } : {}),
+        ...(colorOverride ? { color: colorOverride, secondColor: undefined } : {}),
+      },
+    }),
+    [style, sizeMult, fontFamily, colorOverride],
   );
   const { phrase, activeInPhrase } = useMemo(
     () => currentPhrase(words, currentMs),
     [words, currentMs],
   );
+
+  // ---- Fonts from storage ----
+  const { data: fonts, refetch: refetchFonts } = useQuery({
+    queryKey: ["caption-fonts"],
+    queryFn: listCaptionFonts,
+    staleTime: 60_000,
+  });
+  useEffect(() => {
+    if (!fonts) return;
+    void (async () => {
+      for (const f of fonts) {
+        try {
+          await ensureFontLoaded(f.family, await signedFontUrl(f.storage_path));
+        } catch {
+          /* ignore a single bad font */
+        }
+      }
+    })();
+  }, [fonts]);
+
+  const pickFont = async (f: CaptionFontRow | null) => {
+    if (!f) {
+      setFontFamily(null);
+      setFontUrl(null);
+      return;
+    }
+    try {
+      const url = await signedFontUrl(f.storage_path);
+      await ensureFontLoaded(f.family, url);
+      setFontFamily(f.family);
+      setFontUrl(url);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not load font");
+    }
+  };
+
+  const applyWordFont = async (i: number, f: CaptionFontRow | null) => {
+    if (f) {
+      try {
+        await ensureFontLoaded(f.family, await signedFontUrl(f.storage_path));
+      } catch {
+        toast.error("Could not load font");
+        return;
+      }
+    }
+    updateWord(i, { font: f ? f.family : undefined });
+  };
 
   const clearAll = () => {
     if (videoUrl) URL.revokeObjectURL(videoUrl);
@@ -334,13 +389,20 @@ export function CaptionAiScreen() {
     setVideoUrl(null);
     setDurationSec(null);
     setWords([]);
+    setCuts([]);
+    setSelection(null);
+    setSelectedWord(null);
     setPhase("idle");
     setCurrentMs(0);
     setExportUrl(null);
     setExportProgress(0);
     setExportStage("idle");
     setExportError(null);
+    setProjectId(null);
+    setProjectName("");
+    setVideoPath(null);
   };
+
 
 
   const acceptFile = useCallback(
