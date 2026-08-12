@@ -577,15 +577,63 @@ export function CaptionAiScreen() {
   }, [videoUrl]);
 
 
+  // -------- Undo / redo --------
+  const pushHistory = useCallback(() => {
+    setPast((p) => [...p.slice(-49), { words, cuts }]);
+    setFuture([]);
+  }, [words, cuts]);
+
+  const undo = useCallback(() => {
+    if (past.length === 0) return;
+    const snap = past[past.length - 1];
+    setFuture((f) => [...f.slice(-49), { words, cuts }]);
+    setPast((p) => p.slice(0, -1));
+    setWords(snap.words);
+    setCuts(snap.cuts);
+    setSelection(null);
+    setSelectedWord(null);
+  }, [past, words, cuts]);
+
+  const redo = useCallback(() => {
+    if (future.length === 0) return;
+    const snap = future[future.length - 1];
+    setPast((p) => [...p.slice(-49), { words, cuts }]);
+    setFuture((f) => f.slice(0, -1));
+    setWords(snap.words);
+    setCuts(snap.cuts);
+    setSelection(null);
+    setSelectedWord(null);
+  }, [future, words, cuts]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+      } else if (e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [undo, redo]);
+
   // -------- Transcript editor helpers --------
   const updateWord = (i: number, patch: Partial<EditWord>) => {
     setWords((prev) => prev.map((w, idx) => (idx === i ? { ...w, ...patch } : w)));
   };
   const deleteWord = (i: number) => {
+    pushHistory();
     setWords((prev) => prev.filter((_, idx) => idx !== i));
     setSelectedWord(null);
   };
   const addWordAfter = (i: number) => {
+    pushHistory();
     setWords((prev) => {
       const cur = prev[i];
       const next = prev[i + 1];
@@ -600,6 +648,35 @@ export function CaptionAiScreen() {
   const cutMs = cuts.reduce((a, c) => a + (c.end - c.start), 0);
   /** Length of the timeline after cuts (what the export will be). */
   const totalMs = Math.max(0, (durationSec ?? 0) * 1000 - cutMs);
+
+  /** Effective frame rate used for snapping, preview and export. */
+  const activeFps =
+    exportFps === "match" ? Math.round(detectedFps ?? 30) : exportFps;
+
+  /** Snaps a millisecond position to the nearest frame or caption cue. */
+  const snap = useCallback(
+    (ms: number) => {
+      if (snapMode === "off") return ms;
+      if (snapMode === "frame") {
+        const step = 1000 / Math.max(1, activeFps);
+        return Math.round(ms / step) * step;
+      }
+      const tolerance = Math.max(40, 1200 / Math.max(1, zoom));
+      let best = ms;
+      let bestD = Infinity;
+      for (const w of words) {
+        for (const cue of [w.start, w.end]) {
+          const d = Math.abs(cue - ms);
+          if (d < bestD) {
+            bestD = d;
+            best = cue;
+          }
+        }
+      }
+      return bestD <= tolerance ? best : ms;
+    },
+    [snapMode, activeFps, zoom, words],
+  );
 
   /** Maps an edited-timeline position back to a source video time (cuts re-added). */
   const editedToSource = useCallback(
@@ -623,6 +700,7 @@ export function CaptionAiScreen() {
     }
     const srcA = editedToSource(a);
     const srcB = editedToSource(b);
+    pushHistory();
     setCuts((prev) => [...prev, { start: srcA, end: srcB }].sort((x, y) => x.start - y.start));
     setWords((prev) =>
       prev
@@ -635,13 +713,17 @@ export function CaptionAiScreen() {
   };
 
 
-  const removeCut = (i: number) => setCuts((prev) => prev.filter((_, idx) => idx !== i));
+  const removeCut = (i: number) => {
+    pushHistory();
+    setCuts((prev) => prev.filter((_, idx) => idx !== i));
+  };
 
 
   const seekEdited = (ms: number) => {
     const v = videoRef.current;
     if (v) v.currentTime = editedToSource(ms) / 1000;
   };
+
 
   // -------- Projects --------
   const { data: projects, refetch: refetchProjects } = useQuery({
