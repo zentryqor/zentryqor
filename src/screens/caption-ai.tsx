@@ -7,6 +7,7 @@ import {
   FolderOpen,
   Loader2,
   Palette,
+  Redo2,
   Plus,
   Save,
   Scissors,
@@ -14,8 +15,11 @@ import {
   Trash2,
   Type,
   Upload,
+  Undo2,
   Wand2,
   X,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import {
   startTranscription,
@@ -405,6 +409,7 @@ export function CaptionAiScreen() {
     () => currentPhrase(words, currentMs),
     [words, currentMs],
   );
+  const blocks = useMemo(() => buildBlocks(words), [words]);
 
   // ---- Fonts from storage ----
   const { data: fonts, refetch: refetchFonts } = useQuery({
@@ -1770,7 +1775,7 @@ export function CaptionAiScreen() {
                 <div className="min-w-0">
                   <div className="text-sm font-semibold">Timeline</div>
                   <div className="text-xs text-muted-foreground">
-                    Drag across the track to select a range, then cut it. Каption blocks are stacked
+                    Drag across the track to select a range, then cut it. Caption blocks are stacked
                     on separate lanes so overlapping timings stay readable.
                   </div>
                 </div>
