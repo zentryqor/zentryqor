@@ -2350,7 +2350,91 @@ export function CaptionAiScreen() {
                 </div>
               )}
             </div>
+
+            <div>
+              <div className="text-[11px] text-muted-foreground mb-1.5">
+                Frame rate {detectedFps ? `· clip ≈ ${detectedFps}fps` : ""}
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {([
+                  ["match", detectedFps ? `Match ${detectedFps}` : "Match clip"],
+                  [30, "30 fps"],
+                  [60, "60 fps"],
+                ] as const).map(([v, label]) => (
+                  <button
+                    key={String(v)}
+                    onClick={() => setExportFps(v as "match" | 30 | 60)}
+                    className={`text-[11px] rounded-lg py-1.5 border transition ${
+                      exportFps === v
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border/50 hover:border-border text-muted-foreground"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-[11px] text-muted-foreground mb-1.5">Caption motion</div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {([
+                  ["none", "None"],
+                  ["fade", "Fade"],
+                  ["pop", "Pop"],
+                  ["rise", "Rise"],
+                  ["slide", "Slide"],
+                ] as const).map(([v, label]) => (
+                  <button
+                    key={v}
+                    onClick={() => setTransition(v)}
+                    className={`text-[11px] rounded-lg py-1.5 border transition ${
+                      transition === v
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border/50 hover:border-border text-muted-foreground"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-1.5 text-[10px] text-muted-foreground">
+                Captions show up to {MAX_WORDS_PER_BLOCK} words per block and stay locked in place —
+                no re-centering as new words arrive.
+              </div>
+            </div>
           </div>
+
+          {words.length > 0 && (
+            <div className="rounded-2xl border border-border/50 bg-elevated/30 p-3 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <FileDown className="w-4 h-4 text-primary" />
+                Editable project
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                Hand the edit to your NLE with every caption block, style and transition intact.
+              </div>
+              <button
+                onClick={() => exportNle("ae")}
+                className="w-full rounded-xl border border-border/60 px-3 py-2 text-xs font-semibold hover:bg-elevated/60 transition"
+              >
+                After Effects script (.jsx)
+              </button>
+              <button
+                onClick={() => exportNle("premiere")}
+                className="w-full rounded-xl border border-border/60 px-3 py-2 text-xs font-semibold hover:bg-elevated/60 transition"
+              >
+                Premiere Pro package (.zip)
+              </button>
+              <div className="text-[10px] text-muted-foreground">
+                Premiere's .prproj and AE's .aep are closed binary formats, so we ship Adobe's own
+                interchange route: an AE ExtendScript that builds the comp, and an xmeml sequence +
+                SRT that Premiere imports natively.
+              </div>
+            </div>
+          )}
+
 
 
 
