@@ -1192,7 +1192,9 @@ export function CaptionAiScreen() {
 
       setExportStage("burning");
 
-      const canvasStream = (canvas as HTMLCanvasElement).captureStream(30);
+      const captureFps = Math.max(24, Math.min(60, activeFps));
+      const canvasStream = (canvas as HTMLCanvasElement).captureStream(captureFps);
+
       let combined: MediaStream = canvasStream;
       let hasAudio = false;
       try {
