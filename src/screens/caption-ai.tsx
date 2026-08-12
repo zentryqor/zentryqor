@@ -193,31 +193,85 @@ const STYLES: CaptionStyle[] = [
 
 // -------- Helpers --------
 
-function findActiveIndex(words: CaptionWord[], currentMs: number) {
+/** Captions are grouped into short blocks so placement never jitters. */
+export const MAX_WORDS_PER_BLOCK = 3;
+const BLOCK_GAP_MS = 650;
+const BLOCK_HOLD_MS = 450;
+export const TRANSITION_IN_MS = 220;
+export const TRANSITION_OUT_MS = 160;
+
+export type CaptionBlock<T extends CaptionWord = CaptionWord> = {
+  words: T[];
+  start: number;
+  end: number;
+  /** how long the block stays on screen (until the next one, capped) */
+  holdEnd: number;
+  startIdx: number;
+  index: number;
+};
+
+export function buildBlocks<T extends CaptionWord>(
+  words: T[],
+  maxWords = MAX_WORDS_PER_BLOCK,
+): CaptionBlock<T>[] {
+  const out: CaptionBlock<T>[] = [];
+  let cur: T[] = [];
+  let startIdx = 0;
+  const flush = () => {
+    if (!cur.length) return;
+    out.push({
+      words: cur,
+      start: cur[0].start,
+      end: cur[cur.length - 1].end,
+      holdEnd: cur[cur.length - 1].end,
+      startIdx,
+      index: out.length,
+    });
+    cur = [];
+  };
   for (let i = 0; i < words.length; i++) {
-    if (currentMs >= words[i].start && currentMs <= words[i].end) return i;
+    if (cur.length >= maxWords || (cur.length && words[i].start - words[i - 1].end > BLOCK_GAP_MS)) {
+      flush();
+      startIdx = i;
+    }
+    if (!cur.length) startIdx = i;
+    cur.push(words[i]);
   }
-  return -1;
+  flush();
+  for (let i = 0; i < out.length; i++) {
+    const next = out[i + 1];
+    out[i].holdEnd = next
+      ? Math.max(out[i].end, Math.min(next.start, out[i].end + BLOCK_HOLD_MS))
+      : out[i].end + BLOCK_HOLD_MS;
+  }
+  return out;
 }
 
-function currentPhrase<T extends CaptionWord>(words: T[], currentMs: number, windowMs = 2600) {
-  const active = findActiveIndex(words, currentMs);
-  if (active === -1) {
-    const near = words.find(
-      (w) => Math.abs(w.start - currentMs) < 400 || Math.abs(w.end - currentMs) < 400,
-    );
-    if (!near) return { phrase: [] as T[], activeInPhrase: -1 };
-
-    const startIdx = Math.max(0, words.indexOf(near) - 2);
-    const endIdx = Math.min(words.length, startIdx + 8);
-    return { phrase: words.slice(startIdx, endIdx), activeInPhrase: -1 };
+// Tiny cache so per-frame drawing doesn't re-chunk the transcript.
+let blockCacheKey: unknown = null;
+let blockCacheVal: CaptionBlock<any>[] = [];
+export function blocksFor<T extends CaptionWord>(words: T[]): CaptionBlock<T>[] {
+  if (blockCacheKey !== words) {
+    blockCacheKey = words;
+    blockCacheVal = buildBlocks(words);
   }
-  let startIdx = active;
-  while (startIdx > 0 && words[active].start - words[startIdx - 1].start < windowMs / 2) startIdx--;
-  let endIdx = active + 1;
-  while (endIdx < words.length && words[endIdx].start - words[active].start < windowMs / 2) endIdx++;
-  return { phrase: words.slice(startIdx, endIdx), activeInPhrase: active - startIdx };
+  return blockCacheVal as CaptionBlock<T>[];
 }
+
+function currentPhrase<T extends CaptionWord>(words: T[], currentMs: number) {
+  const blocks = blocksFor(words);
+  let block: CaptionBlock<T> | null = null;
+  for (const b of blocks) {
+    if (currentMs >= b.start - TRANSITION_IN_MS && currentMs < b.holdEnd) {
+      block = b;
+      break;
+    }
+  }
+  if (!block) return { phrase: [] as T[], activeInPhrase: -1, block: null as CaptionBlock<T> | null };
+  const active = block.words.findIndex((w) => currentMs >= w.start && currentMs <= w.end);
+  return { phrase: block.words, activeInPhrase: active, block };
+}
+
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
