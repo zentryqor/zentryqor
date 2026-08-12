@@ -858,7 +858,7 @@ export function CaptionAiScreen() {
     tMs: number,
   ) => {
     if (words.length === 0) return;
-    const { phrase, activeInPhrase } = currentPhrase(words, tMs);
+    const { phrase, activeInPhrase, block } = currentPhrase(words, tMs);
     if (phrase.length === 0) return;
 
     const s = effectiveStyle.canvas;
