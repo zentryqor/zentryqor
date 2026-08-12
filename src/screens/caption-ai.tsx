@@ -4,9 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Download,
+  FileDown,
   FolderOpen,
   Loader2,
   Palette,
+  Redo2,
   Plus,
   Save,
   Scissors,
@@ -14,8 +16,11 @@ import {
   Trash2,
   Type,
   Upload,
+  Undo2,
   Wand2,
   X,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import {
   startTranscription,
@@ -44,6 +49,12 @@ import {
   type CaptionFontRow,
   type CaptionProjectRow,
 } from "@/lib/caption-projects";
+import {
+  buildAeJsx,
+  downloadPremierePackage,
+  downloadTextFile,
+  type NleProject,
+} from "@/lib/caption-nle-export";
 
 /** A transcript word plus optional per-word font/colour overrides. */
 type EditWord = CaptionWord & { font?: string; color?: string };
@@ -193,31 +204,85 @@ const STYLES: CaptionStyle[] = [
 
 // -------- Helpers --------
 
-function findActiveIndex(words: CaptionWord[], currentMs: number) {
+/** Captions are grouped into short blocks so placement never jitters. */
+export const MAX_WORDS_PER_BLOCK = 3;
+const BLOCK_GAP_MS = 650;
+const BLOCK_HOLD_MS = 450;
+export const TRANSITION_IN_MS = 220;
+export const TRANSITION_OUT_MS = 160;
+
+export type CaptionBlock<T extends CaptionWord = CaptionWord> = {
+  words: T[];
+  start: number;
+  end: number;
+  /** how long the block stays on screen (until the next one, capped) */
+  holdEnd: number;
+  startIdx: number;
+  index: number;
+};
+
+export function buildBlocks<T extends CaptionWord>(
+  words: T[],
+  maxWords = MAX_WORDS_PER_BLOCK,
+): CaptionBlock<T>[] {
+  const out: CaptionBlock<T>[] = [];
+  let cur: T[] = [];
+  let startIdx = 0;
+  const flush = () => {
+    if (!cur.length) return;
+    out.push({
+      words: cur,
+      start: cur[0].start,
+      end: cur[cur.length - 1].end,
+      holdEnd: cur[cur.length - 1].end,
+      startIdx,
+      index: out.length,
+    });
+    cur = [];
+  };
   for (let i = 0; i < words.length; i++) {
-    if (currentMs >= words[i].start && currentMs <= words[i].end) return i;
+    if (cur.length >= maxWords || (cur.length && words[i].start - words[i - 1].end > BLOCK_GAP_MS)) {
+      flush();
+      startIdx = i;
+    }
+    if (!cur.length) startIdx = i;
+    cur.push(words[i]);
   }
-  return -1;
+  flush();
+  for (let i = 0; i < out.length; i++) {
+    const next = out[i + 1];
+    out[i].holdEnd = next
+      ? Math.max(out[i].end, Math.min(next.start, out[i].end + BLOCK_HOLD_MS))
+      : out[i].end + BLOCK_HOLD_MS;
+  }
+  return out;
 }
 
-function currentPhrase<T extends CaptionWord>(words: T[], currentMs: number, windowMs = 2600) {
-  const active = findActiveIndex(words, currentMs);
-  if (active === -1) {
-    const near = words.find(
-      (w) => Math.abs(w.start - currentMs) < 400 || Math.abs(w.end - currentMs) < 400,
-    );
-    if (!near) return { phrase: [] as T[], activeInPhrase: -1 };
-
-    const startIdx = Math.max(0, words.indexOf(near) - 2);
-    const endIdx = Math.min(words.length, startIdx + 8);
-    return { phrase: words.slice(startIdx, endIdx), activeInPhrase: -1 };
+// Tiny cache so per-frame drawing doesn't re-chunk the transcript.
+let blockCacheKey: unknown = null;
+let blockCacheVal: CaptionBlock<any>[] = [];
+export function blocksFor<T extends CaptionWord>(words: T[]): CaptionBlock<T>[] {
+  if (blockCacheKey !== words) {
+    blockCacheKey = words;
+    blockCacheVal = buildBlocks(words);
   }
-  let startIdx = active;
-  while (startIdx > 0 && words[active].start - words[startIdx - 1].start < windowMs / 2) startIdx--;
-  let endIdx = active + 1;
-  while (endIdx < words.length && words[endIdx].start - words[active].start < windowMs / 2) endIdx++;
-  return { phrase: words.slice(startIdx, endIdx), activeInPhrase: active - startIdx };
+  return blockCacheVal as CaptionBlock<T>[];
 }
+
+function currentPhrase<T extends CaptionWord>(words: T[], currentMs: number) {
+  const blocks = blocksFor(words);
+  let block: CaptionBlock<T> | null = null;
+  for (const b of blocks) {
+    if (currentMs >= b.start - TRANSITION_IN_MS && currentMs < b.holdEnd) {
+      block = b;
+      break;
+    }
+  }
+  if (!block) return { phrase: [] as T[], activeInPhrase: -1, block: null as CaptionBlock<T> | null };
+  const active = block.words.findIndex((w) => currentMs >= w.start && currentMs <= w.end);
+  return { phrase: block.words, activeInPhrase: active, block };
+}
+
 
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -252,6 +317,18 @@ export function CaptionAiScreen() {
   const [cuts, setCuts] = useState<CaptionCut[]>([]);
   const [selection, setSelection] = useState<{ start: number; end: number } | null>(null);
   const [selectedWord, setSelectedWord] = useState<number | null>(null);
+  // Timeline view controls
+  const [zoom, setZoom] = useState(1);
+  const [snapMode, setSnapMode] = useState<"off" | "frame" | "cue">("cue");
+  // Undo / redo history for cuts + word edits
+  type EditSnapshot = { words: EditWord[]; cuts: CaptionCut[] };
+  const [past, setPast] = useState<EditSnapshot[]>([]);
+  const [future, setFuture] = useState<EditSnapshot[]>([]);
+  // Caption motion
+  const [transition, setTransition] = useState<"none" | "fade" | "pop" | "rise" | "slide">("pop");
+  const [exportFps, setExportFps] = useState<"match" | 30 | 60>(60);
+  const [detectedFps, setDetectedFps] = useState<number | null>(null);
+
   // Colour + font customisation
   const [colorOverride, setColorOverride] = useState<string | null>(null);
   const [fontFamily, setFontFamily] = useState<string | null>(null);
@@ -339,6 +416,7 @@ export function CaptionAiScreen() {
     () => currentPhrase(words, currentMs),
     [words, currentMs],
   );
+  const blocks = useMemo(() => buildBlocks(words), [words]);
 
   // ---- Fonts from storage ----
   const { data: fonts, refetch: refetchFonts } = useQuery({
@@ -510,16 +588,93 @@ export function CaptionAiScreen() {
     return () => cancelAnimationFrame(raf);
   }, [videoUrl]);
 
+  // Measure the source clip's frame rate so exports can match it.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !videoUrl || typeof (v as any).requestVideoFrameCallback !== "function") return;
+    let cancelled = false;
+    let first: number | null = null;
+    let frames = 0;
+    const cb = (_now: number, meta: any) => {
+      if (cancelled) return;
+      if (first === null) {
+        first = meta.mediaTime;
+      } else {
+        frames++;
+        const span = meta.mediaTime - first;
+        if (frames >= 12 && span > 0.15) {
+          setDetectedFps(Math.round(frames / span));
+          return;
+        }
+      }
+      (v as any).requestVideoFrameCallback(cb);
+    };
+    (v as any).requestVideoFrameCallback(cb);
+    return () => {
+      cancelled = true;
+    };
+  }, [videoUrl]);
+
+
+
+
+  // -------- Undo / redo --------
+  const pushHistory = useCallback(() => {
+    setPast((p) => [...p.slice(-49), { words, cuts }]);
+    setFuture([]);
+  }, [words, cuts]);
+
+  const undo = useCallback(() => {
+    if (past.length === 0) return;
+    const snap = past[past.length - 1];
+    setFuture((f) => [...f.slice(-49), { words, cuts }]);
+    setPast((p) => p.slice(0, -1));
+    setWords(snap.words);
+    setCuts(snap.cuts);
+    setSelection(null);
+    setSelectedWord(null);
+  }, [past, words, cuts]);
+
+  const redo = useCallback(() => {
+    if (future.length === 0) return;
+    const snap = future[future.length - 1];
+    setPast((p) => [...p.slice(-49), { words, cuts }]);
+    setFuture((f) => f.slice(0, -1));
+    setWords(snap.words);
+    setCuts(snap.cuts);
+    setSelection(null);
+    setSelectedWord(null);
+  }, [future, words, cuts]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      if (e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+      } else if (e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [undo, redo]);
 
   // -------- Transcript editor helpers --------
   const updateWord = (i: number, patch: Partial<EditWord>) => {
     setWords((prev) => prev.map((w, idx) => (idx === i ? { ...w, ...patch } : w)));
   };
   const deleteWord = (i: number) => {
+    pushHistory();
     setWords((prev) => prev.filter((_, idx) => idx !== i));
     setSelectedWord(null);
   };
   const addWordAfter = (i: number) => {
+    pushHistory();
     setWords((prev) => {
       const cur = prev[i];
       const next = prev[i + 1];
@@ -534,6 +689,35 @@ export function CaptionAiScreen() {
   const cutMs = cuts.reduce((a, c) => a + (c.end - c.start), 0);
   /** Length of the timeline after cuts (what the export will be). */
   const totalMs = Math.max(0, (durationSec ?? 0) * 1000 - cutMs);
+
+  /** Effective frame rate used for snapping, preview and export. */
+  const activeFps =
+    exportFps === "match" ? Math.round(detectedFps ?? 30) : exportFps;
+
+  /** Snaps a millisecond position to the nearest frame or caption cue. */
+  const snap = useCallback(
+    (ms: number) => {
+      if (snapMode === "off") return ms;
+      if (snapMode === "frame") {
+        const step = 1000 / Math.max(1, activeFps);
+        return Math.round(ms / step) * step;
+      }
+      const tolerance = Math.max(40, 1200 / Math.max(1, zoom));
+      let best = ms;
+      let bestD = Infinity;
+      for (const w of words) {
+        for (const cue of [w.start, w.end]) {
+          const d = Math.abs(cue - ms);
+          if (d < bestD) {
+            bestD = d;
+            best = cue;
+          }
+        }
+      }
+      return bestD <= tolerance ? best : ms;
+    },
+    [snapMode, activeFps, zoom, words],
+  );
 
   /** Maps an edited-timeline position back to a source video time (cuts re-added). */
   const editedToSource = useCallback(
@@ -557,6 +741,7 @@ export function CaptionAiScreen() {
     }
     const srcA = editedToSource(a);
     const srcB = editedToSource(b);
+    pushHistory();
     setCuts((prev) => [...prev, { start: srcA, end: srcB }].sort((x, y) => x.start - y.start));
     setWords((prev) =>
       prev
@@ -569,13 +754,17 @@ export function CaptionAiScreen() {
   };
 
 
-  const removeCut = (i: number) => setCuts((prev) => prev.filter((_, idx) => idx !== i));
+  const removeCut = (i: number) => {
+    pushHistory();
+    setCuts((prev) => prev.filter((_, idx) => idx !== i));
+  };
 
 
   const seekEdited = (ms: number) => {
     const v = videoRef.current;
     if (v) v.currentTime = editedToSource(ms) / 1000;
   };
+
 
   // -------- Projects --------
   const { data: projects, refetch: refetchProjects } = useQuery({
@@ -681,7 +870,7 @@ export function CaptionAiScreen() {
     tMs: number,
   ) => {
     if (words.length === 0) return;
-    const { phrase, activeInPhrase } = currentPhrase(words, tMs);
+    const { phrase, activeInPhrase, block } = currentPhrase(words, tMs);
     if (phrase.length === 0) return;
 
     const s = effectiveStyle.canvas;
@@ -736,7 +925,30 @@ export function CaptionAiScreen() {
     const centerY =
       s.align === "center" ? height / 2 : height - blockHeight / 2 - height * 0.08;
 
+    // ---- block-level entrance / exit transition ----
+    const clamp01 = (t: number) => Math.max(0, Math.min(1, t));
+    const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+    let alpha = 1;
+    let sc = 1;
+    let dx = 0;
+    let dy = 0;
+    if (transition !== "none" && block) {
+      const inP = easeOut(clamp01((tMs - (block.start - TRANSITION_IN_MS)) / TRANSITION_IN_MS));
+      const outP = clamp01((block.holdEnd - tMs) / TRANSITION_OUT_MS);
+      alpha = Math.min(inP, outP);
+      if (transition === "pop") sc = 0.8 + 0.2 * inP;
+      else if (transition === "rise") dy = (1 - inP) * fontSize * 0.6;
+      else if (transition === "slide") dx = (1 - inP) * width * -0.06;
+    }
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(width / 2 + dx, centerY + dy);
+    ctx.scale(sc, sc);
+    ctx.translate(-width / 2, -centerY);
+
     if (s.background) {
+
       const pad = fontSize * (s.boxPaddingPct ?? 0.06) * 6;
       const boxW = Math.min(maxWidth + pad, width * 0.94);
       const boxH = blockHeight + pad * 0.6;
@@ -804,7 +1016,10 @@ export function CaptionAiScreen() {
         x += ww + gap;
       }
     });
+
+    ctx.restore();
   };
+
 
   // -------- Live export preview (target resolution + bitrate simulation) --------
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -989,7 +1204,9 @@ export function CaptionAiScreen() {
 
       setExportStage("burning");
 
-      const canvasStream = (canvas as HTMLCanvasElement).captureStream(30);
+      const captureFps = Math.max(24, Math.min(60, activeFps));
+      const canvasStream = (canvas as HTMLCanvasElement).captureStream(captureFps);
+
       let combined: MediaStream = canvasStream;
       let hasAudio = false;
       try {
@@ -1150,6 +1367,57 @@ export function CaptionAiScreen() {
     a.click();
     a.remove();
   };
+
+  // -------- Editable project export (After Effects / Premiere Pro) --------
+  const exportNle = async (target: "ae" | "premiere") => {
+    if (words.length === 0) {
+      toast.error("Generate captions first.");
+      return;
+    }
+    const v = videoRef.current;
+    const dims = targetDims() ?? { w: v?.videoWidth || 1080, h: v?.videoHeight || 1920 };
+    const s = effectiveStyle.canvas;
+    const name = (projectName || file?.name?.replace(/\.[^.]+$/, "") || "CaptionAI project").trim();
+    const project: NleProject = {
+      name,
+      width: dims.w,
+      height: dims.h,
+      fps: activeFps,
+      durationMs: totalMs || (durationSec ?? 0) * 1000,
+      videoFileName: file?.name ?? "source-video.mp4",
+      style: {
+        fontFamily: fontFamily ?? "Arial-Black",
+        fontSizePx: Math.max(14, dims.h * s.fontSizePct),
+        color: s.color,
+        strokeColor: s.strokeColor,
+        strokeWidth: s.strokeWidth,
+        uppercase: s.uppercase,
+        align: s.align,
+      },
+      transition,
+      blocks: blocks.map((b) => ({
+        words: b.words.map((w) => ({ ...w })),
+        start: b.start,
+        end: b.holdEnd,
+      })),
+    };
+    try {
+      if (target === "ae") {
+        downloadTextFile(
+          `${name.replace(/[^\w.-]+/g, "-")}-after-effects.jsx`,
+          buildAeJsx(project),
+          "application/javascript",
+        );
+        toast.success("After Effects script downloaded — run it via File > Scripts.");
+      } else {
+        await downloadPremierePackage(project);
+        toast.success("Premiere package downloaded — import sequence.xml.");
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not build the project file");
+    }
+  };
+
 
   const estMb =
     durationSec && durationSec > 0
@@ -1565,65 +1833,171 @@ export function CaptionAiScreen() {
                 <div className="min-w-0">
                   <div className="text-sm font-semibold">Timeline</div>
                   <div className="text-xs text-muted-foreground">
-                    Drag across the track to select a range, then cut it. Words inside are removed
-                    and everything after shifts left.
+                    Drag across the track to select a range, then cut it. Caption blocks are stacked
+                    on separate lanes so overlapping timings stay readable.
                   </div>
                 </div>
                 <div className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
                   {(totalMs / 1000).toFixed(2)}s
                   {cutMs > 0 ? ` · −${(cutMs / 1000).toFixed(2)}s cut` : ""}
+                  {` · ${activeFps}fps`}
                 </div>
               </div>
 
-              <div
-                ref={timelineRef}
-                onPointerDown={(e) => {
-                  const el = e.currentTarget;
-                  el.setPointerCapture(e.pointerId);
-                  const at = (clientX: number) => {
-                    const r = el.getBoundingClientRect();
-                    return Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * totalMs;
-                  };
-                  const startMs = at(e.clientX);
-                  setSelection({ start: startMs, end: startMs });
-                  seekEdited(startMs);
-                  const move = (ev: PointerEvent) =>
-                    setSelection({ start: startMs, end: at(ev.clientX) });
-                  const up = () => {
-                    el.removeEventListener("pointermove", move);
-                    el.removeEventListener("pointerup", up);
-                  };
-                  el.addEventListener("pointermove", move);
-                  el.addEventListener("pointerup", up);
-                }}
-                className="relative mt-4 h-16 w-full cursor-crosshair overflow-hidden rounded-2xl border border-border/40 bg-background/50 touch-none select-none"
-              >
-                {words.map((w, i) => (
-                  <div
-                    key={i}
-                    className={`absolute top-2 bottom-6 rounded-[4px] ${
-                      i === selectedWord ? "bg-primary" : "bg-primary/35"
-                    }`}
-                    style={{
-                      left: `${(w.start / totalMs) * 100}%`,
-                      width: `${Math.max(0.4, ((w.end - w.start) / totalMs) * 100)}%`,
-                    }}
-                    title={w.text}
-                  />
-                ))}
-                {selection && (
-                  <div
-                    className="absolute inset-y-0 border-x border-primary bg-primary/20"
-                    style={{
-                      left: `${(Math.min(selection.start, selection.end) / totalMs) * 100}%`,
-                      width: `${(Math.abs(selection.end - selection.start) / totalMs) * 100}%`,
-                    }}
-                  />
-                )}
+              {/* Undo / redo + zoom + snap */}
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1 rounded-full border border-border/60 p-1">
+                  <button
+                    onClick={undo}
+                    disabled={past.length === 0}
+                    title="Undo (Ctrl/Cmd+Z)"
+                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold disabled:opacity-40 hover:bg-elevated/60"
+                  >
+                    <Undo2 className="w-3.5 h-3.5" />
+                    Undo
+                  </button>
+                  <button
+                    onClick={redo}
+                    disabled={future.length === 0}
+                    title="Redo (Ctrl/Cmd+Shift+Z)"
+                    className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold disabled:opacity-40 hover:bg-elevated/60"
+                  >
+                    <Redo2 className="w-3.5 h-3.5" />
+                    Redo
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1 rounded-full border border-border/60 p-1">
+                  <button
+                    onClick={() => setZoom((z) => Math.max(1, Math.round((z / 1.5) * 100) / 100))}
+                    disabled={zoom <= 1}
+                    title="Zoom out"
+                    className="rounded-full p-1.5 disabled:opacity-40 hover:bg-elevated/60"
+                  >
+                    <ZoomOut className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="min-w-[3rem] text-center text-[11px] tabular-nums text-muted-foreground">
+                    {zoom.toFixed(1)}×
+                  </span>
+                  <button
+                    onClick={() => setZoom((z) => Math.min(24, Math.round(z * 1.5 * 100) / 100))}
+                    disabled={zoom >= 24}
+                    title="Zoom in"
+                    className="rounded-full p-1.5 disabled:opacity-40 hover:bg-elevated/60"
+                  >
+                    <ZoomIn className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1 rounded-full border border-border/60 p-1">
+                  {([
+                    ["off", "No snap"],
+                    ["frame", `Frame (${activeFps}fps)`],
+                    ["cue", "Caption cue"],
+                  ] as const).map(([id, label]) => (
+                    <button
+                      key={id}
+                      onClick={() => setSnapMode(id)}
+                      className={`rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
+                        snapMode === id
+                          ? "bg-primary text-primary-foreground"
+                          : "text-muted-foreground hover:bg-elevated/60"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Scrollable, zoomable track */}
+              <div className="mt-3 overflow-x-auto overscroll-x-contain rounded-2xl border border-border/40 bg-background/50">
                 <div
-                  className="absolute inset-y-0 w-[2px] bg-foreground"
-                  style={{ left: `${Math.min(100, (currentMs / totalMs) * 100)}%` }}
-                />
+                  ref={timelineRef}
+                  onPointerDown={(e) => {
+                    const el = e.currentTarget;
+                    el.setPointerCapture(e.pointerId);
+                    const at = (clientX: number) => {
+                      const r = el.getBoundingClientRect();
+                      const raw =
+                        Math.max(0, Math.min(1, (clientX - r.left) / r.width)) * totalMs;
+                      return snap(raw);
+                    };
+                    const startMs = at(e.clientX);
+                    setSelection({ start: startMs, end: startMs });
+                    seekEdited(startMs);
+                    const move = (ev: PointerEvent) =>
+                      setSelection({ start: startMs, end: at(ev.clientX) });
+                    const up = () => {
+                      el.removeEventListener("pointermove", move);
+                      el.removeEventListener("pointerup", up);
+                    };
+                    el.addEventListener("pointermove", move);
+                    el.addEventListener("pointerup", up);
+                  }}
+                  className="relative h-28 cursor-crosshair touch-none select-none"
+                  style={{ width: `${zoom * 100}%` }}
+                >
+                  {/* frame/second ruler */}
+                  {Array.from({ length: Math.min(200, Math.ceil(totalMs / 1000) + 1) }).map((_, s) => (
+                    <div
+                      key={`t${s}`}
+                      className="absolute top-0 bottom-0 w-px bg-border/40"
+                      style={{ left: `${((s * 1000) / totalMs) * 100}%` }}
+                    >
+                      <span className="absolute -top-0 left-1 text-[9px] tabular-nums text-muted-foreground/70">
+                        {s}s
+                      </span>
+                    </div>
+                  ))}
+
+                  {/* caption blocks, one lane per consecutive block */}
+                  {blocks.map((b) => {
+                    const lane = b.index % 3;
+                    const selectedInBlock =
+                      selectedWord !== null &&
+                      selectedWord >= b.startIdx &&
+                      selectedWord < b.startIdx + b.words.length;
+                    return (
+                      <div
+                        key={`b${b.index}`}
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          setSelectedWord(b.startIdx);
+                          seekEdited(b.start);
+                        }}
+                        className={`absolute flex items-center overflow-hidden rounded-md px-1 text-[10px] font-semibold whitespace-nowrap ${
+                          selectedInBlock
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-primary/30 text-foreground/90"
+                        }`}
+                        style={{
+                          top: `${18 + lane * 26}px`,
+                          height: "22px",
+                          left: `${(b.start / totalMs) * 100}%`,
+                          width: `${Math.max(0.6, ((b.holdEnd - b.start) / totalMs) * 100)}%`,
+                        }}
+                        title={`${b.words.map((w) => w.text).join(" ")} · ${(b.start / 1000).toFixed(2)}s`}
+                      >
+                        {b.words.map((w) => w.text).join(" ")}
+                      </div>
+                    );
+                  })}
+
+                  {selection && (
+                    <div
+                      className="absolute inset-y-0 border-x border-primary bg-primary/20"
+                      style={{
+                        left: `${(Math.min(selection.start, selection.end) / totalMs) * 100}%`,
+                        width: `${(Math.abs(selection.end - selection.start) / totalMs) * 100}%`,
+                      }}
+                    />
+                  )}
+                  <div
+                    className="absolute inset-y-0 w-[2px] bg-foreground"
+                    style={{ left: `${Math.min(100, (currentMs / totalMs) * 100)}%` }}
+                  />
+                </div>
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -1636,12 +2010,18 @@ export function CaptionAiScreen() {
                   Cut selection
                 </button>
                 {selection && (
-                  <button
-                    onClick={() => setSelection(null)}
-                    className="rounded-full border border-border/60 px-3 py-1.5 text-xs hover:bg-elevated/60"
-                  >
-                    Clear selection
-                  </button>
+                  <>
+                    <span className="text-[11px] tabular-nums text-muted-foreground">
+                      {(Math.min(selection.start, selection.end) / 1000).toFixed(3)}s →{" "}
+                      {(Math.max(selection.start, selection.end) / 1000).toFixed(3)}s
+                    </span>
+                    <button
+                      onClick={() => setSelection(null)}
+                      className="rounded-full border border-border/60 px-3 py-1.5 text-xs hover:bg-elevated/60"
+                    >
+                      Clear selection
+                    </button>
+                  </>
                 )}
                 {cuts.map((c, i) => (
                   <button
@@ -1657,6 +2037,7 @@ export function CaptionAiScreen() {
               </div>
             </div>
           )}
+
 
           {/* Word inspector */}
           {selectedWord !== null && words[selectedWord] && (
@@ -1734,7 +2115,7 @@ export function CaptionAiScreen() {
               </div>
               <div className="max-h-[420px] overflow-y-auto pr-1 sm:pr-2 space-y-1.5">
                 {words.map((w, i) => {
-                  const active = i === findActiveIndex(words, currentMs);
+                  const active = currentMs >= w.start && currentMs <= w.end;
                   return (
                     <div
                       key={i}
@@ -2027,7 +2408,91 @@ export function CaptionAiScreen() {
                 </div>
               )}
             </div>
+
+            <div>
+              <div className="text-[11px] text-muted-foreground mb-1.5">
+                Frame rate {detectedFps ? `· clip ≈ ${detectedFps}fps` : ""}
+              </div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {([
+                  ["match", detectedFps ? `Match ${detectedFps}` : "Match clip"],
+                  [30, "30 fps"],
+                  [60, "60 fps"],
+                ] as const).map(([v, label]) => (
+                  <button
+                    key={String(v)}
+                    onClick={() => setExportFps(v as "match" | 30 | 60)}
+                    className={`text-[11px] rounded-lg py-1.5 border transition ${
+                      exportFps === v
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border/50 hover:border-border text-muted-foreground"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-[11px] text-muted-foreground mb-1.5">Caption motion</div>
+              <div className="grid grid-cols-3 gap-1.5">
+                {([
+                  ["none", "None"],
+                  ["fade", "Fade"],
+                  ["pop", "Pop"],
+                  ["rise", "Rise"],
+                  ["slide", "Slide"],
+                ] as const).map(([v, label]) => (
+                  <button
+                    key={v}
+                    onClick={() => setTransition(v)}
+                    className={`text-[11px] rounded-lg py-1.5 border transition ${
+                      transition === v
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border/50 hover:border-border text-muted-foreground"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="mt-1.5 text-[10px] text-muted-foreground">
+                Captions show up to {MAX_WORDS_PER_BLOCK} words per block and stay locked in place —
+                no re-centering as new words arrive.
+              </div>
+            </div>
           </div>
+
+          {words.length > 0 && (
+            <div className="rounded-2xl border border-border/50 bg-elevated/30 p-3 space-y-2">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <FileDown className="w-4 h-4 text-primary" />
+                Editable project
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                Hand the edit to your NLE with every caption block, style and transition intact.
+              </div>
+              <button
+                onClick={() => exportNle("ae")}
+                className="w-full rounded-xl border border-border/60 px-3 py-2 text-xs font-semibold hover:bg-elevated/60 transition"
+              >
+                After Effects script (.jsx)
+              </button>
+              <button
+                onClick={() => exportNle("premiere")}
+                className="w-full rounded-xl border border-border/60 px-3 py-2 text-xs font-semibold hover:bg-elevated/60 transition"
+              >
+                Premiere Pro package (.zip)
+              </button>
+              <div className="text-[10px] text-muted-foreground">
+                Premiere's .prproj and AE's .aep are closed binary formats, so we ship Adobe's own
+                interchange route: an AE ExtendScript that builds the comp, and an xmeml sequence +
+                SRT that Premiere imports natively.
+              </div>
+            </div>
+          )}
+
 
 
 
