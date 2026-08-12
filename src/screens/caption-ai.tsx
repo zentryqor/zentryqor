@@ -576,6 +576,35 @@ export function CaptionAiScreen() {
     return () => cancelAnimationFrame(raf);
   }, [videoUrl]);
 
+  // Measure the source clip's frame rate so exports can match it.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v || !videoUrl || typeof (v as any).requestVideoFrameCallback !== "function") return;
+    let cancelled = false;
+    let first: number | null = null;
+    let frames = 0;
+    const cb = (_now: number, meta: any) => {
+      if (cancelled) return;
+      if (first === null) {
+        first = meta.mediaTime;
+      } else {
+        frames++;
+        const span = meta.mediaTime - first;
+        if (frames >= 12 && span > 0.15) {
+          setDetectedFps(Math.round(frames / span));
+          return;
+        }
+      }
+      (v as any).requestVideoFrameCallback(cb);
+    };
+    (v as any).requestVideoFrameCallback(cb);
+    return () => {
+      cancelled = true;
+    };
+  }, [videoUrl]);
+
+
+
 
   // -------- Undo / redo --------
   const pushHistory = useCallback(() => {
