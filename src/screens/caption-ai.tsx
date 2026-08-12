@@ -1004,7 +1004,10 @@ export function CaptionAiScreen() {
         x += ww + gap;
       }
     });
+
+    ctx.restore();
   };
+
 
   // -------- Live export preview (target resolution + bitrate simulation) --------
   const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
