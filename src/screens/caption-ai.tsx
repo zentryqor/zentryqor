@@ -1788,7 +1788,7 @@ export function CaptionAiScreen() {
               </div>
               <div className="max-h-[420px] overflow-y-auto pr-1 sm:pr-2 space-y-1.5">
                 {words.map((w, i) => {
-                  const active = i === findActiveIndex(words, currentMs);
+                  const active = currentMs >= w.start && currentMs <= w.end;
                   return (
                     <div
                       key={i}
