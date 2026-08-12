@@ -1361,6 +1361,57 @@ export function CaptionAiScreen() {
     a.remove();
   };
 
+  // -------- Editable project export (After Effects / Premiere Pro) --------
+  const exportNle = async (target: "ae" | "premiere") => {
+    if (words.length === 0) {
+      toast.error("Generate captions first.");
+      return;
+    }
+    const v = videoRef.current;
+    const dims = targetDims() ?? { w: v?.videoWidth || 1080, h: v?.videoHeight || 1920 };
+    const s = effectiveStyle.canvas;
+    const name = (projectName || file?.name?.replace(/\.[^.]+$/, "") || "CaptionAI project").trim();
+    const project: NleProject = {
+      name,
+      width: dims.w,
+      height: dims.h,
+      fps: activeFps,
+      durationMs: totalMs || (durationSec ?? 0) * 1000,
+      videoFileName: file?.name ?? "source-video.mp4",
+      style: {
+        fontFamily: fontFamily ?? "Arial-Black",
+        fontSizePx: Math.max(14, dims.h * s.fontSizePct),
+        color: s.color,
+        strokeColor: s.strokeColor,
+        strokeWidth: s.strokeWidth,
+        uppercase: s.uppercase,
+        align: s.align,
+      },
+      transition,
+      blocks: blocks.map((b) => ({
+        words: b.words.map((w) => ({ ...w })),
+        start: b.start,
+        end: b.holdEnd,
+      })),
+    };
+    try {
+      if (target === "ae") {
+        downloadTextFile(
+          `${name.replace(/[^\w.-]+/g, "-")}-after-effects.jsx`,
+          buildAeJsx(project),
+          "application/javascript",
+        );
+        toast.success("After Effects script downloaded — run it via File > Scripts.");
+      } else {
+        await downloadPremierePackage(project);
+        toast.success("Premiere package downloaded — import sequence.xml.");
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? "Could not build the project file");
+    }
+  };
+
+
   const estMb =
     durationSec && durationSec > 0
       ? ((bitrateMbps + 0.128) * durationSec) / 8
