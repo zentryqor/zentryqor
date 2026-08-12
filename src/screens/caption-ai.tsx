@@ -913,7 +913,30 @@ export function CaptionAiScreen() {
     const centerY =
       s.align === "center" ? height / 2 : height - blockHeight / 2 - height * 0.08;
 
+    // ---- block-level entrance / exit transition ----
+    const clamp01 = (t: number) => Math.max(0, Math.min(1, t));
+    const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+    let alpha = 1;
+    let sc = 1;
+    let dx = 0;
+    let dy = 0;
+    if (transition !== "none" && block) {
+      const inP = easeOut(clamp01((tMs - (block.start - TRANSITION_IN_MS)) / TRANSITION_IN_MS));
+      const outP = clamp01((block.holdEnd - tMs) / TRANSITION_OUT_MS);
+      alpha = Math.min(inP, outP);
+      if (transition === "pop") sc = 0.8 + 0.2 * inP;
+      else if (transition === "rise") dy = (1 - inP) * fontSize * 0.6;
+      else if (transition === "slide") dx = (1 - inP) * width * -0.06;
+    }
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(width / 2 + dx, centerY + dy);
+    ctx.scale(sc, sc);
+    ctx.translate(-width / 2, -centerY);
+
     if (s.background) {
+
       const pad = fontSize * (s.boxPaddingPct ?? 0.06) * 6;
       const boxW = Math.min(maxWidth + pad, width * 0.94);
       const boxH = blockHeight + pad * 0.6;
