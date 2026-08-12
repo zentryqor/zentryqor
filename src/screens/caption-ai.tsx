@@ -306,6 +306,18 @@ export function CaptionAiScreen() {
   const [cuts, setCuts] = useState<CaptionCut[]>([]);
   const [selection, setSelection] = useState<{ start: number; end: number } | null>(null);
   const [selectedWord, setSelectedWord] = useState<number | null>(null);
+  // Timeline view controls
+  const [zoom, setZoom] = useState(1);
+  const [snapMode, setSnapMode] = useState<"off" | "frame" | "cue">("cue");
+  // Undo / redo history for cuts + word edits
+  type EditSnapshot = { words: EditWord[]; cuts: CaptionCut[] };
+  const [past, setPast] = useState<EditSnapshot[]>([]);
+  const [future, setFuture] = useState<EditSnapshot[]>([]);
+  // Caption motion
+  const [transition, setTransition] = useState<"none" | "fade" | "pop" | "rise" | "slide">("pop");
+  const [exportFps, setExportFps] = useState<"match" | 30 | 60>(60);
+  const [detectedFps, setDetectedFps] = useState<number | null>(null);
+
   // Colour + font customisation
   const [colorOverride, setColorOverride] = useState<string | null>(null);
   const [fontFamily, setFontFamily] = useState<string | null>(null);
