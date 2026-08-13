@@ -4,7 +4,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { generateGoogleImageDataUrl } from "@/lib/google-image.server";
 
-const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_URL = "https://api.groq.com/openai/v1/chat/completions";
 const FREE_DAILY_CREDITS = 150;
 const PREMIUM_DAILY_CREDITS = 1000;
 const TEXT_COST = 10;
@@ -89,8 +89,8 @@ async function refundCredits(userId: string, amount: number) {
 }
 
 async function runText(prompt: string, system?: string | null): Promise<string> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error("OPENROUTER_API_KEY missing");
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("GROQ_API_KEY missing");
   const messages = [
     ...(system ? [{ role: "system", content: system }] : []),
     { role: "user", content: prompt },
@@ -103,7 +103,7 @@ async function runText(prompt: string, system?: string | null): Promise<string> 
       "HTTP-Referer": "https://zentryqor.lovable.app",
       "X-Title": "Zentry Qor",
     },
-    body: JSON.stringify({ model: "nvidia/nemotron-3-ultra-550b-a55b:free", messages }),
+    body: JSON.stringify({ model: "llama-3.1-8b-instant", messages }),
   });
   if (!res.ok) {
     const t = await res.text();

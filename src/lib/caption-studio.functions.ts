@@ -37,7 +37,7 @@ export const generateCaptionVariants = createServerFn({ method: "POST" })
       "Too many caption requests",
     );
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
+    const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) throw new Error("AI is not configured on this server");
 
     const platformNote =
@@ -68,7 +68,7 @@ ${data.currentTitle ? `Current title (may or may not use): ${data.currentTitle}\
 ${styleBlock}`;
 
     const res = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
+      "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
         headers: {
@@ -78,7 +78,7 @@ ${styleBlock}`;
           "X-Title": "Zentry Qor",
         },
         body: JSON.stringify({
-          model: "nvidia/nemotron-3-ultra-550b-a55b:free",
+          model: "llama-3.1-8b-instant",
           messages: [
             { role: "system", content: system },
             { role: "user", content: user },

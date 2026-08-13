@@ -1,7 +1,7 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { generateGoogleImageDataUrl } from "@/lib/google-image.server";
 
-const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 export const TEXT_COST = 10;
 export const IMAGE_COST = 30;
@@ -99,8 +99,8 @@ export async function refundCredits(userId: string, cost: number) {
 }
 
 export async function callOpenRouterText(prompt: string, system: string | undefined) {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error("OPENROUTER_API_KEY not configured");
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("GROQ_API_KEY not configured");
   const messages = [
     ...(system ? [{ role: "system", content: system }] : []),
     { role: "user", content: prompt },
@@ -114,7 +114,7 @@ export async function callOpenRouterText(prompt: string, system: string | undefi
       "X-Title": "Zentry Qor",
     },
     body: JSON.stringify({
-      model: "nvidia/nemotron-3-ultra-550b-a55b:free",
+      model: "llama-3.1-8b-instant",
       messages,
       max_tokens: 1024,
       temperature: 0.7,
