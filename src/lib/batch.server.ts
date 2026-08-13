@@ -103,7 +103,7 @@ async function runText(prompt: string, system?: string | null): Promise<string> 
       "HTTP-Referer": "https://zentryqor.lovable.app",
       "X-Title": "Zentry Qor",
     },
-    body: JSON.stringify({ model: "openai/gpt-oss-120b:free", messages }),
+    body: JSON.stringify({ model: "nvidia/nemotron-3-ultra-550b-a55b:free", messages }),
   });
   if (!res.ok) {
     const t = await res.text();
