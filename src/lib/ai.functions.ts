@@ -103,10 +103,10 @@ async function spendCredits(supabase: SupaClient, userId: string, cost: number) 
 }
 
 async function callLovableAiText(messages: Array<{ role: string; content: any }>) {
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) throw new Error("OPENROUTER_API_KEY is not configured");
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("GROQ_API_KEY is not configured");
 
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -115,7 +115,7 @@ async function callLovableAiText(messages: Array<{ role: string; content: any }>
       "X-Title": "Zentry Qor",
     },
     body: JSON.stringify({
-      model: "nvidia/nemotron-3-ultra-550b-a55b:free",
+      model: "llama-3.1-8b-instant",
       messages,
       max_tokens: 1024,
       temperature: 0.7,
