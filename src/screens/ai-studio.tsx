@@ -410,6 +410,19 @@ export function AiStudioScreen() {
             </p>
           </div>
 
+          {/* Zentry chat — ask anything about editing, posting and going viral */}
+          <div className="mt-10 sm:mt-14">
+            <ZentryChat
+              tools={TOOLS.filter((t) => t.id !== "thumbnail").map((t) => ({
+                id: t.id,
+                name: t.name,
+                tagline: t.tagline,
+                system: t.system,
+              }))}
+              onCreditsChange={() => creditsQuery.refetch()}
+            />
+          </div>
+
           {/* Tool bento — featured tile spans two columns, closing tile links out */}
           <div className="mt-10 sm:mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {TOOLS.map((t, i) => {
