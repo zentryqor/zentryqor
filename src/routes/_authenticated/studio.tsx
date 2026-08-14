@@ -27,6 +27,7 @@ export const Route = createFileRoute("/_authenticated/studio")({
           .default("dashboard"),
         tool: z.string().optional(),
         prompt: z.string().optional(),
+        chat: z.string().optional(),
       })
       .parse(s),
   component: StudioPage,

@@ -15,6 +15,7 @@ export const chatWithZentry = createServerFn({ method: "POST" })
         messages: z.array(MessageSchema).min(1).max(30),
         model: z.enum(["zentry-qor-flash", "zentry-qor-basic", "zentry-qor-pro"]),
         toolContext: z.string().max(1200).optional(),
+        conversationId: z.string().uuid().optional(),
       })
       .parse(input),
   )
@@ -38,7 +39,63 @@ Use short markdown sections and bullet lists. Never invent fake statistics.${
         [{ role: "system" as const, content: system }, ...data.messages],
         data.model,
       );
-      return { text, cost: CHAT_COST, usage };
+
+      // Persist the conversation so the creator can reopen it later.
+      let conversationId = data.conversationId ?? null;
+      const lastUser = [...data.messages].reverse().find((m) => m.role === "user");
+
+      if (conversationId) {
+        const { data: owned, error: ownedError } = await context.supabase
+          .from("chat_conversations")
+          .select("id")
+          .eq("id", conversationId)
+          .eq("user_id", context.userId)
+          .maybeSingle();
+        if (ownedError) console.error("chat conversation lookup failed", ownedError);
+        if (!owned) conversationId = null;
+      }
+
+      if (!conversationId) {
+        const title = (lastUser?.content ?? "New chat").slice(0, 80);
+        const { data: created, error: createError } = await context.supabase
+          .from("chat_conversations")
+          .insert({ user_id: context.userId, title, model: data.model })
+          .select("id")
+          .single();
+        if (createError) console.error("chat conversation create failed", createError);
+        conversationId = created?.id ?? null;
+      }
+
+      if (conversationId) {
+        const rows = [
+          ...(lastUser
+            ? [
+                {
+                  conversation_id: conversationId,
+                  user_id: context.userId,
+                  role: "user" as const,
+                  content: lastUser.content,
+                },
+              ]
+            : []),
+          {
+            conversation_id: conversationId,
+            user_id: context.userId,
+            role: "assistant" as const,
+            content: text,
+          },
+        ];
+        const { error: msgError } = await context.supabase.from("chat_messages").insert(rows);
+        if (msgError) console.error("chat message persist failed", msgError);
+        const { error: touchError } = await context.supabase
+          .from("chat_conversations")
+          .update({ updated_at: new Date().toISOString(), model: data.model })
+          .eq("id", conversationId)
+          .eq("user_id", context.userId);
+        if (touchError) console.error("chat conversation touch failed", touchError);
+      }
+
+      return { text, cost: CHAT_COST, usage, conversationId };
     } catch (e) {
       await refundChatCredits(context.supabase, context.userId);
       throw e;

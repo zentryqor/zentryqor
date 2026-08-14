@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ArrowUp, BookOpen, ChevronDown, Loader2, Plus } from "lucide-react";
+import { ArrowUp, BookOpen, ChevronDown, History, Loader2, Plus, Trash2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { chatWithZentry } from "@/lib/chat.functions";
+import {
+  deleteChatConversation,
+  getChatConversation,
+  listChatConversations,
+} from "@/lib/chat-history.functions";
 
 export type ChatTool = {
   id: string;
@@ -32,10 +38,55 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
   const [tool, setTool] = useState<ChatTool | null>(null);
   const [mentionOpen, setMentionOpen] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
+  const [historyOpen, setHistoryOpen] = useState(false);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const send = useServerFn(chatWithZentry);
+  const listConversations = useServerFn(listChatConversations);
+  const loadConversation = useServerFn(getChatConversation);
+  const removeConversation = useServerFn(deleteChatConversation);
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { chat: conversationId } = useSearch({ strict: false }) as { chat?: string };
+
+  const conversations = useQuery({
+    queryKey: ["chat-conversations"],
+    queryFn: () => listConversations({}),
+  });
+
+  const openConversation = (id?: string) => {
+    setHistoryOpen(false);
+    navigate({ to: ".", search: (prev: any) => ({ ...prev, chat: id }), replace: true });
+  };
+
+  // Restore the conversation named in the URL so a reload continues where it left off.
+  const activeConversation = useQuery({
+    queryKey: ["chat-conversation", conversationId],
+    queryFn: () => loadConversation({ data: { id: conversationId! } }),
+    enabled: !!conversationId,
+  });
+
+  useEffect(() => {
+    if (!conversationId) {
+      setMessages([]);
+      return;
+    }
+    const loaded = activeConversation.data;
+    if (loaded) {
+      setMessages(loaded.messages.map((m) => ({ role: m.role, content: m.content })));
+      setModel(loaded.conversation.model as ChatModel);
+    }
+  }, [conversationId, activeConversation.data]);
+
+  const del = useMutation({
+    mutationFn: (id: string) => removeConversation({ data: { id } }),
+    onSuccess: (_r, id) => {
+      queryClient.invalidateQueries({ queryKey: ["chat-conversations"] });
+      if (id === conversationId) openConversation(undefined);
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not delete conversation"),
+  });
 
   const activeModel = MODELS.find((m) => m.id === model)!;
   const filteredTools = useMemo(
@@ -62,11 +113,20 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
           : tool
             ? `${tool.name} — ${tool.tagline}\n${tool.system}`
             : undefined;
-      return send({ data: { messages: next, model, toolContext } });
+      return send({ data: { messages: next, model, toolContext, conversationId } });
     },
     onSuccess: (r) => {
       setMessages((m) => [...m, { role: "assistant", content: r.text || "…" }]);
+      queryClient.invalidateQueries({ queryKey: ["chat-conversations"] });
+      if (r.conversationId && r.conversationId !== conversationId) {
+        navigate({
+          to: ".",
+          search: (prev: any) => ({ ...prev, chat: r.conversationId }),
+          replace: true,
+        });
+      }
       onCreditsChange?.();
+      taRef.current?.focus();
     },
     onError: (e: any) => {
       toast.error(e?.message ?? "Chat failed");
@@ -152,6 +212,55 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
           >
             Viral Studio
           </button>
+
+          <div className="relative ml-auto">
+            <button
+              type="button"
+              onClick={() => setHistoryOpen((o) => !o)}
+              className="h-8 inline-flex items-center gap-1.5 rounded-xl border border-white/12 bg-white/[0.03] px-2.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-white/[0.07] transition-colors"
+            >
+              <History className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Saved chats</span>
+              <ChevronDown className="h-3 w-3" />
+            </button>
+            {historyOpen && (
+              <div className="absolute right-0 top-full mt-2 z-30 w-[280px] max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
+                {conversations.isLoading && (
+                  <div className="px-3 py-2 text-[11px] text-muted-foreground">Loading…</div>
+                )}
+                {!conversations.isLoading && (conversations.data?.length ?? 0) === 0 && (
+                  <div className="px-3 py-2 text-[11px] text-muted-foreground">
+                    No saved chats yet — send a message and it saves automatically.
+                  </div>
+                )}
+                {conversations.data?.map((c) => (
+                  <div
+                    key={c.id}
+                    className={`group flex items-center gap-1 rounded-xl px-1 ${c.id === conversationId ? "bg-white/[0.08]" : "hover:bg-white/[0.05]"}`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => openConversation(c.id)}
+                      className="flex-1 min-w-0 text-left px-2 py-2"
+                    >
+                      <div className="truncate text-[13px]">{c.title}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {new Date(c.updatedAt).toLocaleString()}
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => del.mutate(c.id)}
+                      aria-label={`Delete ${c.title}`}
+                      className="h-7 w-7 shrink-0 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/10"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Transcript */}
@@ -216,7 +325,11 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
         <div className="flex items-center gap-2 px-4 sm:px-5 pb-4 pt-3">
           <button
             type="button"
-            onClick={() => setMessages([])}
+            onClick={() => {
+              setMessages([]);
+              openConversation(undefined);
+              taRef.current?.focus();
+            }}
             title="New chat"
             className="h-9 w-9 shrink-0 rounded-xl border border-white/12 bg-white/[0.03] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/[0.07] transition-colors"
           >
