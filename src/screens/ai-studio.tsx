@@ -29,6 +29,7 @@ import { generateAiText, generateAiImage, getAiCredits } from "@/lib/ai.function
 import { shareToGallery } from "@/lib/gallery.functions";
 import { saveGeneration } from "@/lib/library.functions";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ZentryChat } from "@/components/ai/ZentryChat";
 
 
 
