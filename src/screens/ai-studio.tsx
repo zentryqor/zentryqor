@@ -29,6 +29,7 @@ import { generateAiText, generateAiImage, getAiCredits } from "@/lib/ai.function
 import { shareToGallery } from "@/lib/gallery.functions";
 import { saveGeneration } from "@/lib/library.functions";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ZentryChat } from "@/components/ai/ZentryChat";
 
 
 
@@ -408,6 +409,19 @@ export function AiStudioScreen() {
               Captions, hooks, scripts, thumbnails and trends, generated in seconds.
               Every run tells you the credit cost before you spend it.
             </p>
+          </div>
+
+          {/* Zentry chat — ask anything about editing, posting and going viral */}
+          <div className="mt-10 sm:mt-14">
+            <ZentryChat
+              tools={TOOLS.filter((t) => t.id !== "thumbnail").map((t) => ({
+                id: t.id,
+                name: t.name,
+                tagline: t.tagline,
+                system: t.system,
+              }))}
+              onCreditsChange={() => creditsQuery.refetch()}
+            />
           </div>
 
           {/* Tool bento — featured tile spans two columns, closing tile links out */}
