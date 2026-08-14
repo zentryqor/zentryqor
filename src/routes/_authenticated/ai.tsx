@@ -14,6 +14,6 @@ export const Route = createFileRoute("/_authenticated/ai")({
     ],
   }),
   validateSearch: (s: Record<string, unknown>) =>
-    z.object({ tool: z.string().optional(), prompt: z.string().optional() }).parse(s),
+    z.object({ tool: z.string().optional(), prompt: z.string().optional(), chat: z.string().optional() }).parse(s),
   component: AiStudioScreen,
 });
