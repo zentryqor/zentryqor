@@ -163,9 +163,9 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
   };
 
   return (
-    <div className="relative">
+    <div className="relative isolate">
       {/* Ambient purple glow background, like the reference composer */}
-      <div aria-hidden className="pointer-events-none absolute -inset-x-6 -bottom-16 -top-8 overflow-hidden rounded-[40px]">
+      <div aria-hidden className="pointer-events-none absolute -inset-x-6 -bottom-4 -top-8 -z-10 overflow-hidden rounded-[40px]">
         <div className="absolute left-1/2 bottom-0 h-64 w-[130%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(60%_100%_at_50%_100%,hsl(268_90%_62%/0.55),transparent_70%)] blur-2xl" />
         <div
           className="absolute inset-x-0 bottom-0 h-40 opacity-30 text-primary"
@@ -179,7 +179,8 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
         />
       </div>
 
-      <div className="relative rounded-3xl border border-white/10 bg-[hsl(240_6%_7%/0.92)] backdrop-blur-xl shadow-[0_30px_80px_-30px_hsl(268_90%_50%/0.5)] overflow-hidden">
+      <div className="glass-strong relative rounded-3xl border border-white/12 bg-white/[0.05] backdrop-blur-2xl shadow-[0_30px_80px_-30px_hsl(268_90%_50%/0.5)]">
+
         {/* Tabs row */}
         <div className="flex items-center gap-3 px-4 sm:px-5 pt-4 pb-3 border-b border-white/[0.07]">
           <button
