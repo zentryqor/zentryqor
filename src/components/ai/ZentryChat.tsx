@@ -221,7 +221,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
               <ChevronDown className="h-3 w-3" />
             </button>
             {historyOpen && (
-              <div className="absolute right-0 top-full mt-2 z-30 w-[280px] max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
+              <div className="absolute right-0 top-full mt-2 z-50 w-[280px] max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
                 {conversations.isLoading && (
                   <div className="px-3 py-2 text-[11px] text-muted-foreground">Loading…</div>
                 )}
