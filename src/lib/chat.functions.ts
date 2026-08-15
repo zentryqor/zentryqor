@@ -15,6 +15,7 @@ export const chatWithZentry = createServerFn({ method: "POST" })
         messages: z.array(MessageSchema).min(1).max(30),
         model: z.enum(["zentry-qor-flash", "zentry-qor-basic", "zentry-qor-pro"]),
         toolContext: z.string().max(1200).optional(),
+        channelContext: z.string().max(1200).optional(),
         conversationId: z.string().uuid().optional(),
       })
       .parse(input),
@@ -32,6 +33,10 @@ export const chatWithZentry = createServerFn({ method: "POST" })
 Be concrete and actionable: give hooks, structures, timings, editing steps, and examples the creator can use immediately.
 Use short markdown sections and bullet lists. Never invent fake statistics.${
       data.toolContext ? `\n\nThe creator selected this Zentry tool — behave like it:\n${data.toolContext}` : ""
+    }${
+      data.channelContext
+        ? `\n\nThe creator has connected these YouTube channels to Zentry Poster. Use this when they ask about "my channel":\n${data.channelContext}`
+        : ""
     }`;
 
     try {
