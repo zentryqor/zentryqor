@@ -3,9 +3,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ArrowUp, BookOpen, ChevronDown, History, Loader2, Plus, Trash2 } from "lucide-react";
+import { ArrowUp, BookOpen, ChevronDown, History, Loader2, Plus, Trash2, Youtube } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { chatWithZentry } from "@/lib/chat.functions";
+import { listSocialAccounts } from "@/lib/social.functions";
 import {
   deleteChatConversation,
   getChatConversation,
@@ -49,6 +50,37 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { chat: conversationId } = useSearch({ strict: false }) as { chat?: string };
+
+  const listAccounts = useServerFn(listSocialAccounts);
+  const accounts = useQuery({
+    queryKey: ["social-accounts"],
+    queryFn: () => listAccounts(),
+  });
+
+  const channels = useMemo(
+    () =>
+      (accounts.data ?? []).filter((a) => a.platform === "youtube" && !a.revoked_at),
+    [accounts.data],
+  );
+
+  const channelContext = useMemo(() => {
+    if (channels.length === 0) return undefined;
+    return channels
+      .map((c) => {
+        const meta = (c.meta ?? {}) as Record<string, any>;
+        const bits = [
+          `Channel: ${meta.title ?? c.handle ?? "YouTube channel"}`,
+          meta.customUrl ? `Handle: ${meta.customUrl}` : null,
+          meta.subscriberCount ? `Subscribers: ${meta.subscriberCount}` : null,
+          meta.videoCount ? `Videos: ${meta.videoCount}` : null,
+          meta.viewCount ? `Total views: ${meta.viewCount}` : null,
+          meta.description ? `About: ${String(meta.description).slice(0, 240)}` : null,
+        ].filter(Boolean);
+        return `- ${bits.join(" | ")}`;
+      })
+      .join("\n")
+      .slice(0, 1100);
+  }, [channels]);
 
   const conversations = useQuery({
     queryKey: ["chat-conversations"],
@@ -113,7 +145,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
           : tool
             ? `${tool.name} — ${tool.tagline}\n${tool.system}`
             : undefined;
-      return send({ data: { messages: next, model, toolContext, conversationId } });
+      return send({ data: { messages: next, model, toolContext, channelContext, conversationId } });
     },
     onSuccess: (r) => {
       setMessages((m) => [...m, { role: "assistant", content: r.text || "…" }]);
@@ -157,29 +189,14 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
 
   const pickTool = (t: ChatTool) => {
     setTool(t);
-    setInput((v) => v.replace(/@([\w-]*)$/, ""));
+    setInput((v) => `${v.replace(/@([\w-]*)$/, "")}@${t.name} `);
     setMentionOpen(false);
     taRef.current?.focus();
   };
 
   return (
     <div className="relative isolate">
-      {/* Ambient purple glow background, like the reference composer */}
-      <div aria-hidden className="pointer-events-none absolute -inset-x-6 -bottom-4 -top-8 -z-10 overflow-hidden rounded-[40px]">
-        <div className="absolute left-1/2 bottom-0 h-64 w-[130%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(60%_100%_at_50%_100%,hsl(268_90%_62%/0.55),transparent_70%)] blur-2xl" />
-        <div
-          className="absolute inset-x-0 bottom-0 h-40 opacity-30 text-primary"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
-            backgroundSize: "44px 44px",
-            maskImage: "linear-gradient(to top, black, transparent)",
-            WebkitMaskImage: "linear-gradient(to top, black, transparent)",
-          }}
-        />
-      </div>
-
-      <div className="glass-strong relative rounded-3xl border border-white/12 bg-white/[0.05] backdrop-blur-2xl shadow-[0_30px_80px_-30px_hsl(268_90%_50%/0.5)]">
+      <div className="relative rounded-3xl border border-white/10 bg-transparent">
 
         {/* Tabs row */}
         <div className="flex items-center gap-3 px-4 sm:px-5 pt-4 pb-3 border-b border-white/[0.07]">
@@ -214,7 +231,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
             <button
               type="button"
               onClick={() => setHistoryOpen((o) => !o)}
-              className="h-8 inline-flex items-center gap-1.5 rounded-xl border border-white/12 bg-white/[0.03] px-2.5 text-[11px] text-muted-foreground hover:text-foreground hover:bg-white/[0.07] transition-colors"
+              className="liquid-btn h-8 inline-flex items-center gap-1.5 rounded-xl px-2.5 text-[11px] text-muted-foreground hover:text-foreground"
             >
               <History className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Saved chats</span>
@@ -266,8 +283,16 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
             {messages.map((m, i) =>
               m.role === "user" ? (
                 <div key={i} className="flex justify-end">
-                  <div className="max-w-[85%] rounded-2xl bg-primary px-3.5 py-2 text-sm text-primary-foreground">
-                    {m.content}
+                  <div className="max-w-[85%] rounded-2xl bg-primary px-3.5 py-2 text-sm text-primary-foreground whitespace-pre-wrap">
+                    {m.content.split(/(@[\w][\w -]*)/g).map((part, j) =>
+                      part.startsWith("@") ? (
+                        <span key={j} className="font-medium underline decoration-white/40">
+                          {part}
+                        </span>
+                      ) : (
+                        <span key={j}>{part}</span>
+                      ),
+                    )}
                   </div>
                 </div>
               ) : (
@@ -329,7 +354,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
               taRef.current?.focus();
             }}
             title="New chat"
-            className="h-9 w-9 shrink-0 rounded-xl border border-white/12 bg-white/[0.03] flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/[0.07] transition-colors"
+            className="liquid-btn h-9 w-9 shrink-0 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground"
           >
             <Plus className="h-4 w-4" />
           </button>
@@ -341,7 +366,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
               setMentionQuery("");
               taRef.current?.focus();
             }}
-            className="h-9 shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-primary/35 bg-primary/10 px-3 text-xs text-primary hover:bg-primary/20 transition-colors"
+            className="liquid-btn h-9 shrink-0 inline-flex items-center gap-1.5 rounded-xl px-3 text-xs text-primary"
           >
             <BookOpen className="h-3.5 w-3.5" /> Skill
           </button>
@@ -350,7 +375,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
             <button
               type="button"
               onClick={() => setModelOpen((o) => !o)}
-              className="h-9 inline-flex items-center gap-1.5 rounded-xl border border-white/12 bg-white/[0.03] px-3 text-xs text-foreground hover:bg-white/[0.07] transition-colors"
+              className="liquid-btn h-9 inline-flex items-center gap-1.5 rounded-xl px-3 text-xs text-foreground"
             >
               {activeModel.label}
               <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
@@ -376,7 +401,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
           </div>
 
           <div className="ml-auto flex items-center gap-2 min-w-0">
-            <div className="hidden sm:flex items-center gap-1.5 rounded-xl border border-white/12 bg-white/[0.03] px-3 h-9 text-xs text-muted-foreground max-w-[210px]">
+            <div className="liquid-btn hidden sm:flex items-center gap-1.5 rounded-xl px-3 h-9 text-xs text-muted-foreground max-w-[210px]">
               <span className="text-foreground">Agent</span>
               <span className="opacity-50">·</span>
               <span className="truncate">{activeModel.label}</span>
@@ -385,7 +410,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
               type="button"
               onClick={submit}
               disabled={mut.isPending || !input.trim()}
-              className="h-9 w-9 shrink-0 rounded-xl bg-white text-black flex items-center justify-center disabled:opacity-40 hover:opacity-90 transition-opacity"
+              className="liquid-btn liquid-btn--primary h-9 w-9 shrink-0 rounded-xl text-primary-foreground flex items-center justify-center"
               aria-label="Send message"
             >
               {mut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-4 w-4" />}
