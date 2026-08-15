@@ -163,9 +163,9 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
   };
 
   return (
-    <div className="relative">
+    <div className="relative isolate">
       {/* Ambient purple glow background, like the reference composer */}
-      <div aria-hidden className="pointer-events-none absolute -inset-x-6 -bottom-16 -top-8 overflow-hidden rounded-[40px]">
+      <div aria-hidden className="pointer-events-none absolute -inset-x-6 -bottom-4 -top-8 -z-10 overflow-hidden rounded-[40px]">
         <div className="absolute left-1/2 bottom-0 h-64 w-[130%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(60%_100%_at_50%_100%,hsl(268_90%_62%/0.55),transparent_70%)] blur-2xl" />
         <div
           className="absolute inset-x-0 bottom-0 h-40 opacity-30 text-primary"
@@ -179,7 +179,8 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
         />
       </div>
 
-      <div className="relative rounded-3xl border border-white/10 bg-[hsl(240_6%_7%/0.92)] backdrop-blur-xl shadow-[0_30px_80px_-30px_hsl(268_90%_50%/0.5)] overflow-hidden">
+      <div className="glass-strong relative rounded-3xl border border-white/12 bg-white/[0.05] backdrop-blur-2xl shadow-[0_30px_80px_-30px_hsl(268_90%_50%/0.5)]">
+
         {/* Tabs row */}
         <div className="flex items-center gap-3 px-4 sm:px-5 pt-4 pb-3 border-b border-white/[0.07]">
           <button
@@ -189,22 +190,18 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
           >
             Zentry Chat
           </button>
-          {tool ? (
+          {tool && (
             <button
               type="button"
               onClick={() => setTool(null)}
-              className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2.5 py-0.5 text-[11px] text-muted-foreground hover:text-foreground"
+              className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-[11px] text-primary hover:bg-primary/20 transition-colors"
               title="Clear selected tool"
             >
-              {tool.name.split(" ")[0]}
+              @{tool.name.split(" ")[0]}
               <ChevronDown className="h-3 w-3" />
             </button>
-          ) : (
-            <span className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2.5 py-0.5 text-[11px] text-muted-foreground">
-              Canvas
-              <ChevronDown className="h-3 w-3" />
-            </span>
           )}
+
           <button
             type="button"
             onClick={() => setMode("viral")}
@@ -224,7 +221,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
               <ChevronDown className="h-3 w-3" />
             </button>
             {historyOpen && (
-              <div className="absolute right-0 top-full mt-2 z-30 w-[280px] max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
+              <div className="absolute right-0 top-full mt-2 z-50 w-[280px] max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
                 {conversations.isLoading && (
                   <div className="px-3 py-2 text-[11px] text-muted-foreground">Loading…</div>
                 )}
@@ -305,20 +302,21 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
           />
 
           {mentionOpen && filteredTools.length > 0 && (
-            <div className="absolute left-4 right-4 bottom-full mb-2 z-20 max-h-64 overflow-y-auto rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
+            <div className="absolute left-4 right-4 bottom-full mb-2 z-50 max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain rounded-2xl border border-primary/25 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
               {filteredTools.map((t) => (
                 <button
                   key={t.id}
                   type="button"
                   onClick={() => pickTool(t)}
-                  className="w-full text-left rounded-xl px-3 py-2 hover:bg-white/[0.06] transition-colors"
+                  className="w-full text-left rounded-xl px-3 py-2 hover:bg-primary/10 transition-colors"
                 >
-                  <div className="text-sm">{t.name}</div>
+                  <div className="text-sm text-primary">@{t.name}</div>
                   <div className="text-[11px] text-muted-foreground">{t.tagline}</div>
                 </button>
               ))}
             </div>
           )}
+
         </div>
 
         {/* Bottom controls */}
@@ -343,7 +341,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
               setMentionQuery("");
               taRef.current?.focus();
             }}
-            className="h-9 shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-white/12 bg-white/[0.03] px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-white/[0.07] transition-colors"
+            className="h-9 shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-primary/35 bg-primary/10 px-3 text-xs text-primary hover:bg-primary/20 transition-colors"
           >
             <BookOpen className="h-3.5 w-3.5" /> Skill
           </button>
@@ -358,7 +356,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
               <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
             {modelOpen && (
-              <div className="absolute left-0 bottom-full mb-2 z-20 w-56 rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
+              <div className="absolute left-0 bottom-full mb-2 z-50 w-60 max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
                 {MODELS.map((m) => (
                   <button
                     key={m.id}
