@@ -190,22 +190,18 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
           >
             Zentry Chat
           </button>
-          {tool ? (
+          {tool && (
             <button
               type="button"
               onClick={() => setTool(null)}
-              className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2.5 py-0.5 text-[11px] text-muted-foreground hover:text-foreground"
+              className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-[11px] text-primary hover:bg-primary/20 transition-colors"
               title="Clear selected tool"
             >
-              {tool.name.split(" ")[0]}
+              @{tool.name.split(" ")[0]}
               <ChevronDown className="h-3 w-3" />
             </button>
-          ) : (
-            <span className="inline-flex items-center gap-1 rounded-full border border-white/15 px-2.5 py-0.5 text-[11px] text-muted-foreground">
-              Canvas
-              <ChevronDown className="h-3 w-3" />
-            </span>
           )}
+
           <button
             type="button"
             onClick={() => setMode("viral")}
