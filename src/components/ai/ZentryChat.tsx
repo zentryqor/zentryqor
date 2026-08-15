@@ -302,20 +302,21 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
           />
 
           {mentionOpen && filteredTools.length > 0 && (
-            <div className="absolute left-4 right-4 bottom-full mb-2 z-20 max-h-64 overflow-y-auto rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
+            <div className="absolute left-4 right-4 bottom-full mb-2 z-50 max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain rounded-2xl border border-primary/25 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
               {filteredTools.map((t) => (
                 <button
                   key={t.id}
                   type="button"
                   onClick={() => pickTool(t)}
-                  className="w-full text-left rounded-xl px-3 py-2 hover:bg-white/[0.06] transition-colors"
+                  className="w-full text-left rounded-xl px-3 py-2 hover:bg-primary/10 transition-colors"
                 >
-                  <div className="text-sm">{t.name}</div>
+                  <div className="text-sm text-primary">@{t.name}</div>
                   <div className="text-[11px] text-muted-foreground">{t.tagline}</div>
                 </button>
               ))}
             </div>
           )}
+
         </div>
 
         {/* Bottom controls */}
