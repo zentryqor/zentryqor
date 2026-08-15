@@ -356,7 +356,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
               <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
             {modelOpen && (
-              <div className="absolute left-0 bottom-full mb-2 z-20 w-56 rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
+              <div className="absolute left-0 bottom-full mb-2 z-50 w-60 max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
                 {MODELS.map((m) => (
                   <button
                     key={m.id}
