@@ -341,7 +341,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
               setMentionQuery("");
               taRef.current?.focus();
             }}
-            className="h-9 shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-white/12 bg-white/[0.03] px-3 text-xs text-muted-foreground hover:text-foreground hover:bg-white/[0.07] transition-colors"
+            className="h-9 shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-primary/35 bg-primary/10 px-3 text-xs text-primary hover:bg-primary/20 transition-colors"
           >
             <BookOpen className="h-3.5 w-3.5" /> Skill
           </button>
