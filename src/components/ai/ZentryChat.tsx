@@ -12,6 +12,43 @@ import {
   getChatConversation,
   listChatConversations,
 } from "@/lib/chat-history.functions";
+import {
+  createChatSkill,
+  deleteChatSkill,
+  listChatSkills,
+} from "@/lib/chat-skills.functions";
+
+/** Parse a SKILL.md file: optional YAML frontmatter (name/description) + markdown body. */
+function parseSkillMd(raw: string, fallbackName: string) {
+  let name = "";
+  let description = "";
+  let body = raw.trim();
+
+  const fm = body.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  if (fm) {
+    for (const line of fm[1].split(/\r?\n/)) {
+      const m = line.match(/^(name|description)\s*:\s*(.*)$/i);
+      if (m) {
+        const value = m[2].trim().replace(/^["']|["']$/g, "");
+        if (m[1].toLowerCase() === "name") name = value;
+        else description = value;
+      }
+    }
+    body = body.slice(fm[0].length).trim();
+  }
+  if (!name) {
+    const h1 = body.match(/^#\s+(.+)$/m);
+    name = h1 ? h1[1].trim() : fallbackName;
+  }
+  if (!description) {
+    const firstPara = body
+      .split(/\r?\n\r?\n/)
+      .map((p) => p.trim())
+      .find((p) => p && !p.startsWith("#"));
+    description = (firstPara ?? "Custom skill").replace(/\s+/g, " ").slice(0, 160);
+  }
+  return { name: name.slice(0, 60), description: description.slice(0, 200), content: body };
+}
 
 export type ChatTool = {
   id: string;
