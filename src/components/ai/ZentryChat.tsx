@@ -413,21 +413,63 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
             className="w-full resize-none bg-transparent text-[15px] text-foreground placeholder:text-muted-foreground/70 focus:outline-none"
           />
 
-          {mentionOpen && filteredTools.length > 0 && (
+          {mentionOpen && (
             <div className="absolute left-4 right-4 bottom-full mb-2 z-50 max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain rounded-2xl border border-primary/25 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
-              {filteredTools.map((t) => (
+              <div className="flex items-center gap-1 px-1 pb-1.5">
                 <button
-                  key={t.id}
                   type="button"
-                  onClick={() => pickTool(t)}
-                  className="w-full text-left rounded-xl px-3 py-2 hover:bg-primary/10 transition-colors"
+                  onClick={() => setSkillModalOpen(true)}
+                  className="liquid-btn h-8 flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl px-3 text-[11px] text-primary"
                 >
-                  <div className="text-sm text-primary">@{t.name}</div>
-                  <div className="text-[11px] text-muted-foreground">{t.tagline}</div>
+                  <Plus className="h-3.5 w-3.5" /> Add skill
                 </button>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="liquid-btn h-8 inline-flex items-center gap-1.5 rounded-xl px-3 text-[11px] text-muted-foreground hover:text-foreground"
+                >
+                  <Upload className="h-3.5 w-3.5" /> SKILL.md
+                </button>
+              </div>
+              {filteredTools.map((t) => (
+                <div key={t.id} className="group flex items-center gap-1 rounded-xl hover:bg-primary/10">
+                  <button
+                    type="button"
+                    onClick={() => pickTool(t)}
+                    className="flex-1 min-w-0 text-left px-3 py-2"
+                  >
+                    <div className="text-sm text-primary truncate">@{t.name}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">{t.tagline}</div>
+                  </button>
+                  {t.id.startsWith("custom:") && (
+                    <button
+                      type="button"
+                      onClick={() => dropSkill.mutate(t.id.slice("custom:".length))}
+                      aria-label={`Delete ${t.name}`}
+                      className="h-7 w-7 mr-1 shrink-0 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/10"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
               ))}
+              {filteredTools.length === 0 && (
+                <div className="px-3 py-2 text-[11px] text-muted-foreground">No matching skills.</div>
+              )}
             </div>
           )}
+
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".md,text/markdown,text/plain"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              e.target.value = "";
+              if (f) void onSkillFile(f);
+            }}
+          />
 
         </div>
 
