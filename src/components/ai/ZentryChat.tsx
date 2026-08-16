@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ArrowUp, BookOpen, ChevronDown, History, Loader2, Plus, Trash2, Youtube } from "lucide-react";
+import { ArrowUp, BookOpen, ChevronDown, History, Loader2, Plus, Trash2, Upload, X, Youtube } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { chatWithZentry } from "@/lib/chat.functions";
 import { listSocialAccounts } from "@/lib/social.functions";
