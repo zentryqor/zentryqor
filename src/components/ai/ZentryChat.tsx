@@ -551,6 +551,79 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
       <div className="mt-3 text-center text-[11px] text-muted-foreground">
         {tool ? `Using ${tool.name} · ` : ""}10 credits per reply
       </div>
+
+      {skillModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[hsl(240_6%_9%/0.97)] backdrop-blur-2xl p-5 shadow-2xl">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-medium">Add a skill</h3>
+              <button
+                type="button"
+                onClick={() => setSkillModalOpen(false)}
+                aria-label="Close"
+                className="ml-auto h-8 w-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/10"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="liquid-btn mt-4 w-full h-10 inline-flex items-center justify-center gap-2 rounded-xl text-xs text-primary"
+            >
+              <Upload className="h-3.5 w-3.5" /> Import a SKILL.md file
+            </button>
+
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="text-[11px] text-muted-foreground">Name</label>
+                <input
+                  value={skillForm.name}
+                  onChange={(e) => setSkillForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="Retention Doctor"
+                  className="mt-1 w-full h-10 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm focus:outline-none focus:border-primary/50"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-muted-foreground">Description</label>
+                <input
+                  value={skillForm.description}
+                  onChange={(e) => setSkillForm((f) => ({ ...f, description: e.target.value }))}
+                  placeholder="Diagnoses drop-off in short-form videos."
+                  className="mt-1 w-full h-10 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm focus:outline-none focus:border-primary/50"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-muted-foreground">Content (instructions)</label>
+                <textarea
+                  value={skillForm.content}
+                  onChange={(e) => setSkillForm((f) => ({ ...f, content: e.target.value }))}
+                  rows={6}
+                  placeholder="You are… Always output…"
+                  className="mt-1 w-full resize-y rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm focus:outline-none focus:border-primary/50"
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              disabled={saveSkill.isPending || !skillForm.name.trim() || !skillForm.content.trim()}
+              onClick={() =>
+                saveSkill.mutate({
+                  name: skillForm.name.trim(),
+                  description: skillForm.description.trim(),
+                  content: skillForm.content.trim(),
+                })
+              }
+              className="liquid-btn liquid-btn--primary mt-4 w-full h-10 rounded-xl text-sm text-primary-foreground inline-flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {saveSkill.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Save skill
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
