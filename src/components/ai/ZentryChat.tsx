@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ArrowUp, BookOpen, ChevronDown, History, Loader2, Plus, Trash2, Youtube } from "lucide-react";
+import { ArrowUp, BookOpen, ChevronDown, History, Loader2, Plus, Trash2, Upload, X, Youtube } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { chatWithZentry } from "@/lib/chat.functions";
 import { listSocialAccounts } from "@/lib/social.functions";
@@ -12,6 +12,43 @@ import {
   getChatConversation,
   listChatConversations,
 } from "@/lib/chat-history.functions";
+import {
+  createChatSkill,
+  deleteChatSkill,
+  listChatSkills,
+} from "@/lib/chat-skills.functions";
+
+/** Parse a SKILL.md file: optional YAML frontmatter (name/description) + markdown body. */
+function parseSkillMd(raw: string, fallbackName: string) {
+  let name = "";
+  let description = "";
+  let body = raw.trim();
+
+  const fm = body.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  if (fm) {
+    for (const line of fm[1].split(/\r?\n/)) {
+      const m = line.match(/^(name|description)\s*:\s*(.*)$/i);
+      if (m) {
+        const value = m[2].trim().replace(/^["']|["']$/g, "");
+        if (m[1].toLowerCase() === "name") name = value;
+        else description = value;
+      }
+    }
+    body = body.slice(fm[0].length).trim();
+  }
+  if (!name) {
+    const h1 = body.match(/^#\s+(.+)$/m);
+    name = h1 ? h1[1].trim() : fallbackName;
+  }
+  if (!description) {
+    const firstPara = body
+      .split(/\r?\n\r?\n/)
+      .map((p) => p.trim())
+      .find((p) => p && !p.startsWith("#"));
+    description = (firstPara ?? "Custom skill").replace(/\s+/g, " ").slice(0, 160);
+  }
+  return { name: name.slice(0, 60), description: description.slice(0, 200), content: body };
+}
 
 export type ChatTool = {
   id: string;
@@ -40,6 +77,9 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
   const [mentionOpen, setMentionOpen] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [skillModalOpen, setSkillModalOpen] = useState(false);
+  const [skillForm, setSkillForm] = useState({ name: "", description: "", content: "" });
+  const fileRef = useRef<HTMLInputElement | null>(null);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -120,14 +160,61 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
     onError: (e: any) => toast.error(e?.message ?? "Could not delete conversation"),
   });
 
+  const fetchSkills = useServerFn(listChatSkills);
+  const addSkill = useServerFn(createChatSkill);
+  const removeSkill = useServerFn(deleteChatSkill);
+
+  const customSkills = useQuery({
+    queryKey: ["chat-skills"],
+    queryFn: () => fetchSkills(),
+  });
+
+  const saveSkill = useMutation({
+    mutationFn: (payload: { name: string; description: string; content: string }) =>
+      addSkill({ data: payload }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chat-skills"] });
+      setSkillForm({ name: "", description: "", content: "" });
+      setSkillModalOpen(false);
+      toast.success("Skill added");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not add skill"),
+  });
+
+  const dropSkill = useMutation({
+    mutationFn: (id: string) => removeSkill({ data: { id } }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["chat-skills"] }),
+    onError: (e: any) => toast.error(e?.message ?? "Could not delete skill"),
+  });
+
+  const allTools = useMemo<ChatTool[]>(
+    () => [
+      ...(customSkills.data ?? []).map((s) => ({
+        id: `custom:${s.id}`,
+        name: s.name,
+        tagline: s.description || "Custom skill",
+        system: s.content,
+      })),
+      ...tools,
+    ],
+    [tools, customSkills.data],
+  );
+
   const activeModel = MODELS.find((m) => m.id === model)!;
   const filteredTools = useMemo(
     () =>
-      tools.filter((t) =>
+      allTools.filter((t) =>
         mentionQuery ? t.name.toLowerCase().includes(mentionQuery.toLowerCase()) : true,
       ),
-    [tools, mentionQuery],
+    [allTools, mentionQuery],
   );
+
+  const onSkillFile = async (file: File) => {
+    const raw = await file.text();
+    const parsed = parseSkillMd(raw, file.name.replace(/\.md$/i, ""));
+    setSkillForm(parsed);
+    setSkillModalOpen(true);
+  };
 
   useEffect(() => {
     taRef.current?.focus();
@@ -196,7 +283,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
 
   return (
     <div className="relative isolate">
-      <div className="relative rounded-3xl border border-white/10 bg-transparent">
+      <div className="relative rounded-3xl border border-white/10 bg-white/[0.035] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_24px_60px_-24px_rgba(0,0,0,0.8)] border-beam-host">
 
         {/* Tabs row */}
         <div className="flex items-center gap-3 px-4 sm:px-5 pt-4 pb-3 border-b border-white/[0.07]">
@@ -326,21 +413,63 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
             className="w-full resize-none bg-transparent text-[15px] text-foreground placeholder:text-muted-foreground/70 focus:outline-none"
           />
 
-          {mentionOpen && filteredTools.length > 0 && (
+          {mentionOpen && (
             <div className="absolute left-4 right-4 bottom-full mb-2 z-50 max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain rounded-2xl border border-primary/25 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
-              {filteredTools.map((t) => (
+              <div className="flex items-center gap-1 px-1 pb-1.5">
                 <button
-                  key={t.id}
                   type="button"
-                  onClick={() => pickTool(t)}
-                  className="w-full text-left rounded-xl px-3 py-2 hover:bg-primary/10 transition-colors"
+                  onClick={() => setSkillModalOpen(true)}
+                  className="liquid-btn h-8 flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl px-3 text-[11px] text-primary"
                 >
-                  <div className="text-sm text-primary">@{t.name}</div>
-                  <div className="text-[11px] text-muted-foreground">{t.tagline}</div>
+                  <Plus className="h-3.5 w-3.5" /> Add skill
                 </button>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="liquid-btn h-8 inline-flex items-center gap-1.5 rounded-xl px-3 text-[11px] text-muted-foreground hover:text-foreground"
+                >
+                  <Upload className="h-3.5 w-3.5" /> SKILL.md
+                </button>
+              </div>
+              {filteredTools.map((t) => (
+                <div key={t.id} className="group flex items-center gap-1 rounded-xl hover:bg-primary/10">
+                  <button
+                    type="button"
+                    onClick={() => pickTool(t)}
+                    className="flex-1 min-w-0 text-left px-3 py-2"
+                  >
+                    <div className="text-sm text-primary truncate">@{t.name}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">{t.tagline}</div>
+                  </button>
+                  {t.id.startsWith("custom:") && (
+                    <button
+                      type="button"
+                      onClick={() => dropSkill.mutate(t.id.slice("custom:".length))}
+                      aria-label={`Delete ${t.name}`}
+                      className="h-7 w-7 mr-1 shrink-0 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/10"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
               ))}
+              {filteredTools.length === 0 && (
+                <div className="px-3 py-2 text-[11px] text-muted-foreground">No matching skills.</div>
+              )}
             </div>
           )}
+
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".md,text/markdown,text/plain"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              e.target.value = "";
+              if (f) void onSkillFile(f);
+            }}
+          />
 
         </div>
 
@@ -422,6 +551,79 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
       <div className="mt-3 text-center text-[11px] text-muted-foreground">
         {tool ? `Using ${tool.name} · ` : ""}10 credits per reply
       </div>
+
+      {skillModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-[hsl(240_6%_9%/0.97)] backdrop-blur-2xl p-5 shadow-2xl">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-4 w-4 text-primary" />
+              <h3 className="text-sm font-medium">Add a skill</h3>
+              <button
+                type="button"
+                onClick={() => setSkillModalOpen(false)}
+                aria-label="Close"
+                className="ml-auto h-8 w-8 rounded-xl flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-white/10"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="liquid-btn mt-4 w-full h-10 inline-flex items-center justify-center gap-2 rounded-xl text-xs text-primary"
+            >
+              <Upload className="h-3.5 w-3.5" /> Import a SKILL.md file
+            </button>
+
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="text-[11px] text-muted-foreground">Name</label>
+                <input
+                  value={skillForm.name}
+                  onChange={(e) => setSkillForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="Retention Doctor"
+                  className="mt-1 w-full h-10 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm focus:outline-none focus:border-primary/50"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-muted-foreground">Description</label>
+                <input
+                  value={skillForm.description}
+                  onChange={(e) => setSkillForm((f) => ({ ...f, description: e.target.value }))}
+                  placeholder="Diagnoses drop-off in short-form videos."
+                  className="mt-1 w-full h-10 rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm focus:outline-none focus:border-primary/50"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] text-muted-foreground">Content (instructions)</label>
+                <textarea
+                  value={skillForm.content}
+                  onChange={(e) => setSkillForm((f) => ({ ...f, content: e.target.value }))}
+                  rows={6}
+                  placeholder="You are… Always output…"
+                  className="mt-1 w-full resize-y rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-sm focus:outline-none focus:border-primary/50"
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              disabled={saveSkill.isPending || !skillForm.name.trim() || !skillForm.content.trim()}
+              onClick={() =>
+                saveSkill.mutate({
+                  name: skillForm.name.trim(),
+                  description: skillForm.description.trim(),
+                  content: skillForm.content.trim(),
+                })
+              }
+              className="liquid-btn liquid-btn--primary mt-4 w-full h-10 rounded-xl text-sm text-primary-foreground inline-flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {saveSkill.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Save skill
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
