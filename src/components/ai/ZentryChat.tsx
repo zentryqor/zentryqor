@@ -160,14 +160,61 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
     onError: (e: any) => toast.error(e?.message ?? "Could not delete conversation"),
   });
 
+  const fetchSkills = useServerFn(listChatSkills);
+  const addSkill = useServerFn(createChatSkill);
+  const removeSkill = useServerFn(deleteChatSkill);
+
+  const customSkills = useQuery({
+    queryKey: ["chat-skills"],
+    queryFn: () => fetchSkills(),
+  });
+
+  const saveSkill = useMutation({
+    mutationFn: (payload: { name: string; description: string; content: string }) =>
+      addSkill({ data: payload }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chat-skills"] });
+      setSkillForm({ name: "", description: "", content: "" });
+      setSkillModalOpen(false);
+      toast.success("Skill added");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Could not add skill"),
+  });
+
+  const dropSkill = useMutation({
+    mutationFn: (id: string) => removeSkill({ data: { id } }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["chat-skills"] }),
+    onError: (e: any) => toast.error(e?.message ?? "Could not delete skill"),
+  });
+
+  const allTools = useMemo<ChatTool[]>(
+    () => [
+      ...(customSkills.data ?? []).map((s) => ({
+        id: `custom:${s.id}`,
+        name: s.name,
+        tagline: s.description || "Custom skill",
+        system: s.content,
+      })),
+      ...tools,
+    ],
+    [tools, customSkills.data],
+  );
+
   const activeModel = MODELS.find((m) => m.id === model)!;
   const filteredTools = useMemo(
     () =>
-      tools.filter((t) =>
+      allTools.filter((t) =>
         mentionQuery ? t.name.toLowerCase().includes(mentionQuery.toLowerCase()) : true,
       ),
-    [tools, mentionQuery],
+    [allTools, mentionQuery],
   );
+
+  const onSkillFile = async (file: File) => {
+    const raw = await file.text();
+    const parsed = parseSkillMd(raw, file.name.replace(/\.md$/i, ""));
+    setSkillForm(parsed);
+    setSkillModalOpen(true);
+  };
 
   useEffect(() => {
     taRef.current?.focus();
