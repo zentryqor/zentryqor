@@ -77,6 +77,9 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
   const [mentionOpen, setMentionOpen] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [skillModalOpen, setSkillModalOpen] = useState(false);
+  const [skillForm, setSkillForm] = useState({ name: "", description: "", content: "" });
+  const fileRef = useRef<HTMLInputElement | null>(null);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
