@@ -196,7 +196,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
 
   return (
     <div className="relative isolate">
-      <div className="relative rounded-3xl border border-white/10 bg-transparent">
+      <div className="relative rounded-3xl border border-white/10 bg-white/[0.035] backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_24px_60px_-24px_rgba(0,0,0,0.8)] border-beam-host">
 
         {/* Tabs row */}
         <div className="flex items-center gap-3 px-4 sm:px-5 pt-4 pb-3 border-b border-white/[0.07]">
