@@ -436,17 +436,21 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
             {messages.map((m, i) =>
               m.role === "user" ? (
                 <div key={i} className="flex justify-end">
-                  <div className="max-w-[85%] rounded-2xl bg-primary px-3.5 py-2 text-sm text-primary-foreground whitespace-pre-wrap">
+                  <div className="max-w-[85%] rounded-2xl border border-white/10 bg-white/[0.07] px-3.5 py-2 text-sm text-foreground whitespace-pre-wrap">
                     {m.content.split(/(@[\w][\w -]*)/g).map((part, j) =>
                       part.startsWith("@") ? (
-                        <span key={j} className="font-medium underline decoration-white/40">
-                          {part}
+                        <span
+                          key={j}
+                          className="rounded-md bg-primary/15 px-1 font-medium text-primary"
+                        >
+                          {part.trimEnd()}
                         </span>
                       ) : (
                         <span key={j}>{part}</span>
                       ),
                     )}
                   </div>
+
                 </div>
               ) : (
                 <div key={i} className="prose prose-sm prose-invert max-w-none text-sm leading-relaxed">
