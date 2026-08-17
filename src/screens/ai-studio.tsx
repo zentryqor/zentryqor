@@ -424,64 +424,58 @@ export function AiStudioScreen() {
             />
           </div>
 
-          {/* Tool bento — featured tile spans two columns, closing tile links out */}
-          <div className="mt-10 sm:mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {TOOLS.map((t, i) => {
-              const Icon = t.icon;
-              const featured = i === 0;
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => openTool(t.id)}
-                  className={`group relative overflow-hidden text-left rounded-3xl border border-border/60 bg-elevated/25 hover:bg-elevated/50 hover:border-foreground/25 transition-all duration-300 ${
-                    featured
-                      ? "sm:col-span-2 p-6 sm:p-8 min-h-[220px] flex flex-col justify-between bg-gradient-to-br from-primary/12 via-elevated/30 to-accent/10"
-                      : "p-5 sm:p-6"
-                  }`}
-                >
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-primary/15 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  />
-                  <div className="relative flex items-start justify-between gap-4">
+          {/* Thumbnail generator — the only visual tool that lives outside the chat */}
+          <div className="mt-10 sm:mt-14 grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+            <button
+              onClick={() => openTool("thumbnail")}
+              className="group relative lg:col-span-2 overflow-hidden text-left rounded-3xl border border-border/60 bg-gradient-to-br from-emerald-500/12 via-elevated/30 to-primary/10 hover:border-foreground/25 transition-all duration-300 p-6 sm:p-8 min-h-[240px] flex flex-col justify-between"
+            >
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-emerald-500/20 blur-3xl opacity-60 group-hover:opacity-100 transition-opacity duration-500"
+              />
+              <div className="relative flex items-start justify-between gap-4">
+                <span className="h-12 w-12 rounded-2xl bg-background/50 border border-border/60 flex items-center justify-center">
+                  <ImageIcon className="h-6 w-6 text-emerald-400" />
+                </span>
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all" />
+              </div>
+              <div className="relative mt-8">
+                <div className="text-[11px] uppercase tracking-[0.24em] text-emerald-400/90">
+                  Image tool
+                </div>
+                <div className="mt-3 text-2xl sm:text-4xl font-medium tracking-[-0.03em]">
+                  Thumbnail Photo Generator
+                </div>
+                <p className="mt-2 max-w-[44ch] text-sm text-muted-foreground">
+                  Click-worthy thumbnails in any ratio — 16:9, 9:16, 4:3 or 3:4.
+                  Download it or share it straight to the gallery.
+                </p>
+                <div className="mt-5 flex flex-wrap items-center gap-2">
+                  {(["16:9", "9:16", "4:3", "3:4"] as AspectRatio[]).map((r) => (
                     <span
-                      className={`rounded-2xl bg-background/50 border border-border/60 flex items-center justify-center ${
-                        featured ? "h-12 w-12" : "h-10 w-10"
-                      }`}
+                      key={r}
+                      className="rounded-full border border-border/60 bg-background/40 px-3 py-1 text-[11px] text-muted-foreground"
                     >
-                      <Icon className={`${featured ? "h-6 w-6" : "h-5 w-5"} ${t.accent}`} />
+                      {r}
                     </span>
-                    <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all" />
-                  </div>
-                  <div className={featured ? "relative mt-8" : "relative mt-5"}>
-                    <div
-                      className={`font-medium tracking-[-0.02em] ${
-                        featured ? "text-2xl sm:text-3xl" : "text-base"
-                      }`}
-                    >
-                      {t.name}
-                    </div>
-                    <div
-                      className={`text-muted-foreground mt-1.5 ${
-                        featured ? "text-sm max-w-[40ch]" : "text-xs"
-                      }`}
-                    >
-                      {t.tagline}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+                  ))}
+                  <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-3 py-1 text-[11px] text-emerald-300">
+                    {credits?.costs.image ?? 30} credits
+                  </span>
+                </div>
+              </div>
+            </button>
 
             {/* Closing tile — keeps the grid full and routes to the surrounding surfaces */}
-            <div className="sm:col-span-2 rounded-3xl border border-border/60 bg-background/40 p-6 sm:p-8 flex flex-col justify-between gap-6">
+            <div className="rounded-3xl border border-border/60 bg-background/40 p-6 sm:p-8 flex flex-col justify-between gap-6">
               <div>
                 <div className="text-lg font-medium tracking-[-0.02em]">
-                  Not sure where to start?
+                  Every other tool lives in the chat
                 </div>
-                <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground max-w-[46ch]">
-                  Open a ready-made prompt template, see what other creators made,
-                  or pick up a generation you saved earlier.
+                <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground max-w-[40ch]">
+                  Type <span className="text-primary font-medium">@</span> in Zentry Chat to pull in
+                  captions, hooks, scripts, plans, trends and hashtags — or add your own skill.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -506,6 +500,7 @@ export function AiStudioScreen() {
               </div>
             </div>
           </div>
+
         </main>
 
       </div>
