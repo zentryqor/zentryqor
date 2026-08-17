@@ -399,16 +399,17 @@ export function AiStudioScreen() {
               <Wand2 className="h-3 w-3 text-accent" /> The creator toolkit
             </div>
             <h1 className="mt-4 text-4xl sm:text-6xl font-semibold tracking-[-0.035em] leading-[1.02]">
-              Nine tools. One{" "}
+              One chat. One{" "}
               <span className="text-gradient-brand italic leading-[1.1] pb-1 inline-block">
                 unfair
               </span>{" "}
               advantage.
             </h1>
             <p className="mt-4 max-w-[52ch] text-sm sm:text-base text-muted-foreground leading-relaxed">
-              Captions, hooks, scripts, thumbnails and trends, generated in seconds.
-              Every run tells you the credit cost before you spend it.
+              Captions, hooks, scripts, plans and trends all live inside Zentry Chat — type @ to
+              call one. Thumbnails get their own generator below.
             </p>
+
           </div>
 
           {/* Zentry chat — ask anything about editing, posting and going viral */}
