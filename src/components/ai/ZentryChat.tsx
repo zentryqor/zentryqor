@@ -103,24 +103,35 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
     [accounts.data],
   );
 
+  const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
+  const [channelMenuOpen, setChannelMenuOpen] = useState(false);
+
+  const activeChannel = useMemo(
+    () => channels.find((c) => c.id === activeChannelId) ?? channels[0] ?? null,
+    [channels, activeChannelId],
+  );
+
+  const channelLabel = (c: any) => {
+    const meta = (c?.meta ?? {}) as Record<string, any>;
+    return meta.title ?? c?.handle ?? meta.customUrl ?? "YouTube channel";
+  };
+
   const channelContext = useMemo(() => {
-    if (channels.length === 0) return undefined;
-    return channels
-      .map((c) => {
-        const meta = (c.meta ?? {}) as Record<string, any>;
-        const bits = [
-          `Channel: ${meta.title ?? c.handle ?? "YouTube channel"}`,
-          meta.customUrl ? `Handle: ${meta.customUrl}` : null,
-          meta.subscriberCount ? `Subscribers: ${meta.subscriberCount}` : null,
-          meta.videoCount ? `Videos: ${meta.videoCount}` : null,
-          meta.viewCount ? `Total views: ${meta.viewCount}` : null,
-          meta.description ? `About: ${String(meta.description).slice(0, 240)}` : null,
-        ].filter(Boolean);
-        return `- ${bits.join(" | ")}`;
-      })
-      .join("\n")
+    if (!activeChannel) return undefined;
+    const meta = (activeChannel.meta ?? {}) as Record<string, any>;
+    return [
+      `Channel: ${channelLabel(activeChannel)}`,
+      meta.customUrl ? `Handle: ${meta.customUrl}` : null,
+      meta.subscriberCount ? `Subscribers: ${meta.subscriberCount}` : null,
+      meta.videoCount ? `Videos: ${meta.videoCount}` : null,
+      meta.viewCount ? `Total views: ${meta.viewCount}` : null,
+      meta.description ? `About: ${String(meta.description).slice(0, 240)}` : null,
+    ]
+      .filter(Boolean)
+      .join(" | ")
       .slice(0, 1100);
-  }, [channels]);
+  }, [activeChannel]);
+
 
   const conversations = useQuery({
     queryKey: ["chat-conversations"],
