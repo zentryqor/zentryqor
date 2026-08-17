@@ -484,23 +484,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
           />
 
           {mentionOpen && (
-            <div className="absolute left-4 right-4 bottom-full mb-2 z-50 max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain rounded-2xl border border-primary/25 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
-              <div className="flex items-center gap-1 px-1 pb-1.5">
-                <button
-                  type="button"
-                  onClick={() => setSkillModalOpen(true)}
-                  className="liquid-btn h-8 flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl px-3 text-[11px] text-primary"
-                >
-                  <Plus className="h-3.5 w-3.5" /> Add skill
-                </button>
-                <button
-                  type="button"
-                  onClick={() => fileRef.current?.click()}
-                  className="liquid-btn h-8 inline-flex items-center gap-1.5 rounded-xl px-3 text-[11px] text-muted-foreground hover:text-foreground"
-                >
-                  <Upload className="h-3.5 w-3.5" /> SKILL.md
-                </button>
-              </div>
+            <div className="absolute left-4 right-4 bottom-full mb-2 z-50 max-h-[min(50vh,22rem)] overflow-y-auto overscroll-contain rounded-2xl border border-primary/25 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
               {filteredTools.map((t) => (
                 <div key={t.id} className="group flex items-center gap-1 rounded-xl hover:bg-primary/10">
                   <button
@@ -526,8 +510,26 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
               {filteredTools.length === 0 && (
                 <div className="px-3 py-2 text-[11px] text-muted-foreground">No matching skills.</div>
               )}
+              {/* Kept at the bottom so it stays visible even when the list is long */}
+              <div className="sticky bottom-0 flex items-center gap-1 px-1 pt-1.5 mt-1 border-t border-white/[0.07] bg-[hsl(240_6%_9%/0.98)]">
+                <button
+                  type="button"
+                  onClick={() => setSkillModalOpen(true)}
+                  className="liquid-btn h-8 flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl px-3 text-[11px] text-primary"
+                >
+                  <Plus className="h-3.5 w-3.5" /> Add skill
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  className="liquid-btn h-8 inline-flex items-center gap-1.5 rounded-xl px-3 text-[11px] text-muted-foreground hover:text-foreground"
+                >
+                  <Upload className="h-3.5 w-3.5" /> SKILL.md
+                </button>
+              </div>
             </div>
           )}
+
 
           <input
             ref={fileRef}
