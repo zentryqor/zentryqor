@@ -442,16 +442,16 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
           />
 
           {mentionOpen && (
-            <div className="absolute left-4 right-4 bottom-full mb-2 z-50 max-h-[min(50vh,22rem)] overflow-y-auto overscroll-contain rounded-2xl border border-primary/25 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
+            <div className="absolute left-4 right-4 sm:right-auto sm:w-[19rem] bottom-full mb-2 z-50 max-h-[min(38vh,15rem)] overflow-y-auto overscroll-contain rounded-2xl border border-primary/25 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1 shadow-2xl">
               {filteredTools.map((t) => (
-                <div key={t.id} className="group flex items-center gap-1 rounded-xl hover:bg-primary/10">
+                <div key={t.id} className="group flex items-center gap-1 rounded-lg hover:bg-primary/10">
                   <button
                     type="button"
                     onClick={() => pickTool(t)}
-                    className="flex-1 min-w-0 text-left px-3 py-2"
+                    className="flex-1 min-w-0 text-left px-2.5 py-1.5"
                   >
-                    <div className="text-sm text-primary truncate">@{t.name}</div>
-                    <div className="text-[11px] text-muted-foreground truncate">{t.tagline}</div>
+                    <div className="text-[13px] text-primary truncate">@{t.name}</div>
+                    <div className="text-[10px] text-muted-foreground truncate">{t.tagline}</div>
                   </button>
                   {t.id.startsWith("custom:") && (
                     <button
