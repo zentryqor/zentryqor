@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ArrowUp, BookOpen, ChevronDown, History, Loader2, Plus, Trash2, Upload, X, Youtube } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { chatWithZentry } from "@/lib/chat.functions";
+import { getYouTubeChannelDetails } from "@/lib/youtube-analytics.functions";
 import { listSocialAccounts } from "@/lib/social.functions";
 import {
   deleteChatConversation,
@@ -72,7 +73,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
   const [input, setInput] = useState("");
   const [model, setModel] = useState<ChatModel>("zentry-qor-flash");
   const [modelOpen, setModelOpen] = useState(false);
-  const [mode, setMode] = useState<"chat" | "viral">("chat");
+  
   const [tool, setTool] = useState<ChatTool | null>(null);
   const [mentionOpen, setMentionOpen] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
@@ -116,21 +117,48 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
     return meta.title ?? c?.handle ?? meta.customUrl ?? "YouTube channel";
   };
 
+  // Live channel stats — the cached `meta` on the account row goes stale fast,
+  // which made the assistant quote wrong subscriber/view counts.
+  const fetchChannelDetails = useServerFn(getYouTubeChannelDetails);
+  const channelDetails = useQuery({
+    queryKey: ["chat-channel-details", activeChannel?.id],
+    queryFn: () => fetchChannelDetails({ data: { accountId: activeChannel!.id } }),
+    enabled: !!activeChannel,
+    staleTime: 60_000,
+    retry: false,
+  });
+
   const channelContext = useMemo(() => {
-    if (!activeChannel) return undefined;
-    const meta = (activeChannel.meta ?? {}) as Record<string, any>;
+    const d = channelDetails.data;
+    if (!d) return undefined;
+    const top = d.recentVideos
+      .slice(0, 5)
+      .map(
+        (v) =>
+          `"${v.title}" (${new Date(v.publishedAt).toISOString().slice(0, 10)}, ${v.views} views, ${v.likes} likes, ${v.comments} comments)`,
+      )
+      .join("; ");
     return [
-      `Channel: ${channelLabel(activeChannel)}`,
-      meta.customUrl ? `Handle: ${meta.customUrl}` : null,
-      meta.subscriberCount ? `Subscribers: ${meta.subscriberCount}` : null,
-      meta.videoCount ? `Videos: ${meta.videoCount}` : null,
-      meta.viewCount ? `Total views: ${meta.viewCount}` : null,
-      meta.description ? `About: ${String(meta.description).slice(0, 240)}` : null,
+      `Channel: ${d.title}`,
+      d.customUrl ? `Handle: ${d.customUrl}` : null,
+      d.stats.hiddenSubs ? "Subscribers: hidden by the owner" : `Subscribers: ${d.stats.subscribers}`,
+      `Total views: ${d.stats.views}`,
+      `Videos: ${d.stats.videos}`,
+      d.description ? `About: ${d.description.slice(0, 200)}` : null,
+      top ? `Recent uploads: ${top}` : null,
+      "These figures are live from the YouTube Data API. Use only these numbers; never estimate or invent metrics, and say you don't have the data if it is not listed here.",
     ]
       .filter(Boolean)
       .join(" | ")
-      .slice(0, 1100);
-  }, [activeChannel]);
+      .slice(0, 1200);
+  }, [channelDetails.data]);
+
+  const insertChannelMention = () => {
+    if (!activeChannel) return;
+    const name = channelLabel(activeChannel);
+    setInput((v) => `${v.trimEnd()}${v.trim() ? " " : ""}/${name} `.replace(/^\s+/, ""));
+    taRef.current?.focus();
+  };
 
 
   const conversations = useQuery({
@@ -237,12 +265,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
 
   const mut = useMutation({
     mutationFn: async (next: Msg[]) => {
-      const toolContext =
-        mode === "viral"
-          ? "Focus every answer on virality: hook, retention, posting strategy, and trend hijacking."
-          : tool
-            ? `${tool.name} — ${tool.tagline}\n${tool.system}`
-            : undefined;
+      const toolContext = tool ? `${tool.name} — ${tool.tagline}\n${tool.system}` : undefined;
       return send({ data: { messages: next, model, toolContext, channelContext, conversationId } });
     },
     onSuccess: (r) => {
@@ -298,13 +321,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
 
         {/* Tabs row */}
         <div className="flex items-center gap-3 px-4 sm:px-5 pt-4 pb-3 border-b border-white/[0.07]">
-          <button
-            type="button"
-            onClick={() => setMode("chat")}
-            className={`text-sm font-medium transition-colors ${mode === "chat" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Zentry Chat
-          </button>
+          <span className="text-sm font-medium text-foreground">Zentry Chat</span>
           {tool && (
             <button
               type="button"
@@ -317,67 +334,8 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={() => setMode("viral")}
-            className={`text-sm font-medium transition-colors ${mode === "viral" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Viral Studio
-          </button>
+          <div className="ml-auto" />
 
-          {/* Connected YouTube channel chip */}
-          <div className="relative ml-auto">
-            <button
-              type="button"
-              onClick={() => channels.length > 1 && setChannelMenuOpen((o) => !o)}
-              title={
-                activeChannel
-                  ? `Assistant is referencing ${channelLabel(activeChannel)}`
-                  : "No YouTube channel connected"
-              }
-              className={`liquid-btn h-8 inline-flex max-w-[190px] items-center gap-1.5 rounded-xl px-2.5 text-[11px] ${
-                activeChannel ? "text-foreground" : "text-muted-foreground"
-              } ${channels.length > 1 ? "" : "cursor-default"}`}
-            >
-              <Youtube className={`h-3.5 w-3.5 ${activeChannel ? "text-red-500" : "opacity-60"}`} />
-              <span className="truncate">
-                {activeChannel ? channelLabel(activeChannel) : "No channel"}
-              </span>
-              {channels.length > 1 && (
-                <>
-                  <span className="shrink-0 rounded-full bg-primary/20 px-1.5 text-[10px] text-primary">
-                    {channels.length}
-                  </span>
-                  <ChevronDown className="h-3 w-3 shrink-0" />
-                </>
-              )}
-            </button>
-            {channelMenuOpen && channels.length > 1 && (
-              <div className="absolute right-0 top-full mt-2 z-50 w-[260px] max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
-                <div className="px-2.5 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Active channel
-                </div>
-                {channels.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveChannelId(c.id);
-                      setChannelMenuOpen(false);
-                    }}
-                    className={`w-full text-left rounded-xl px-2.5 py-2 transition-colors ${
-                      c.id === activeChannel?.id ? "bg-white/[0.08]" : "hover:bg-white/[0.05]"
-                    }`}
-                  >
-                    <div className="truncate text-[13px]">{channelLabel(c)}</div>
-                    <div className="truncate text-[10px] text-muted-foreground">
-                      {(c.meta as any)?.customUrl ?? c.handle ?? "YouTube"}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
 
           <div className="relative">
 
@@ -484,16 +442,16 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
           />
 
           {mentionOpen && (
-            <div className="absolute left-4 right-4 bottom-full mb-2 z-50 max-h-[min(50vh,22rem)] overflow-y-auto overscroll-contain rounded-2xl border border-primary/25 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
+            <div className="absolute left-4 right-4 sm:right-auto sm:w-[19rem] bottom-full mb-2 z-50 max-h-[min(38vh,15rem)] overflow-y-auto overscroll-contain rounded-2xl border border-primary/25 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1 shadow-2xl">
               {filteredTools.map((t) => (
-                <div key={t.id} className="group flex items-center gap-1 rounded-xl hover:bg-primary/10">
+                <div key={t.id} className="group flex items-center gap-1 rounded-lg hover:bg-primary/10">
                   <button
                     type="button"
                     onClick={() => pickTool(t)}
-                    className="flex-1 min-w-0 text-left px-3 py-2"
+                    className="flex-1 min-w-0 text-left px-2.5 py-1.5"
                   >
-                    <div className="text-sm text-primary truncate">@{t.name}</div>
-                    <div className="text-[11px] text-muted-foreground truncate">{t.tagline}</div>
+                    <div className="text-[13px] text-primary truncate">@{t.name}</div>
+                    <div className="text-[10px] text-muted-foreground truncate">{t.tagline}</div>
                   </button>
                   {t.id.startsWith("custom:") && (
                     <button
@@ -571,6 +529,56 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
           >
             <BookOpen className="h-3.5 w-3.5" /> Skill
           </button>
+
+          {/* Connected YouTube channel — click to reference it in the message */}
+          {channels.length > 0 && (
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={insertChannelMention}
+                title={`Ask about ${channelLabel(activeChannel)}`}
+                className="liquid-btn h-9 inline-flex max-w-[150px] items-center gap-1.5 rounded-xl px-2.5 text-xs text-foreground"
+              >
+                <Youtube className="h-3.5 w-3.5 text-red-500" />
+                <span className="truncate">{channelLabel(activeChannel)}</span>
+              </button>
+              {channels.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setChannelMenuOpen((o) => !o)}
+                    aria-label="Switch channel"
+                    className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-primary text-[9px] font-semibold text-primary-foreground flex items-center justify-center"
+                  >
+                    {channels.length}
+                  </button>
+                  {channelMenuOpen && (
+                    <div className="absolute left-0 bottom-full mb-2 z-50 w-[min(78vw,15rem)] max-h-56 overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
+                      {channels.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            setActiveChannelId(c.id);
+                            setChannelMenuOpen(false);
+                          }}
+                          className={`w-full text-left rounded-xl px-2.5 py-2 transition-colors ${
+                            c.id === activeChannel?.id ? "bg-white/[0.08]" : "hover:bg-white/[0.05]"
+                          }`}
+                        >
+                          <div className="truncate text-[13px]">{channelLabel(c)}</div>
+                          <div className="truncate text-[10px] text-muted-foreground">
+                            {(c.meta as any)?.customUrl ?? c.handle ?? "YouTube"}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
 
           <div className="relative shrink-0">
             <button
