@@ -72,7 +72,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
   const [input, setInput] = useState("");
   const [model, setModel] = useState<ChatModel>("zentry-qor-flash");
   const [modelOpen, setModelOpen] = useState(false);
-  const [mode, setMode] = useState<"chat" | "viral">("chat");
+  
   const [tool, setTool] = useState<ChatTool | null>(null);
   const [mentionOpen, setMentionOpen] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
@@ -116,21 +116,48 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
     return meta.title ?? c?.handle ?? meta.customUrl ?? "YouTube channel";
   };
 
+  // Live channel stats — the cached `meta` on the account row goes stale fast,
+  // which made the assistant quote wrong subscriber/view counts.
+  const fetchChannelDetails = useServerFn(getYouTubeChannelDetails);
+  const channelDetails = useQuery({
+    queryKey: ["chat-channel-details", activeChannel?.id],
+    queryFn: () => fetchChannelDetails({ data: { accountId: activeChannel!.id } }),
+    enabled: !!activeChannel,
+    staleTime: 60_000,
+    retry: false,
+  });
+
   const channelContext = useMemo(() => {
-    if (!activeChannel) return undefined;
-    const meta = (activeChannel.meta ?? {}) as Record<string, any>;
+    const d = channelDetails.data;
+    if (!d) return undefined;
+    const top = d.recentVideos
+      .slice(0, 5)
+      .map(
+        (v) =>
+          `"${v.title}" (${new Date(v.publishedAt).toISOString().slice(0, 10)}, ${v.views} views, ${v.likes} likes, ${v.comments} comments)`,
+      )
+      .join("; ");
     return [
-      `Channel: ${channelLabel(activeChannel)}`,
-      meta.customUrl ? `Handle: ${meta.customUrl}` : null,
-      meta.subscriberCount ? `Subscribers: ${meta.subscriberCount}` : null,
-      meta.videoCount ? `Videos: ${meta.videoCount}` : null,
-      meta.viewCount ? `Total views: ${meta.viewCount}` : null,
-      meta.description ? `About: ${String(meta.description).slice(0, 240)}` : null,
+      `Channel: ${d.title}`,
+      d.customUrl ? `Handle: ${d.customUrl}` : null,
+      d.stats.hiddenSubs ? "Subscribers: hidden by the owner" : `Subscribers: ${d.stats.subscribers}`,
+      `Total views: ${d.stats.views}`,
+      `Videos: ${d.stats.videos}`,
+      d.description ? `About: ${d.description.slice(0, 200)}` : null,
+      top ? `Recent uploads: ${top}` : null,
+      "These figures are live from the YouTube Data API. Use only these numbers; never estimate or invent metrics, and say you don't have the data if it is not listed here.",
     ]
       .filter(Boolean)
       .join(" | ")
-      .slice(0, 1100);
-  }, [activeChannel]);
+      .slice(0, 1200);
+  }, [channelDetails.data]);
+
+  const insertChannelMention = () => {
+    if (!activeChannel) return;
+    const name = channelLabel(activeChannel);
+    setInput((v) => `${v.trimEnd()}${v.trim() ? " " : ""}/${name} `.replace(/^\s+/, ""));
+    taRef.current?.focus();
+  };
 
 
   const conversations = useQuery({
