@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ArrowUp, BookOpen, ChevronDown, History, Loader2, Plus, Trash2, Upload, X, Youtube } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { chatWithZentry } from "@/lib/chat.functions";
+import { getYouTubeChannelDetails } from "@/lib/youtube-analytics.functions";
 import { listSocialAccounts } from "@/lib/social.functions";
 import {
   deleteChatConversation,
@@ -264,12 +265,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
 
   const mut = useMutation({
     mutationFn: async (next: Msg[]) => {
-      const toolContext =
-        mode === "viral"
-          ? "Focus every answer on virality: hook, retention, posting strategy, and trend hijacking."
-          : tool
-            ? `${tool.name} — ${tool.tagline}\n${tool.system}`
-            : undefined;
+      const toolContext = tool ? `${tool.name} — ${tool.tagline}\n${tool.system}` : undefined;
       return send({ data: { messages: next, model, toolContext, channelContext, conversationId } });
     },
     onSuccess: (r) => {
@@ -325,13 +321,7 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
 
         {/* Tabs row */}
         <div className="flex items-center gap-3 px-4 sm:px-5 pt-4 pb-3 border-b border-white/[0.07]">
-          <button
-            type="button"
-            onClick={() => setMode("chat")}
-            className={`text-sm font-medium transition-colors ${mode === "chat" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Zentry Chat
-          </button>
+          <span className="text-sm font-medium text-foreground">Zentry Chat</span>
           {tool && (
             <button
               type="button"
@@ -344,67 +334,8 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={() => setMode("viral")}
-            className={`text-sm font-medium transition-colors ${mode === "viral" ? "text-foreground" : "text-muted-foreground hover:text-foreground"}`}
-          >
-            Viral Studio
-          </button>
+          <div className="ml-auto" />
 
-          {/* Connected YouTube channel chip */}
-          <div className="relative ml-auto">
-            <button
-              type="button"
-              onClick={() => channels.length > 1 && setChannelMenuOpen((o) => !o)}
-              title={
-                activeChannel
-                  ? `Assistant is referencing ${channelLabel(activeChannel)}`
-                  : "No YouTube channel connected"
-              }
-              className={`liquid-btn h-8 inline-flex max-w-[190px] items-center gap-1.5 rounded-xl px-2.5 text-[11px] ${
-                activeChannel ? "text-foreground" : "text-muted-foreground"
-              } ${channels.length > 1 ? "" : "cursor-default"}`}
-            >
-              <Youtube className={`h-3.5 w-3.5 ${activeChannel ? "text-red-500" : "opacity-60"}`} />
-              <span className="truncate">
-                {activeChannel ? channelLabel(activeChannel) : "No channel"}
-              </span>
-              {channels.length > 1 && (
-                <>
-                  <span className="shrink-0 rounded-full bg-primary/20 px-1.5 text-[10px] text-primary">
-                    {channels.length}
-                  </span>
-                  <ChevronDown className="h-3 w-3 shrink-0" />
-                </>
-              )}
-            </button>
-            {channelMenuOpen && channels.length > 1 && (
-              <div className="absolute right-0 top-full mt-2 z-50 w-[260px] max-h-72 overflow-y-auto rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
-                <div className="px-2.5 py-1.5 text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                  Active channel
-                </div>
-                {channels.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => {
-                      setActiveChannelId(c.id);
-                      setChannelMenuOpen(false);
-                    }}
-                    className={`w-full text-left rounded-xl px-2.5 py-2 transition-colors ${
-                      c.id === activeChannel?.id ? "bg-white/[0.08]" : "hover:bg-white/[0.05]"
-                    }`}
-                  >
-                    <div className="truncate text-[13px]">{channelLabel(c)}</div>
-                    <div className="truncate text-[10px] text-muted-foreground">
-                      {(c.meta as any)?.customUrl ?? c.handle ?? "YouTube"}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
 
           <div className="relative">
 
