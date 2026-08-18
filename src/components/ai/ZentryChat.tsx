@@ -530,6 +530,56 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
             <BookOpen className="h-3.5 w-3.5" /> Skill
           </button>
 
+          {/* Connected YouTube channel — click to reference it in the message */}
+          {channels.length > 0 && (
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={insertChannelMention}
+                title={`Ask about ${channelLabel(activeChannel)}`}
+                className="liquid-btn h-9 inline-flex max-w-[150px] items-center gap-1.5 rounded-xl px-2.5 text-xs text-foreground"
+              >
+                <Youtube className="h-3.5 w-3.5 text-red-500" />
+                <span className="truncate">{channelLabel(activeChannel)}</span>
+              </button>
+              {channels.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setChannelMenuOpen((o) => !o)}
+                    aria-label="Switch channel"
+                    className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-primary text-[9px] font-semibold text-primary-foreground flex items-center justify-center"
+                  >
+                    {channels.length}
+                  </button>
+                  {channelMenuOpen && (
+                    <div className="absolute left-0 bottom-full mb-2 z-50 w-[min(78vw,15rem)] max-h-56 overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[hsl(240_6%_9%/0.98)] backdrop-blur-xl p-1.5 shadow-2xl">
+                      {channels.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => {
+                            setActiveChannelId(c.id);
+                            setChannelMenuOpen(false);
+                          }}
+                          className={`w-full text-left rounded-xl px-2.5 py-2 transition-colors ${
+                            c.id === activeChannel?.id ? "bg-white/[0.08]" : "hover:bg-white/[0.05]"
+                          }`}
+                        >
+                          <div className="truncate text-[13px]">{channelLabel(c)}</div>
+                          <div className="truncate text-[10px] text-muted-foreground">
+                            {(c.meta as any)?.customUrl ?? c.handle ?? "YouTube"}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+
           <div className="relative shrink-0">
             <button
               type="button"
