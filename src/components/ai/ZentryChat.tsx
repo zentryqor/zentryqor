@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { ArrowUp, BookOpen, ChevronDown, History, Loader2, Plus, Trash2, Upload, X, Youtube } from "lucide-react";
+import { ArrowUp, BookOpen, ChevronDown, History, Loader2, Plus, Trash2, Upload, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { chatWithZentry } from "@/lib/chat.functions";
 import { getYouTubeChannelDetails } from "@/lib/youtube-analytics.functions";
@@ -104,18 +104,12 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
     [accounts.data],
   );
 
-  const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
-  const [channelMenuOpen, setChannelMenuOpen] = useState(false);
+  const [activeChannelId] = useState<string | null>(null);
 
   const activeChannel = useMemo(
     () => channels.find((c) => c.id === activeChannelId) ?? channels[0] ?? null,
     [channels, activeChannelId],
   );
-
-  const channelLabel = (c: any) => {
-    const meta = (c?.meta ?? {}) as Record<string, any>;
-    return meta.title ?? c?.handle ?? meta.customUrl ?? "YouTube channel";
-  };
 
   // Live channel stats — the cached `meta` on the account row goes stale fast,
   // which made the assistant quote wrong subscriber/view counts.
@@ -152,13 +146,6 @@ export function ZentryChat({ tools, onCreditsChange }: { tools: ChatTool[]; onCr
       .join(" | ")
       .slice(0, 1200);
   }, [channelDetails.data]);
-
-  const insertChannelMention = () => {
-    if (!activeChannel) return;
-    const name = channelLabel(activeChannel);
-    setInput((v) => `${v.trimEnd()}${v.trim() ? " " : ""}/${name} `.replace(/^\s+/, ""));
-    taRef.current?.focus();
-  };
 
 
   const conversations = useQuery({
