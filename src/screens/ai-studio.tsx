@@ -498,7 +498,14 @@ export function AiStudioScreen() {
                 >
                   <FolderHeart className="h-3.5 w-3.5 text-rose-400 icon-fx" /> My library
                 </Link>
+                <Link
+                  to="/speech-timestamps"
+                  className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-elevated/40 hover:bg-elevated/80 hover:border-foreground/30 px-4 py-2 text-xs font-medium transition-all"
+                >
+                  <Clock className="h-3.5 w-3.5 text-primary icon-fx" /> Speech timestamps
+                </Link>
               </div>
+
             </div>
           </div>
 
