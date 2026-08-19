@@ -167,3 +167,46 @@ export const pollTranscription = createServerFn({ method: "POST" })
       words: (j.words ?? []) as CaptionWord[],
     };
   });
+
+export type TimedSentence = { text: string; start: number; end: number };
+
+/**
+ * Returns sentence-level segments with start/end timings for a finished
+ * AssemblyAI transcript. Used by the Speech Timestamps tool.
+ */
+export const pollSentences = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ id: z.string().min(4) }).parse(input))
+  .handler(async ({ data }) => {
+    const key = keyOrThrow();
+    const statusRes = await fetch(`${AAI}/transcript/${data.id}`, {
+      headers: { authorization: key },
+    });
+    if (!statusRes.ok) throw new Error(`Poll failed: ${statusRes.status}`);
+    const status = (await statusRes.json()) as {
+      status: "queued" | "processing" | "completed" | "error";
+      error?: string;
+      text?: string;
+    };
+    if (status.status === "error") throw new Error(status.error ?? "Transcription failed");
+    if (status.status !== "completed") {
+      return { status: status.status, text: "", sentences: [] as TimedSentence[] };
+    }
+
+    const res = await fetch(`${AAI}/transcript/${data.id}/sentences`, {
+      headers: { authorization: key },
+    });
+    if (!res.ok) throw new Error(`Sentences failed: ${res.status}`);
+    const j = (await res.json()) as {
+      sentences?: Array<{ text: string; start: number; end: number }>;
+    };
+    return {
+      status: "completed" as const,
+      text: status.text ?? "",
+      sentences: (j.sentences ?? []).map((s) => ({
+        text: s.text,
+        start: s.start,
+        end: s.end,
+      })),
+    };
+  });
