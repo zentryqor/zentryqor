@@ -30,6 +30,7 @@ import { Route as TemplatesSlugRouteImport } from './routes/templates.$slug'
 import { Route as GuidesUgcEssentialsRouteImport } from './routes/guides/ugc-essentials'
 import { Route as GalleryIdRouteImport } from './routes/gallery.$id'
 import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
+import { Route as AuthenticatedSpeechTimestampsRouteImport } from './routes/_authenticated/speech-timestamps'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSavedRouteImport } from './routes/_authenticated/saved'
 import { Route as AuthenticatedReferRouteImport } from './routes/_authenticated/refer'
@@ -174,6 +175,12 @@ const AuthenticatedStudioRoute = AuthenticatedStudioRouteImport.update({
   path: '/studio',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSpeechTimestampsRoute =
+  AuthenticatedSpeechTimestampsRouteImport.update({
+    id: '/speech-timestamps',
+    path: '/speech-timestamps',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -420,6 +427,7 @@ export interface FileRoutesByFullPath {
   '/refer': typeof AuthenticatedReferRoute
   '/saved': typeof AuthenticatedSavedRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/speech-timestamps': typeof AuthenticatedSpeechTimestampsRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
@@ -480,6 +488,7 @@ export interface FileRoutesByTo {
   '/refer': typeof AuthenticatedReferRoute
   '/saved': typeof AuthenticatedSavedRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/speech-timestamps': typeof AuthenticatedSpeechTimestampsRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
@@ -543,6 +552,7 @@ export interface FileRoutesById {
   '/_authenticated/refer': typeof AuthenticatedReferRoute
   '/_authenticated/saved': typeof AuthenticatedSavedRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/speech-timestamps': typeof AuthenticatedSpeechTimestampsRoute
   '/_authenticated/studio': typeof AuthenticatedStudioRoute
   '/gallery/$id': typeof GalleryIdRoute
   '/guides/ugc-essentials': typeof GuidesUgcEssentialsRoute
@@ -606,6 +616,7 @@ export interface FileRouteTypes {
     | '/refer'
     | '/saved'
     | '/settings'
+    | '/speech-timestamps'
     | '/studio'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
@@ -666,6 +677,7 @@ export interface FileRouteTypes {
     | '/refer'
     | '/saved'
     | '/settings'
+    | '/speech-timestamps'
     | '/studio'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
@@ -728,6 +740,7 @@ export interface FileRouteTypes {
     | '/_authenticated/refer'
     | '/_authenticated/saved'
     | '/_authenticated/settings'
+    | '/_authenticated/speech-timestamps'
     | '/_authenticated/studio'
     | '/gallery/$id'
     | '/guides/ugc-essentials'
@@ -936,6 +949,13 @@ declare module '@tanstack/react-router' {
       path: '/studio'
       fullPath: '/studio'
       preLoaderRoute: typeof AuthenticatedStudioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/speech-timestamps': {
+      id: '/_authenticated/speech-timestamps'
+      path: '/speech-timestamps'
+      fullPath: '/speech-timestamps'
+      preLoaderRoute: typeof AuthenticatedSpeechTimestampsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/settings': {
@@ -1263,6 +1283,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReferRoute: typeof AuthenticatedReferRoute
   AuthenticatedSavedRoute: typeof AuthenticatedSavedRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSpeechTimestampsRoute: typeof AuthenticatedSpeechTimestampsRoute
   AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
   AuthenticatedAssetsIdRoute: typeof AuthenticatedAssetsIdRoute
   AuthenticatedAssetsIndexRoute: typeof AuthenticatedAssetsIndexRoute
@@ -1286,6 +1307,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReferRoute: AuthenticatedReferRoute,
   AuthenticatedSavedRoute: AuthenticatedSavedRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSpeechTimestampsRoute: AuthenticatedSpeechTimestampsRoute,
   AuthenticatedStudioRoute: AuthenticatedStudioRoute,
   AuthenticatedAssetsIdRoute: AuthenticatedAssetsIdRoute,
   AuthenticatedAssetsIndexRoute: AuthenticatedAssetsIndexRoute,
