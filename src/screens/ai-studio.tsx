@@ -10,6 +10,8 @@ import {
   FileText,
   FolderHeart,
   Grid3X3,
+  Clock,
+
   Hash,
   Image as ImageIcon,
   Loader2,
