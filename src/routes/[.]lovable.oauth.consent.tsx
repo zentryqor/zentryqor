@@ -2,23 +2,8 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { authOAuth } from "@/lib/oauth-consent-client";
 
-// Local typed wrapper: supabase.auth.oauth is beta and may not be in the SDK types.
-type OAuthAuthorization = {
-  client?: { name?: string; redirect_uri?: string; client_uri?: string };
-  scope?: string;
-  redirect_url?: string;
-  redirect_to?: string;
-};
-type OAuthResult = { data: OAuthAuthorization | null; error: { message: string } | null };
-const authOAuth = () =>
-  (supabase.auth as unknown as {
-    oauth: {
-      getAuthorizationDetails: (id: string) => Promise<OAuthResult>;
-      approveAuthorization: (id: string) => Promise<OAuthResult>;
-      denyAuthorization: (id: string) => Promise<OAuthResult>;
-    };
-  }).oauth;
 
 export const Route = createFileRoute("/.lovable/oauth/consent")({
   ssr: false,
