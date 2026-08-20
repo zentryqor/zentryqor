@@ -1,12 +1,17 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import {
+  appwriteGetUser,
+  appwriteOAuthGoogle,
+  appwriteSignIn,
+  appwriteSignUp,
+} from "@/lib/appwrite";
 import { getReferrerByCode } from "@/lib/referrals.functions";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, Gift, Sparkles } from "lucide-react";
 import authLogo from "@/assets/zentry-auth-logo.png.asset.json";
+
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (
@@ -72,11 +77,10 @@ function AuthPage() {
   }, [isInvited, refCode, fetchReferrer]);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: dest });
+    void appwriteGetUser().then((u) => {
+      if (u) navigate({ to: dest });
     });
   }, [navigate, dest]);
-
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
@@ -84,54 +88,25 @@ function AuthPage() {
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}${dest}`,
-            data: { full_name: name },
-          },
-        });
-        if (error) throw error;
-        if (!data.session) {
-          // Fall back to explicit sign-in in case email confirmation is enforced.
-          const { error: siErr } = await supabase.auth.signInWithPassword({ email, password });
-          if (siErr) throw siErr;
-        }
+        await appwriteSignUp(email, password, name || undefined);
         toast.success("Welcome to Zentry Qor!");
-        await router.invalidate();
-        navigate({ to: dest });
       } else {
-        const res = await fetch("/api/public/auth/signin", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-        const payload = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          const msg =
-            payload?.error ||
-            (res.status === 401
-              ? "Incorrect email or password."
-              : "Log in failed. Please try again.");
-          throw new Error(msg);
-        }
-        const { error: setErr } = await supabase.auth.setSession({
-          access_token: payload.access_token,
-          refresh_token: payload.refresh_token,
-        });
-        if (setErr) throw setErr;
-        await router.invalidate();
-        navigate({ to: dest });
+        await appwriteSignIn(email, password);
       }
+      await router.invalidate();
+      navigate({ to: dest });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
+      const raw = err instanceof Error ? err.message : "Something went wrong";
+      const message = /invalid credentials/i.test(raw)
+        ? "Incorrect email or password."
+        : raw;
       setFormError(message);
       toast.error(message);
     } finally {
       setLoading(false);
     }
   }
+
 
   const isSignin = mode === "signin";
 
@@ -350,20 +325,11 @@ function AuthPage() {
 
           <button
             type="button"
-            onClick={async () => {
+            onClick={() => {
               setLoading(true);
-              const result = await lovable.auth.signInWithOAuth("google", {
-                redirect_uri: `${window.location.origin}${dest}`,
-              });
-              if (result.error) {
-                toast.error("Google sign-in failed");
-                setLoading(false);
-                return;
-              }
-              if (result.redirected) return;
-              await router.invalidate();
-              navigate({ to: dest });
+              appwriteOAuthGoogle(dest);
             }}
+
             disabled={loading}
             className="w-full flex items-center justify-center gap-3 bg-white/[0.04] border border-white/10 rounded-2xl py-3.5 hover:bg-white/[0.08] transition-colors disabled:opacity-50 text-sm font-medium text-foreground"
           >
