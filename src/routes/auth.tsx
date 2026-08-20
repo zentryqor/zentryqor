@@ -325,20 +325,11 @@ function AuthPage() {
 
           <button
             type="button"
-            onClick={async () => {
+            onClick={() => {
               setLoading(true);
-              const result = await lovable.auth.signInWithOAuth("google", {
-                redirect_uri: `${window.location.origin}${dest}`,
-              });
-              if (result.error) {
-                toast.error("Google sign-in failed");
-                setLoading(false);
-                return;
-              }
-              if (result.redirected) return;
-              await router.invalidate();
-              navigate({ to: dest });
+              appwriteOAuthGoogle(dest);
             }}
+
             disabled={loading}
             className="w-full flex items-center justify-center gap-3 bg-white/[0.04] border border-white/10 rounded-2xl py-3.5 hover:bg-white/[0.08] transition-colors disabled:opacity-50 text-sm font-medium text-foreground"
           >
