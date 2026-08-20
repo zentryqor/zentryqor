@@ -1,12 +1,17 @@
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import {
+  appwriteGetUser,
+  appwriteOAuthGoogle,
+  appwriteSignIn,
+  appwriteSignUp,
+} from "@/lib/appwrite";
 import { getReferrerByCode } from "@/lib/referrals.functions";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, Gift, Sparkles } from "lucide-react";
 import authLogo from "@/assets/zentry-auth-logo.png.asset.json";
+
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (
