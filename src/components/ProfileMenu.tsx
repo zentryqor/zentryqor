@@ -5,7 +5,6 @@ import { ChevronRight, FolderHeart, Gift, Key, Layers, LogOut, Plug, Settings, S
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
-import { supabase } from "@/integrations/supabase/client";
 import { getMyContext } from "@/lib/preferences.functions";
 import { getDashboardStats } from "@/lib/stats.functions";
 import { getAiCredits } from "@/lib/ai.functions";
