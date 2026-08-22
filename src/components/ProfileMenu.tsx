@@ -12,7 +12,7 @@ import { getAiCredits } from "@/lib/ai.functions";
 
 export function ProfileMenu() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut: endSession } = useAuth();
   const { isPremium: liveIsPremium } = useSubscription(user?.id);
   const fetchCtx = useServerFn(getMyContext);
   const fetchStats = useServerFn(getDashboardStats);
@@ -26,7 +26,7 @@ export function ProfileMenu() {
   const firstName = profile?.display_name?.split(" ")[0] ?? "creator";
 
   async function signOut() {
-    await supabase.auth.signOut();
+    await endSession();
     navigate({ to: "/auth" });
   }
 
