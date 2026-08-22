@@ -56,6 +56,7 @@ export function Nav() {
 }
 
 function ProfilePopover({ initial, email }: { initial: string; email: string }) {
+  const { signOut } = useAuth();
   const items = [
     { to: "/", label: "Home", icon: Home },
     { to: "/roadmap", label: "Roadmap", icon: Map },
