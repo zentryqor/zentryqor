@@ -9,11 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 export function Nav() {
   const { user, loading } = useAuth();
 
-  const displayName =
-    (user?.user_metadata?.full_name as string | undefined) ??
-    (user?.user_metadata?.name as string | undefined) ??
-    user?.email ??
-    "";
+  const displayName = user?.name || user?.email || "";
 
   return (
     <motion.header
