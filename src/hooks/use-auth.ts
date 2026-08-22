@@ -1,24 +1,46 @@
-import { useEffect, useState } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { useCallback, useEffect, useState } from "react";
+import { appwriteGetUser, appwriteSignOut, type AppwriteUser } from "@/lib/appwrite";
 
+export type AuthUser = {
+  id: string;
+  email: string;
+  name: string;
+  emailVerified: boolean;
+};
+
+function mapUser(u: AppwriteUser | null): AuthUser | null {
+  if (!u) return null;
+  return {
+    id: u.$id,
+    email: u.email,
+    name: u.name,
+    emailVerified: u.emailVerification,
+  };
+}
+
+/**
+ * Session state backed by the new backend (Appwrite). Shape is kept
+ * compatible with the previous hook: consumers read `user.id` / `user.email`.
+ */
 export function useAuth() {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      setLoading(false);
-    });
-    return () => sub.subscription.unsubscribe();
+  const refresh = useCallback(async () => {
+    const next = mapUser(await appwriteGetUser());
+    setUser(next);
+    setLoading(false);
+    return next;
   }, []);
 
-  return { session, user, loading };
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  const signOut = useCallback(async () => {
+    await appwriteSignOut();
+    setUser(null);
+  }, []);
+
+  return { user, session: user ? { user } : null, loading, refresh, signOut };
 }

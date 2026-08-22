@@ -5,14 +5,13 @@ import { ChevronRight, FolderHeart, Gift, Key, Layers, LogOut, Plug, Settings, S
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/hooks/use-auth";
 import { useSubscription } from "@/hooks/use-subscription";
-import { supabase } from "@/integrations/supabase/client";
 import { getMyContext } from "@/lib/preferences.functions";
 import { getDashboardStats } from "@/lib/stats.functions";
 import { getAiCredits } from "@/lib/ai.functions";
 
 export function ProfileMenu() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut: endSession } = useAuth();
   const { isPremium: liveIsPremium } = useSubscription(user?.id);
   const fetchCtx = useServerFn(getMyContext);
   const fetchStats = useServerFn(getDashboardStats);
@@ -26,7 +25,7 @@ export function ProfileMenu() {
   const firstName = profile?.display_name?.split(" ")[0] ?? "creator";
 
   async function signOut() {
-    await supabase.auth.signOut();
+    await endSession();
     navigate({ to: "/auth" });
   }
 

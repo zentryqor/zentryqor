@@ -3,17 +3,12 @@ import { motion } from "framer-motion";
 import { Home, Map, Tag, BookOpen, Info, Mail } from "lucide-react";
 import logoAsset from "@/assets/zentry-logo.png.asset.json";
 import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/integrations/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export function Nav() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
 
-  const displayName =
-    (user?.user_metadata?.full_name as string | undefined) ??
-    (user?.user_metadata?.name as string | undefined) ??
-    user?.email ??
-    "";
+  const displayName = user?.name || user?.email || "";
 
   return (
     <motion.header
@@ -61,6 +56,7 @@ export function Nav() {
 }
 
 function ProfilePopover({ initial, email }: { initial: string; email: string }) {
+  const { signOut } = useAuth();
   const items = [
     { to: "/", label: "Home", icon: Home },
     { to: "/roadmap", label: "Roadmap", icon: Map },
@@ -124,7 +120,7 @@ function ProfilePopover({ initial, email }: { initial: string; email: string }) 
             Go to dashboard
           </Link>
           <button
-            onClick={() => supabase.auth.signOut()}
+            onClick={() => void signOut()}
             className="w-full mt-1 rounded-xl px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-white/[0.06] transition"
           >
             Sign out
