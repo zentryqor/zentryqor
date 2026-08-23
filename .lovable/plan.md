@@ -1,67 +1,71 @@
-# Native scheduler — per-user OAuth for TikTok, Reels, Shorts
+# Make the signed-in app work again after the Appwrite login switch
 
-## Reality check (read first)
+## What's actually broken
 
-Auto-publishing to these three platforms requires **your own OAuth apps** on each provider — the Lovable connectors sign in as the workspace owner, not each end user, so they can't be used here.
+Sign-in and sign-up now create an **Appwrite** session. But every authenticated
+feature still asks the **old hosted backend** to prove who you are:
 
-| Platform | What we register | Review needed to publish for real users |
-|---|---|---|
-| TikTok | TikTok for Developers app, `video.publish` + `video.upload` scopes | Yes — TikTok Content Posting API review (days–weeks) |
-| Instagram Reels | Meta app, Instagram Graph API, `instagram_content_publish` + `pages_show_list` + `business_management` | Yes — Meta App Review + Business Verification (1–3 weeks). Only Business/Creator IG accounts linked to a Facebook Page can post. |
-| YouTube Shorts | Google Cloud OAuth client, `youtube.upload` scope | Yes — Google security assessment for sensitive scope (weeks) and CASA if scale grows |
+- 27 server-side modules (credits, AI chat, chat history, assets, library,
+  billing/payments, referrals, YouTube, caption tools, stats, settings, admin)
+  require an old-backend access token.
+- The client middleware that attaches that token reads it from the old backend's
+  session, which no longer exists after an Appwrite login — so it sends nothing
+  and every request is rejected as unauthorized.
+- `src/hooks/use-subscription.ts` still reads plan/credit data (and realtime
+  updates) straight from the old backend, so the plan badge and credit balance
+  render as "not signed in".
 
-Until each review clears, publishing works in **sandbox/test-user mode only**. The scheduler UI, storage, connection flow, and cron worker all work day 1 — we just can't guarantee a random signed-up user can post to their real IG until Meta approves the app.
+Sign-out and `useAuth` are already on Appwrite — those parts of the report are
+out of date.
 
-I'll build the whole system now with sandbox credentials and give you a checklist to submit each app for review. That's the honest path.
+On top of that, the old hosted database is currently **paused**, so even the old
+path cannot succeed right now.
 
-## Scope
+## The decision this needs
 
-### New database (one migration)
+This is not a small patch: it's the bridge between phase 1 (auth) and phase 2
+(data). Two viable routes:
 
-- `social_accounts` — one row per user × platform connection
-  - `user_id`, `platform` (`tiktok`|`instagram`|`youtube`), `platform_user_id`, `handle`, `access_token` (encrypted), `refresh_token` (encrypted), `expires_at`, `scopes`, `meta` (jsonb — page_id for IG, channel_id for YT), `connected_at`, `revoked_at`
-- `scheduled_posts` — one row per queued post
-  - `user_id`, `caption`, `video_url` (Supabase Storage path), `thumbnail_url`, `scheduled_for`, `status` (`draft`|`queued`|`publishing`|`published`|`failed`|`canceled`), `error`, `created_at`, `updated_at`
-- `scheduled_post_targets` — fan-out per platform
-  - `scheduled_post_id`, `platform`, `social_account_id`, `platform_post_id` (after publish), `status`, `error`, `published_at`
-- Storage bucket `social-uploads` (private, RLS: owner read/write)
-- All tables: RLS scoped to `auth.uid()`, GRANTs to `authenticated` + `service_role`, encrypted token columns via `pgsodium` or app-layer AES
+**Route A — Bridge now (recommended, smaller)**
+Keep all data on the existing backend for now, and make the server accept the
+Appwrite identity instead of the old session token.
 
-### New OAuth callback routes (public, signature-safe)
+1. Add Appwrite JWT verification middleware (server-side): read the bearer
+   token, verify it against Appwrite, resolve the Appwrite user id.
+2. Map each Appwrite user to a row in the existing database (a link table
+   `appwrite_user_id -> internal user id`, created on first authenticated call).
+3. Swap the 27 modules' middleware from the old auth middleware to the new one,
+   using the mapped internal user id. Data access runs with the trusted server
+   key, scoped in code by that id.
+4. Replace the client token attacher so it sends a fresh Appwrite JWT.
+5. Rewrite `use-subscription.ts` to read plan/credits through a server function
+   instead of querying the database directly from the browser (the browser no
+   longer has an old-backend session, and realtime needs one).
 
-- `src/routes/api/public/oauth/tiktok/start.ts` + `callback.ts`
-- `src/routes/api/public/oauth/instagram/start.ts` + `callback.ts`
-- `src/routes/api/public/oauth/youtube/start.ts` + `callback.ts`
+Result: everyone can sign in and use every feature again, existing rows stay
+where they are, and phase 2 can move tables over gradually behind these
+functions.
 
-Each: signed `state` (HMAC of `user_id`+nonce+expiry), PKCE where the provider supports it, token exchange, upsert into `social_accounts`. Refresh handled by a helper in `src/lib/social-tokens.server.ts`.
+**Route B — Full phase 2 first**
+Move profiles, credits, chat, assets, library, poster, push into Appwrite
+collections and rewrite all 27 modules against Appwrite. Correct end state, but
+it is a multi-stage rebuild and the app stays broken for signed-in users until a
+large part of it lands.
 
-### New pages (authenticated)
+## Prerequisite
 
-- `/scheduler` — calendar/list view, "New post" button, connection status cards
-- `/scheduler/new` — upload video → Supabase Storage, caption, per-platform toggles (only enabled if that platform is connected), datetime picker
-- `/scheduler/$id` — detail, per-target status, retry, cancel, delete
-- `/scheduler/connections` — connect/disconnect buttons per platform, shows handle + scopes + expiry
+The old hosted database must be resumed before either route can be built or
+verified — every authenticated read still lands there, and I cannot test a single
+signed-in page while it is paused.
 
-Dock gets a "Scheduler" entry.
+## Technical notes
 
-### Publish worker
-
-- `src/lib/scheduler.server.ts` with `publishDuePosts()` — one function per platform:
-  - TikTok: `POST /v2/post/publish/video/init/` → PULL_FROM_URL with signed Supabase Storage URL → poll status
-  - Instagram: create media container `POST /{ig-user-id}/media` (`media_type=REELS`, `video_url=`) → poll `status_code` → `POST /{ig-user-id}/media_publish`
-  - YouTube: resumable upload `POST /upload/youtube/v3/videos` with `snippet` + `status.privacyStatus=public` (Shorts = ≤60s vertical)
-- Cron: extend existing `pg_cron` to hit new `src/routes/api/public/hooks/run-scheduler.ts` every minute
-- Idempotency via `status='publishing'` row lock
-
-### Secrets to request
-
-Six env vars (three client-ID/secret pairs). I'll request them with `add_secret` when the OAuth routes are wired. Callback URLs will be on `zentryqor.lovable.app` so you can copy them straight into each provider console.
-
-## Phasing (so you get something usable this week)
-
-1. **DB + storage + connections UI + OAuth flows** (this build) — you can connect real TikTok/IG/YT accounts, tokens stored and refreshed.
-2. **Scheduler UI + upload + cron worker + TikTok publish** — TikTok is the fastest to get through review; ship real posting first.
-3. **Instagram Reels publish** — after Meta review clears.
-4. **YouTube Shorts publish** — after Google verification clears.
-
-If you say go, I'll start phase 1: migration, storage bucket, connections page, and the three OAuth callback routes with signed state. Reply "go" or tell me to reorder.
+- New files: `src/lib/appwrite-auth-middleware.server.ts` (JWT verification via
+  Appwrite `/account` with the user JWT), `src/lib/appwrite-auth-attacher.ts`
+  (client middleware minting a JWT per call, cached until near expiry).
+- `src/start.ts` `functionMiddleware` swaps the old attacher for the new one.
+- Identity mapping lives in a single helper so the 27 modules change one import
+  and one context field (`context.userId`) each.
+- `src/routes/api/public/auth/signin.ts` becomes dead once Appwrite owns
+  password sign-in; remove it and its lockout/rate-limit RPC calls in the same
+  pass, or keep Appwrite's own throttling as the replacement.
