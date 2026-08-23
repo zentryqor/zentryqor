@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 export type ScheduledPostRow = {
   id: string;
@@ -21,7 +21,7 @@ export type ScheduledPostRow = {
 };
 
 export const listScheduledPosts = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const { data, error } = await (context.supabase as any)
       .from("scheduled_posts")
@@ -38,7 +38,7 @@ export const listScheduledPosts = createServerFn({ method: "GET" })
   });
 
 export const createSignedUploadUrl = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) =>
     z
       .object({
@@ -78,7 +78,7 @@ const youtubeOptionsSchema = z
   .optional();
 
 export const createScheduledPost = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) =>
     z
       .object({
@@ -163,7 +163,7 @@ export const createScheduledPost = createServerFn({ method: "POST" })
   });
 
 export const saveDraftPost = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) =>
     z
       .object({
@@ -245,7 +245,7 @@ export const saveDraftPost = createServerFn({ method: "POST" })
   });
 
 export const getScheduledPost = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await (context.supabase as any)
@@ -271,7 +271,7 @@ export const getScheduledPost = createServerFn({ method: "GET" })
   });
 
 export const cancelScheduledPost = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { error } = await (context.supabase as any)
@@ -284,7 +284,7 @@ export const cancelScheduledPost = createServerFn({ method: "POST" })
   });
 
 export const deleteScheduledPost = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { error } = await (context.supabase as any)

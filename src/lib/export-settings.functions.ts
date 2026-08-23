@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 const SettingsSchema = z.object({
   resolution: z.enum(["source", "1080", "720", "480"]),
@@ -11,7 +11,7 @@ export type ExportSettings = z.infer<typeof SettingsSchema>;
 
 /** Last-used caption video export settings for the signed-in user. */
 export const getExportSettings = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }): Promise<ExportSettings> => {
     const { data } = await context.supabase
       .from("export_settings")
@@ -27,7 +27,7 @@ export const getExportSettings = createServerFn({ method: "GET" })
   });
 
 export const saveExportSettings = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((d) => SettingsSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("export_settings").upsert(

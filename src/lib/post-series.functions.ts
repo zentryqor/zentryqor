@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 const cadenceSchema = z.object({
   type: z.enum(["daily", "every_n_days", "weekdays", "custom_days"]),
@@ -81,7 +81,7 @@ function computeSlots(
 }
 
 export const createPostSeries = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) =>
     z
       .object({
@@ -171,7 +171,7 @@ export type PostSeriesRow = {
 };
 
 export const listPostSeries = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }): Promise<PostSeriesRow[]> => {
     const { data: series, error } = await (context.supabase as any)
       .from("post_series")
@@ -217,7 +217,7 @@ export const listPostSeries = createServerFn({ method: "GET" })
   });
 
 export const deletePostSeries = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     // Cancel any queued posts belonging to this series, then delete the series.

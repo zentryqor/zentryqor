@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 export type BatchJob = {
   id: string;
@@ -49,7 +49,7 @@ export type ScheduledJob = {
 // ---------- Batches ----------
 
 export const listBatches = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const { data, error } = await (context.supabase as any)
       .from("batch_jobs")
@@ -61,7 +61,7 @@ export const listBatches = createServerFn({ method: "GET" })
   });
 
 export const getBatch = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { data: job } = await (context.supabase as any)
@@ -73,7 +73,7 @@ export const getBatch = createServerFn({ method: "POST" })
   });
 
 export const createBatch = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) =>
     z.object({
       name: z.string().trim().min(1).max(80),
@@ -112,7 +112,7 @@ export const createBatch = createServerFn({ method: "POST" })
   });
 
 export const tickBatch = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     // Ownership check via RLS-safe query
@@ -124,7 +124,7 @@ export const tickBatch = createServerFn({ method: "POST" })
   });
 
 export const cancelBatch = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { error } = await (context.supabase as any)
@@ -141,7 +141,7 @@ export const cancelBatch = createServerFn({ method: "POST" })
   });
 
 export const deleteBatch = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { error } = await (context.supabase as any)
@@ -158,7 +158,7 @@ async function isPremium(context: any): Promise<boolean> {
 }
 
 export const listScheduled = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const { data, error } = await (context.supabase as any)
       .from("scheduled_jobs").select("*").order("created_at", { ascending: false });
@@ -167,7 +167,7 @@ export const listScheduled = createServerFn({ method: "GET" })
   });
 
 export const createScheduled = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) =>
     z.object({
       name: z.string().trim().min(1).max(80),
@@ -207,7 +207,7 @@ export const createScheduled = createServerFn({ method: "POST" })
   });
 
 export const toggleScheduled = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) => z.object({ id: z.string().uuid(), active: z.boolean() }).parse(i))
   .handler(async ({ data, context }) => {
     const { error } = await (context.supabase as any)
@@ -217,7 +217,7 @@ export const toggleScheduled = createServerFn({ method: "POST" })
   });
 
 export const deleteScheduled = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     const { error } = await (context.supabase as any)

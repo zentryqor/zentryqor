@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 const assetIdSchema = z.object({ asset_id: z.string().uuid() });
 const idSchema = z.object({ id: z.string().uuid() });
@@ -50,7 +50,7 @@ export type AssetRow = {
 export const FREE_DAILY_DOWNLOAD_LIMIT = 3;
 
 export const recordDownload = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((d) => assetIdSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { data: claimRows, error } = await context.supabase.rpc("claim_asset_download", {
@@ -64,7 +64,7 @@ export const recordDownload = createServerFn({ method: "POST" })
   });
 
 export const toggleSave = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((d) => assetIdSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -86,7 +86,7 @@ export const toggleSave = createServerFn({ method: "POST" })
   });
 
 export const getMySavedIds = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }): Promise<string[]> => {
     const { data } = await context.supabase
       .from("asset_saves")
@@ -96,7 +96,7 @@ export const getMySavedIds = createServerFn({ method: "GET" })
   });
 
 export const getSavedAssets = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }): Promise<(AssetRow & { saved_at: string })[]> => {
     const { data, error } = await context.supabase
       .from("asset_saves")
@@ -110,7 +110,7 @@ export const getSavedAssets = createServerFn({ method: "GET" })
   });
 
 export const getAssetDetails = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((d) => idSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -154,7 +154,7 @@ async function signThumbs(supabase: any, paths: string[]): Promise<Map<string, s
 }
 
 export const getDashboardFeed = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }): Promise<DashboardFeed> => {
     const { supabase, userId } = context;
 

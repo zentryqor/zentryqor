@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 const PrefsSchema = z.object({
   creator_type: z.enum([
@@ -22,7 +22,7 @@ const PrefsSchema = z.object({
 });
 
 export const saveOnboarding = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((d) => PrefsSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
@@ -51,7 +51,7 @@ export const saveOnboarding = createServerFn({ method: "POST" })
   });
 
 export const getMyContext = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const [profile, prefs, sub, activity] = await Promise.all([
@@ -89,7 +89,7 @@ export const getMyContext = createServerFn({ method: "GET" })
   });
 
 export const trackVaultView = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((d) =>
     z
       .object({

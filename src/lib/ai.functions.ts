@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 const FREE_DAILY_CREDITS = 150;
 const PREMIUM_DAILY_CREDITS = 1000;
@@ -134,7 +134,7 @@ async function callLovableAiText(messages: Array<{ role: string; content: any }>
 }
 
 export const getAiCredits = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const state = await getCreditsState(context.supabase, context.userId);
     return {
@@ -147,7 +147,7 @@ export const getAiCredits = createServerFn({ method: "GET" })
   });
 
 export const generateAiText = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z
       .object({
@@ -180,7 +180,7 @@ export const generateAiText = createServerFn({ method: "POST" })
   });
 
 export const generateAiImage = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z
       .object({
@@ -212,7 +212,7 @@ export const generateAiImage = createServerFn({ method: "POST" })
 
 // Backwards-compat shim — older clients may still call this; report as credits.
 export const getThumbnailUsage = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const state = await getCreditsState(context.supabase, context.userId);
     return { used: state.used, limit: state.limit, isPremium: state.isPremium };

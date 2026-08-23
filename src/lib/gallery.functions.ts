@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 import type { Database } from "@/integrations/supabase/types";
 
 const SIGNED_URL_TTL = 60 * 60 * 24 * 7; // 7 days
@@ -86,7 +86,7 @@ export const getGalleryItem = createServerFn({ method: "GET" })
   });
 
 export const shareToGallery = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z
       .object({
@@ -142,7 +142,7 @@ export const shareToGallery = createServerFn({ method: "POST" })
   });
 
 export const deleteMyGalleryItem = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await (context.supabase as any)

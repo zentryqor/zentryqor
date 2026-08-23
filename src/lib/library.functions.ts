@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 export type LibraryGeneration = {
   id: string;
@@ -32,7 +32,7 @@ export type LibraryFolder = {
 // -------- Folders --------
 
 export const listFolders = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const { data, error } = await (context.supabase as any)
       .from("generation_folders")
@@ -43,7 +43,7 @@ export const listFolders = createServerFn({ method: "GET" })
   });
 
 export const createFolder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z
       .object({
@@ -63,7 +63,7 @@ export const createFolder = createServerFn({ method: "POST" })
   });
 
 export const renameFolder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z
       .object({ id: z.string().uuid(), name: z.string().trim().min(1).max(60) })
@@ -79,7 +79,7 @@ export const renameFolder = createServerFn({ method: "POST" })
   });
 
 export const deleteFolder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await (context.supabase as any)
@@ -93,7 +93,7 @@ export const deleteFolder = createServerFn({ method: "POST" })
 // -------- Generations --------
 
 export const listGenerations = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z
       .object({
@@ -122,7 +122,7 @@ export const listGenerations = createServerFn({ method: "POST" })
   });
 
 export const getGeneration = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { data: row, error } = await (context.supabase as any)
@@ -171,7 +171,7 @@ export const getGeneration = createServerFn({ method: "GET" })
   });
 
 export const saveGeneration = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z
       .object({
@@ -215,7 +215,7 @@ export const saveGeneration = createServerFn({ method: "POST" })
   });
 
 export const toggleFavorite = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z.object({ id: z.string().uuid(), value: z.boolean() }).parse(input),
   )
@@ -229,7 +229,7 @@ export const toggleFavorite = createServerFn({ method: "POST" })
   });
 
 export const moveGeneration = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z
       .object({ id: z.string().uuid(), folderId: z.string().uuid().nullable() })
@@ -245,7 +245,7 @@ export const moveGeneration = createServerFn({ method: "POST" })
   });
 
 export const deleteGeneration = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await (context.supabase as any)

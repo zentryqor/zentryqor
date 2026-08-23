@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 const displayNameSchema = z
   .string()
@@ -10,7 +10,7 @@ const displayNameSchema = z
   .regex(/^[\p{L}\p{N} ._'\-]+$/u, "Display name contains invalid characters");
 
 export const updateProfile = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((d) =>
     z
       .object({
