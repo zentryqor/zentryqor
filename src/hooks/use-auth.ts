@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { appwriteGetUser, appwriteSignOut, type AppwriteUser } from "@/lib/appwrite";
+import { clearAppwriteAuthCache } from "@/integrations/appwrite/auth-attacher";
 
 export type AuthUser = {
   id: string;
@@ -39,6 +40,7 @@ export function useAuth() {
 
   const signOut = useCallback(async () => {
     await appwriteSignOut();
+    clearAppwriteAuthCache();
     setUser(null);
   }, []);
 
