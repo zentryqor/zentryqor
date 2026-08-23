@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 export type YouTubeAnalyticsReport = {
   rangeDays: number;
@@ -55,7 +55,7 @@ function iso(d: Date) {
 }
 
 export const getYouTubeAnalyticsReport = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input: { days?: number; accountId?: string } | undefined) => {
     const d = Number(input?.days ?? 7);
     const days = [7, 14, 30].includes(d) ? d : 7;

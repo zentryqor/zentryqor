@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 export type ChatConversation = {
   id: string;
@@ -16,7 +16,7 @@ export type StoredChatMessage = {
 };
 
 export const listChatConversations = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }): Promise<ChatConversation[]> => {
     const { data, error } = await context.supabase
       .from("chat_conversations")
@@ -34,7 +34,7 @@ export const listChatConversations = createServerFn({ method: "GET" })
   });
 
 export const getChatConversation = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { data: convo, error: convoError } = await context.supabase
@@ -65,7 +65,7 @@ export const getChatConversation = createServerFn({ method: "GET" })
   });
 
 export const createChatConversation = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z.object({ title: z.string().max(120).optional(), model: z.string().max(40).optional() }).parse(input ?? {}),
   )
@@ -84,7 +84,7 @@ export const createChatConversation = createServerFn({ method: "POST" })
   });
 
 export const renameChatConversation = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z.object({ id: z.string().uuid(), title: z.string().min(1).max(120) }).parse(input),
   )
@@ -99,7 +99,7 @@ export const renameChatConversation = createServerFn({ method: "POST" })
   });
 
 export const deleteChatConversation = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase

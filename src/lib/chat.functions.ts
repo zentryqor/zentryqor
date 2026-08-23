@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 const MessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
@@ -8,7 +8,7 @@ const MessageSchema = z.object({
 });
 
 export const chatWithZentry = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z
       .object({

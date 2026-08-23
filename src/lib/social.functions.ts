@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 export type SocialAccountRow = {
   id: string;
@@ -14,7 +14,7 @@ export type SocialAccountRow = {
 };
 
 export const listSocialAccounts = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const { data, error } = await (context.supabase as any)
       .from("social_accounts_public")
@@ -25,7 +25,7 @@ export const listSocialAccounts = createServerFn({ method: "GET" })
   });
 
 export const startSocialOAuth = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) =>
     z
       .object({
@@ -87,7 +87,7 @@ export const startSocialOAuth = createServerFn({ method: "POST" })
   });
 
 export const disconnectSocialAccount = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((i) => z.object({ id: z.string().uuid() }).parse(i))
   .handler(async ({ data, context }) => {
     // Owner check via RLS on the underlying table

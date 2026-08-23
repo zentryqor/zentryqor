@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 export type BestTimesReport = {
   accountId: string;
@@ -18,7 +18,7 @@ const WEEKDAY_COUNT = 7;
 const HOUR_COUNT = 24;
 
 export const getBestPostingTimes = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input: { accountId?: string; tzOffsetMinutes?: number } | undefined) => ({
     accountId:
       input?.accountId && typeof input.accountId === "string"

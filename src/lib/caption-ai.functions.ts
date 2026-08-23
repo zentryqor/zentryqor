@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 const AAI = "https://api.assemblyai.com/v2";
 const CAPTION_COST = 50;
@@ -95,7 +95,7 @@ async function refundDailyCredits(supabase: any, userId: string, amount: number,
  * transcription job with word-level timestamps. Costs 50 credits.
  */
 export const startTranscription = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z
       .object({
@@ -146,7 +146,7 @@ export const startTranscription = createServerFn({ method: "POST" })
 export type CaptionWord = { text: string; start: number; end: number };
 
 export const pollTranscription = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) => z.object({ id: z.string().min(4) }).parse(input))
   .handler(async ({ data }) => {
     const key = keyOrThrow();
@@ -175,7 +175,7 @@ export type TimedSentence = { text: string; start: number; end: number };
  * AssemblyAI transcript. Used by the Speech Timestamps tool.
  */
 export const pollSentences = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) => z.object({ id: z.string().min(4) }).parse(input))
   .handler(async ({ data }) => {
     const key = keyOrThrow();

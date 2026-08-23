@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 import {
   DEFAULT_PUSH_PREFERENCES,
   PUSH_CATEGORY_KEYS,
@@ -22,7 +22,7 @@ export const getPushConfig = createServerFn({ method: "GET" }).handler(async ():
 
 /** Registers (or refreshes) this device's FCM token and ensures a preferences row. */
 export const registerPushDevice = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input: { token: string; platform?: string; userAgent?: string }) =>
     z
       .object({
@@ -54,7 +54,7 @@ export const registerPushDevice = createServerFn({ method: "POST" })
 
 /** Removes a device token (used when the user turns notifications off). */
 export const unregisterPushDevice = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input: { token: string }) =>
     z.object({ token: z.string().min(20).max(4096) }).parse(input),
   )
@@ -69,7 +69,7 @@ export const unregisterPushDevice = createServerFn({ method: "POST" })
   });
 
 export const getPushSettings = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const [{ data: prefs }, { data: devices }] = await Promise.all([
@@ -116,7 +116,7 @@ const prefsSchema = z.object({
 });
 
 export const updatePushPreferences = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input: z.infer<typeof prefsSchema>) => prefsSchema.parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
@@ -127,7 +127,7 @@ export const updatePushPreferences = createServerFn({ method: "POST" })
   });
 
 export const removePushDevice = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input: { id: string }) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
@@ -141,7 +141,7 @@ export const removePushDevice = createServerFn({ method: "POST" })
 
 /** Sends a test notification to every device registered by the caller. */
 export const sendTestPush = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const { data: devices } = await supabase

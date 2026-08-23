@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 export type YouTubeChannelDetails = {
   id: string;
@@ -32,7 +32,7 @@ export type YouTubeChannelDetails = {
 };
 
 export const getYouTubeChannelDetails = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input: { accountId?: string } | undefined) => ({
     accountId:
       input?.accountId && typeof input.accountId === "string"

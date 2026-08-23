@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { gatewayFetch, type PaddleEnv } from "@/lib/paddle.server";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 export const resolvePaddlePrice = createServerFn({ method: "GET" })
   .inputValidator((data: { priceId: string; environment: PaddleEnv }) =>
@@ -30,7 +30,7 @@ export const resolvePaddlePrice = createServerFn({ method: "GET" })
  * current subscription's next billing date (when one exists).
  */
 export const getLatestPurchase = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     const [purchase, sub] = await Promise.all([

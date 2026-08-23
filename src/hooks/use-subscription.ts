@@ -1,69 +1,22 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getMySubscription, type SubscriptionRow } from "@/lib/subscription.functions";
 import { getPaddleEnvironment } from "@/lib/paddle";
 
-export type SubscriptionRow = {
-  id: string;
-  status: string;
-  current_period_end: string | null;
-  current_period_start: string | null;
-  cancel_at_period_end: boolean | null;
-  price_id: string;
-  product_id: string;
-  paddle_subscription_id: string;
-  paddle_customer_id: string;
-  environment: string;
-};
+export type { SubscriptionRow };
 
 export function useSubscription(userId: string | null | undefined) {
-  const [subscription, setSubscription] = useState<SubscriptionRow | null>(null);
-  const [loading, setLoading] = useState(true);
+  const fetchSub = useServerFn(getMySubscription);
+  const environment = getPaddleEnvironment() as "sandbox" | "live";
 
-  useEffect(() => {
-    if (!userId) {
-      setSubscription(null);
-      setLoading(false);
-      return;
-    }
+  const { data, isLoading } = useQuery({
+    queryKey: ["subscription", userId, environment],
+    enabled: !!userId,
+    refetchInterval: 60_000,
+    queryFn: () => fetchSub({ data: { environment } }),
+  });
 
-    let cancelled = false;
-    const env = getPaddleEnvironment();
-
-    const fetchSub = async () => {
-      const { data } = await supabase
-        .from("subscriptions")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("environment", env)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (cancelled) return;
-      setSubscription((data as SubscriptionRow | null) ?? null);
-      setLoading(false);
-    };
-
-    fetchSub();
-
-    const channel = supabase.channel(`sub-${userId}-${Math.random().toString(36).slice(2)}`);
-    channel
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "subscriptions",
-          filter: `user_id=eq.${userId}`,
-        },
-        () => fetchSub(),
-      )
-      .subscribe();
-
-    return () => {
-      cancelled = true;
-      supabase.removeChannel(channel);
-    };
-  }, [userId]);
+  const subscription = data ?? null;
 
   const now = Date.now();
   const periodEnd = subscription?.current_period_end
@@ -77,7 +30,14 @@ export function useSubscription(userId: string | null | undefined) {
       (subscription.status === "canceled" && periodEnd !== null && periodEnd > now));
 
   const isPastDue = subscription?.status === "past_due";
-  const isCanceling = !!subscription?.cancel_at_period_end && subscription.status !== "canceled";
+  const isCanceling =
+    !!subscription?.cancel_at_period_end && subscription.status !== "canceled";
 
-  return { subscription, isPremium, isPastDue, isCanceling, loading };
+  return {
+    subscription,
+    isPremium,
+    isPastDue,
+    isCanceling,
+    loading: !!userId && isLoading,
+  };
 }

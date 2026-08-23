@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 export type AdminAccount = {
   id: string;
@@ -41,7 +41,7 @@ async function assertAdmin(userId: string) {
 }
 
 export const checkIsAdmin = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }): Promise<{ isAdmin: boolean }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await supabaseAdmin
@@ -52,7 +52,7 @@ export const checkIsAdmin = createServerFn({ method: "GET" })
   });
 
 export const adminListAccounts = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }): Promise<AdminAccount[]> => {
     const supabaseAdmin = await assertAdmin(context.userId);
     const [{ data: profiles }, { data: roles }, { data: subs }] = await Promise.all([
@@ -75,7 +75,7 @@ export const adminListAccounts = createServerFn({ method: "GET" })
   });
 
 export const adminListAssets = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }): Promise<AdminAssetRow[]> => {
     const supabaseAdmin = await assertAdmin(context.userId);
     const { data, error } = await supabaseAdmin
@@ -111,7 +111,7 @@ const uploadMetaSchema = z.object({
 });
 
 export const adminUploadAsset = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((data: FormData) => {
     if (!(data instanceof FormData)) throw new Error("Expected FormData");
     const file = data.get("file");
@@ -177,7 +177,7 @@ export const adminUploadAsset = createServerFn({ method: "POST" })
   });
 
 export const adminDeleteAsset = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const supabaseAdmin = await assertAdmin(context.userId);
@@ -196,7 +196,7 @@ export const adminDeleteAsset = createServerFn({ method: "POST" })
   });
 
 export const adminGetAssetSignedUrl = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }): Promise<{ url: string }> => {
     const supabaseAdmin = await assertAdmin(context.userId);
@@ -230,7 +230,7 @@ const insertRowSchema = z.object({
 });
 
 export const adminInsertAssetRow = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((d) => insertRowSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { enforceRateLimit } = await import("@/lib/security.server");

@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 export type CustomSkill = {
   id: string;
@@ -10,7 +10,7 @@ export type CustomSkill = {
 };
 
 export const listChatSkills = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }): Promise<CustomSkill[]> => {
     const { data, error } = await context.supabase
       .from("chat_skills")
@@ -23,7 +23,7 @@ export const listChatSkills = createServerFn({ method: "GET" })
   });
 
 export const createChatSkill = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z
       .object({
@@ -49,7 +49,7 @@ export const createChatSkill = createServerFn({ method: "POST" })
   });
 
 export const deleteChatSkill = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase

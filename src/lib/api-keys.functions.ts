@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAppwriteAuth } from "@/integrations/appwrite/auth-middleware";
 
 const KEY_PREFIX = "zqk_live_";
 
@@ -23,7 +23,7 @@ function generateRawKey(): string {
 }
 
 export const listApiKeys = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("api_keys")
@@ -34,7 +34,7 @@ export const listApiKeys = createServerFn({ method: "GET" })
   });
 
 export const listApiUsage = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("api_usage_logs")
@@ -115,7 +115,7 @@ export const listApiUsage = createServerFn({ method: "GET" })
   });
 
 export const getRateLimitStatus = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: premium } = await supabaseAdmin.rpc("is_premium", { _user_id: context.userId });
@@ -150,7 +150,7 @@ export const getRateLimitStatus = createServerFn({ method: "GET" })
   });
 
 export const createApiKey = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) =>
     z.object({ name: z.string().trim().min(1).max(60) }).parse(input),
   )
@@ -191,7 +191,7 @@ export const createApiKey = createServerFn({ method: "POST" })
   });
 
 export const revokeApiKey = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAppwriteAuth])
   .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase
