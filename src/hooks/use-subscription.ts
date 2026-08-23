@@ -7,7 +7,7 @@ export type { SubscriptionRow };
 
 export function useSubscription(userId: string | null | undefined) {
   const fetchSub = useServerFn(getMySubscription);
-  const environment = getPaddleEnvironment() as "sandbox" | "production";
+  const environment = getPaddleEnvironment() as "sandbox" | "live";
 
   const { data, isLoading } = useQuery({
     queryKey: ["subscription", userId, environment],

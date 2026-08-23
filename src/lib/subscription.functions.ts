@@ -19,7 +19,7 @@ export type SubscriptionRow = {
 export const getMySubscription = createServerFn({ method: "GET" })
   .middleware([requireAppwriteAuth])
   .inputValidator((d) =>
-    z.object({ environment: z.enum(["sandbox", "production"]) }).parse(d),
+    z.object({ environment: z.enum(["sandbox", "live"]) }).parse(d),
   )
   .handler(async ({ data, context }): Promise<SubscriptionRow | null> => {
     const { data: row } = await context.supabase
