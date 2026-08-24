@@ -10,7 +10,7 @@ import {
 import { getReferrerByCode } from "@/lib/referrals.functions";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff, Gift, Sparkles } from "lucide-react";
-import authLogo from "@/assets/zentry-mark.png.asset.json";
+import authLogo from "@/assets/zentry-auth-logo.png.asset.json";
 
 
 export const Route = createFileRoute("/auth")({
