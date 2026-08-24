@@ -1,5 +1,5 @@
 // Browser-side Appwrite client. Endpoint + project id are publishable values.
-import { Account, Client, ID } from "appwrite";
+import { Account, Client, Databases, ID } from "appwrite";
 
 export const APPWRITE_ENDPOINT =
   import.meta.env.VITE_APPWRITE_ENDPOINT ?? "https://fra.cloud.appwrite.io/v1";
@@ -11,6 +11,17 @@ export const appwriteClient = new Client()
   .setProject(APPWRITE_PROJECT_ID);
 
 export const appwriteAccount = new Account(appwriteClient);
+export const appwriteDatabases = new Databases(appwriteClient);
+
+/** Ping the Appwrite backend to verify connectivity (called on app start). */
+export async function appwritePing(): Promise<boolean> {
+  try {
+    await appwriteClient.ping();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export type AppwriteUser = {
   $id: string;

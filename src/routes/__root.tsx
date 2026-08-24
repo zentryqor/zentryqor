@@ -183,7 +183,10 @@ function RootComponent() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // Verify the Appwrite backend connection on app start.
+    import("@/lib/appwrite").then(({ appwritePing }) => void appwritePing());
     let mounted = true;
+
 
     // Capture ?ref=CODE from URL and stash for post-signup processing
     try {
