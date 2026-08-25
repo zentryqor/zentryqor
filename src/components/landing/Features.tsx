@@ -1,207 +1,110 @@
-import { Sparkles, Wand2, LineChart, Library, Bookmark, Zap, ArrowUpRight } from "lucide-react";
-import { motion } from "framer-motion";
-import { TiltCard } from "@/components/motion/TiltCard";
-import { Reveal } from "@/components/motion/Reveal";
-import { Typewriter } from "@/components/motion/Typewriter";
+import { Link } from "@tanstack/react-router";
+import { ArrowRight } from "lucide-react";
+import { Reveal } from "./Cine";
+import shotVault from "@/assets/cine-1.jpg";
+import shotTimeline from "@/assets/cine-5.jpg";
+import shotSmoke from "@/assets/cine-3.jpg";
 
-import { MotionIcon } from "@/components/motion/MotionIcon";
+type Block = {
+  eyebrow: string;
+  title: string;
+  copy: string;
+  bullets: string[];
+  href: string;
+  image: string;
+  alt: string;
+  w: number;
+  h: number;
+  flip?: boolean;
+  ratio: string;
+};
 
+const BLOCKS: Block[] = [
+  {
+    eyebrow: "Caption engine",
+    title: "Captions that look art-directed, not auto-generated.",
+    copy:
+      "Upload a clip, get word-level timing, then edit on a real timeline — cut, zoom, snap to frame, restyle any single word.",
+    bullets: ["20+ caption styles", "Per-word font & colour", "Export MP4, .aep, .prproj"],
+    href: "/studio",
+    image: shotTimeline,
+    alt: "Editing timeline glowing in a dark room",
+    w: 1600,
+    h: 900,
+    ratio: "aspect-[16/10]",
+  },
+  {
+    eyebrow: "Asset vault",
+    title: "A curated vault, not a stock dump.",
+    copy:
+      "Overlays, LUTs, transitions, hook libraries and templates — organised like a repository, downloadable as one zip.",
+    bullets: ["Multi-select bulk download", "Repo-style file browser", "New drops weekly"],
+    href: "/templates",
+    image: shotVault,
+    alt: "Cinema lens on black background",
+    w: 1024,
+    h: 1280,
+    flip: true,
+    ratio: "aspect-[4/5]",
+  },
+  {
+    eyebrow: "AI studio",
+    title: "A creative desk that answers in your voice.",
+    copy:
+      "Chat with your own skills, mention any tool with @, pull your connected channel's data in for context-aware ideas.",
+    bullets: ["Custom SKILL.md skills", "@tool mentions", "Channel-aware answers"],
+    href: "/studio",
+    image: shotSmoke,
+    alt: "Green light streaks through dark smoke",
+    w: 1600,
+    h: 900,
+    ratio: "aspect-[16/10]",
+  },
+];
 
 export function Features() {
   return (
-    <section id="features" className="py-28 px-4 relative">
-      <div className="max-w-6xl mx-auto">
-        <Reveal className="max-w-2xl mb-14">
-          <div className="text-xs uppercase tracking-[0.22em] text-accent mb-3">
-            Built different
-          </div>
-          <h2 className="text-4xl sm:text-6xl font-semibold tracking-[-0.035em] text-gradient leading-[1.02]">
-            Every tool a serious
-            <br />
-            creator needs.{" "}
-            <span className="text-muted-foreground italic font-medium">Nothing they don't.</span>
-          </h2>
-        </Reveal>
-
-        {/* Bento grid — 6 cols, asymmetric on md+, natural stacking on mobile */}
-        <div className="grid grid-cols-1 md:grid-cols-6 md:auto-rows-[180px] gap-3">
-          {/* Vault — large hero card (4 cols, 2 rows on md+) */}
-          <TiltCard
-            maxTilt={4}
-            className="md:col-span-4 md:row-span-2 group rounded-3xl glass overflow-hidden cursor-default relative"
+    <section id="features" className="section-pad pt-0">
+      <div className="shell space-y-24 md:space-y-40">
+        {BLOCKS.map((b) => (
+          <div
+            key={b.title}
+            className="grid items-center gap-10 md:gap-16 lg:grid-cols-12"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative h-full p-6 md:p-7 flex flex-col gap-5 md:gap-0">
-              <div className="flex items-center justify-between">
-                <MotionIcon className="h-11 w-11 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                  <Library className="h-5 w-5 text-accent icon-fx" />
-                </MotionIcon>
-                <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors icon-fx" />
-              </div>
-              <div className="md:mt-auto">
-                <h3 className="text-2xl font-semibold tracking-tight">
-                  Creator Vault
-                </h3>
-                <p className="text-sm text-muted-foreground mt-2 max-w-md leading-relaxed">
-                  Thousands of premium packs — LUTs, overlays, hook libraries,
-                  templates. Curated weekly, not dumped monthly.
-                </p>
-              </div>
-
-              {/* Floating asset thumbnails — desktop only */}
-              <div className="absolute right-6 top-16 hidden md:flex gap-3 -rotate-6">
-                {[
-                  "from-primary/40 to-accent/20",
-                  "from-accent/40 to-primary/20",
-                  "from-primary/30 to-foreground/5",
-                ].map((g, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ y: 0 }}
-                    animate={{ y: [0, -8, 0] }}
-                    transition={{
-                      duration: 4 + i,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: i * 0.4,
-                    }}
-                    className={`w-28 h-36 rounded-2xl bg-gradient-to-br ${g} border border-border/60 shadow-elegant`}
-                  >
-                    <div className="h-full w-full ring-grid opacity-30 rounded-2xl" />
-                  </motion.div>
+            <Reveal
+              className={`lg:col-span-5 ${b.flip ? "lg:order-2" : ""}`}
+            >
+              <p className="eyebrow">{b.eyebrow}</p>
+              <h3 className="display-3 mt-4">{b.title}</h3>
+              <p className="body-cine mt-5">{b.copy}</p>
+              <ul className="mt-7 space-y-2.5">
+                {b.bullets.map((li) => (
+                  <li key={li} className="flex items-center gap-3 text-[13px] text-foreground/80">
+                    <span className="h-1 w-1 rounded-full bg-primary" />
+                    {li}
+                  </li>
                 ))}
+              </ul>
+              <Link
+                to={b.href}
+                search={b.href === "/studio" ? ({ screen: "dashboard" } as never) : undefined}
+                className="btn-cine-ghost mt-9 group"
+              >
+                Explore
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </Reveal>
+
+            <Reveal
+              delay={0.08}
+              className={`lg:col-span-7 ${b.flip ? "lg:order-1" : ""}`}
+            >
+              <div className={`media-frame ${b.ratio}`}>
+                <img src={b.image} alt={b.alt} width={b.w} height={b.h} loading="lazy" />
               </div>
-
-              <div className="md:mt-4 flex items-center gap-4 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                <span>Premium asset packs</span>
-                <span className="h-1 w-1 rounded-full bg-border" />
-                <span>Updated weekly</span>
-              </div>
-            </div>
-          </TiltCard>
-
-          {/* AI Tools — wide (2 cols, 1 row) */}
-          <TiltCard
-            maxTilt={6}
-            className="md:col-span-2 group rounded-3xl glass overflow-hidden cursor-default relative"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-accent/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative h-full p-6 flex flex-col">
-              <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                <Wand2 className="h-4 w-4 text-accent icon-fx" />
-              </MotionIcon>
-              <h3 className="text-lg font-semibold tracking-tight mt-4">AI that ships</h3>
-              <div className="text-[12px] text-muted-foreground mt-2 min-h-[3em] leading-snug">
-                <Typewriter
-                  lines={[
-                    "Generating viral hooks…",
-                    "Writing 30-sec script…",
-                    "Finding hot trends…",
-                  ]}
-                />
-              </div>
-            </div>
-          </TiltCard>
-
-          {/* Analytics — wide */}
-          <TiltCard
-            maxTilt={6}
-            className="md:col-span-2 group rounded-3xl glass overflow-hidden cursor-default relative"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="relative h-full p-6 flex flex-col">
-              <div className="flex items-start justify-between">
-                <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                  <LineChart className="h-4 w-4 text-accent icon-fx" />
-                </MotionIcon>
-                <div className="text-right">
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                    7d
-                  </div>
-                  <div className="text-sm font-semibold text-success">+34%</div>
-                </div>
-              </div>
-              <h3 className="text-lg font-semibold tracking-tight mt-4">Analytics</h3>
-              {/* Mini chart */}
-              <svg viewBox="0 0 120 40" className="w-full h-10 md:mt-auto">
-                <motion.path
-                  d="M0,32 L15,28 L30,30 L45,18 L60,22 L75,10 L90,14 L105,6 L120,8"
-                  fill="none"
-                  stroke="var(--accent)"
-                  strokeWidth="1.5"
-                  initial={{ pathLength: 0 }}
-                  whileInView={{ pathLength: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.6, ease: "easeOut" }}
-                />
-                <motion.path
-                  d="M0,32 L15,28 L30,30 L45,18 L60,22 L75,10 L90,14 L105,6 L120,8 L120,40 L0,40 Z"
-                  fill="url(#g1)"
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1, delay: 0.4 }}
-                />
-                <defs>
-                  <linearGradient id="g1" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </div>
-          </TiltCard>
-
-          {/* Saved library — small */}
-          <TiltCard
-            maxTilt={8}
-            className="md:col-span-2 group rounded-3xl glass overflow-hidden cursor-default relative"
-          >
-            <div className="relative h-full p-6 flex flex-col">
-              <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                <Bookmark className="h-4 w-4 text-accent icon-fx" />
-              </MotionIcon>
-              <h3 className="text-lg font-semibold tracking-tight md:mt-auto">Saved library</h3>
-              <p className="text-xs text-muted-foreground mt-1.5">
-                Bookmark anything from the vault. One click to find it again.
-              </p>
-            </div>
-          </TiltCard>
-
-          {/* Daily credits — small */}
-          <TiltCard
-            maxTilt={8}
-            className="md:col-span-2 group rounded-3xl glass overflow-hidden cursor-default relative"
-          >
-            <div className="relative h-full p-6 flex flex-col">
-              <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                <Zap className="h-4 w-4 text-accent icon-fx" />
-              </MotionIcon>
-              <h3 className="text-lg font-semibold tracking-tight md:mt-auto">Fresh credits daily</h3>
-              <p className="text-xs text-muted-foreground mt-1.5">
-                1,000 AI credits a day on Premium. No top-ups, no surprise bills.
-              </p>
-            </div>
-          </TiltCard>
-
-          {/* Personalized — small */}
-          <TiltCard
-            maxTilt={8}
-            className="md:col-span-2 group rounded-3xl glass overflow-hidden cursor-default relative"
-          >
-            <div className="relative h-full p-6 flex flex-col">
-              <MotionIcon className="h-10 w-10 rounded-xl bg-elevated border border-border icon-fx-glow icon-fx-shimmer">
-                <Sparkles className="h-4 w-4 text-accent icon-fx" />
-              </MotionIcon>
-              <h3 className="text-lg font-semibold tracking-tight md:mt-auto">
-                Tuned to you
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1.5">
-                Recommendations that learn your niche, your platform, your taste.
-              </p>
-            </div>
-          </TiltCard>
-        </div>
+            </Reveal>
+          </div>
+        ))}
       </div>
     </section>
   );
