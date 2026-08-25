@@ -1246,3 +1246,176 @@ input[type="range"]::-moz-range-track {
 .liquid-btn--primary:hover:not(:disabled) {
   background-color: color-mix(in oklch, var(--primary) 72%, transparent);
 }
+
+/* =========================================================
+   Cinematic design system (landing + marketing surfaces)
+   ========================================================= */
+
+@utility shell {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
+  padding-inline: 20px;
+  @media (min-width: 768px) {
+    padding-inline: 40px;
+  }
+  @media (min-width: 1280px) {
+    padding-inline: 56px;
+  }
+}
+
+@utility section-pad {
+  padding-block: 88px;
+  @media (min-width: 768px) {
+    padding-block: 128px;
+  }
+  @media (min-width: 1280px) {
+    padding-block: 160px;
+  }
+}
+
+@utility display-1 {
+  font-size: clamp(2.75rem, 8.2vw, 5.75rem);
+  font-weight: 650;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+  text-wrap: balance;
+}
+
+@utility display-2 {
+  font-size: clamp(2rem, 5.2vw, 3.75rem);
+  font-weight: 650;
+  line-height: 1.02;
+  letter-spacing: -0.042em;
+  text-wrap: balance;
+}
+
+@utility display-3 {
+  font-size: clamp(1.5rem, 3.2vw, 2.375rem);
+  font-weight: 620;
+  line-height: 1.08;
+  letter-spacing: -0.032em;
+}
+
+@utility eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+@utility body-cine {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+  @media (min-width: 768px) {
+    font-size: 16px;
+  }
+}
+
+@utility card-cine {
+  background: var(--surface);
+  border: 1px solid oklch(1 0 0 / 0.08);
+  border-radius: 18px;
+  transition:
+    transform 260ms ease-out,
+    background-color 260ms ease-out,
+    border-color 260ms ease-out;
+}
+
+@utility card-cine-hover {
+  &:hover {
+    transform: translateY(-3px);
+    background: var(--elevated);
+    border-color: oklch(1 0 0 / 0.14);
+  }
+}
+
+@utility btn-cine {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding-inline: 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  background: #f5f5f5;
+  color: #0a0a0a;
+  border: 1px solid transparent;
+  transition:
+    transform 200ms ease-out,
+    filter 200ms ease-out,
+    background-color 200ms ease-out;
+  &:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+  }
+}
+
+@utility btn-cine-accent {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+@utility btn-cine-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding-inline: 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #f5f5f5;
+  background: oklch(1 0 0 / 0.03);
+  border: 1px solid oklch(1 0 0 / 0.12);
+  transition:
+    transform 200ms ease-out,
+    background-color 200ms ease-out,
+    border-color 200ms ease-out;
+  &:hover {
+    transform: translateY(-2px);
+    background: oklch(1 0 0 / 0.07);
+    border-color: oklch(1 0 0 / 0.2);
+  }
+}
+
+@utility media-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background: #101010;
+  border: 1px solid oklch(1 0 0 / 0.08);
+  & img,
+  & video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  &:hover img,
+  &:hover video {
+    transform: scale(1.03);
+  }
+}
+
+@utility hairline {
+  height: 1px;
+  width: 100%;
+  background: oklch(1 0 0 / 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-cine,
+  .btn-cine-ghost,
+  .card-cine,
+  .media-frame img,
+  .media-frame video {
+    transition: none !important;
+  }
+}
